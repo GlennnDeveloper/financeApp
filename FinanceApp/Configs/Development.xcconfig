@@ -1,0 +1,5 @@
+// Development.xcconfig
+// Base URL for the development server
+BASE_URL = https:/$()/dev-api.myfinance.com
+API_KEY = dev_key_12345
+SUPABASE_URL = https:/$()/dev-supabase.supabase.co

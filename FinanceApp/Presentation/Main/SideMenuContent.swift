@@ -4,6 +4,7 @@ import Auth
 /// Side menu content — adapted from SettingsView for the 3D drawer layout
 struct SideMenuContent: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var settingsManager: SettingsManager
     @Binding var isOpen: Bool
 
     var body: some View {

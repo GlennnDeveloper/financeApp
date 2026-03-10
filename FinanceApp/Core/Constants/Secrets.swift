@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct Secrets {
     static let supabaseURL = URL(string: "https://guwyoxbahwvxsqyvepam.supabase.co")!

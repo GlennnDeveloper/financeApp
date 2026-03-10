@@ -1,0 +1,5 @@
+// Production.xcconfig
+// Base URL for the production server
+BASE_URL = https:/$()/api.myfinance.com
+API_KEY = prod_key_abcde
+SUPABASE_URL = https:/$()/prod-supabase.supabase.co

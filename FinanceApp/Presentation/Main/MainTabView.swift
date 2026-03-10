@@ -9,6 +9,7 @@ struct MainTabView: View {
     
     @State private var viewModel = FinanceViewModel()
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var settingsManager: SettingsManager
     
     @State private var showSettings = false
     
@@ -25,27 +26,27 @@ struct MainTabView: View {
                 TabView {
                     DashboardView(showSettings: $showSettings)
                         .tabItem {
-                            Label(SettingsManager.shared.localizedString(for: "Dashboard"), systemImage: "square.grid.2x2")
+                            Label(settingsManager.localizedString(for: "Dashboard"), systemImage: "square.grid.2x2")
                         }
                     
                     RecurringView()
                         .tabItem {
-                            Label(SettingsManager.shared.localizedString(for: "Recurring"), systemImage: "calendar")
+                            Label(settingsManager.localizedString(for: "Recurring"), systemImage: "calendar")
                         }
                     
                     NetWorthView()
                         .tabItem {
-                            Label(SettingsManager.shared.localizedString(for: "Net Worth"), systemImage: "chart.bar.fill")
+                            Label(settingsManager.localizedString(for: "Net Worth"), systemImage: "chart.bar.fill")
                         }
                     
                     SpendingView()
                         .tabItem {
-                            Label(SettingsManager.shared.localizedString(for: "Spending"), systemImage: "wallet.pass")
+                            Label(settingsManager.localizedString(for: "Spending"), systemImage: "wallet.pass")
                         }
                     
                     TransactionsView()
                         .tabItem {
-                            Label(SettingsManager.shared.localizedString(for: "Transactions"), systemImage: "list.bullet")
+                            Label(settingsManager.localizedString(for: "Transactions"), systemImage: "list.bullet")
                         }
                 }
                 .tint(.blue)

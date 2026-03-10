@@ -1,0 +1,5 @@
+// Staging.xcconfig
+// Base URL for the staging server
+BASE_URL = https:/$()/staging-api.myfinance.com
+API_KEY = staging_key_67890
+SUPABASE_URL = https:/$()/staging-supabase.supabase.co
