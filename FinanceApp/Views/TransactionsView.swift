@@ -3,6 +3,7 @@ import SwiftData
 
 struct TransactionsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+    @Query(sort: \Category.orderIndex) private var categories: [Category]
     
     // Performance Optimization: Pre-calculated grouped state
     @State private var groupedTransactions: [(String, [Transaction])] = []
@@ -12,7 +13,7 @@ struct TransactionsView: View {
             Group {
                 if transactions.isEmpty {
                     ContentUnavailableView(
-                        "No Transactions",
+                        NSLocalizedString("No Transactions", comment: ""),
                         systemImage: "tray.fill",
                         description: Text("Your bank movements will appear here.")
                     )
@@ -21,7 +22,7 @@ struct TransactionsView: View {
                         ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
                             Section {
                                 ForEach(monthTransactions) { transaction in
-                                    TransactionRow(transaction: transaction)
+                                    TransactionRow(transaction: transaction, categories: categories)
                                         .listRowInsets(EdgeInsets())
                                         .listRowBackground(Color.clear)
                                         .listRowSeparator(.hidden)
@@ -31,19 +32,17 @@ struct TransactionsView: View {
                             } header: {
                                 Text(monthYear)
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.primary)
                                     .padding(.vertical, 8)
                             }
                         }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .background(Color.black)
                     .environment(\.defaultMinListRowHeight, 10)
                 }
             }
             .navigationTitle("Transactions")
-            .background(Color.black.ignoresSafeArea())
             .onAppear {
                 recalculateGroups()
             }

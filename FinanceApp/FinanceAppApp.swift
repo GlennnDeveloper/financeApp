@@ -12,12 +12,11 @@ import SwiftData
 struct FinanceAppApp: App {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var initManager = AppInitializationManager()
+    @StateObject private var settingsManager = SettingsManager.shared
     
     var body: some Scene {
         WindowGroup {
             ZStack {
-                Color.black.ignoresSafeArea() // Constant background to avoid flickering
-                
                 if initManager.isInitialized, let container = initManager.modelContainer {
                     Group {
                         if authViewModel.session != nil {
@@ -29,6 +28,9 @@ struct FinanceAppApp: App {
                         }
                     }
                     .modelContainer(container) // Use the background-initialized container
+                    .environmentObject(settingsManager)
+                    .environment(\.locale, settingsManager.locale)
+                    .preferredColorScheme(settingsManager.appTheme.colorScheme)
                     .transition(.opacity.animation(.easeInOut(duration: 0.5)))
                 } else {
                     // Ultra-lightweight Splash Screen

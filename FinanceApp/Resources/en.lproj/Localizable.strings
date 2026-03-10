@@ -1,0 +1,111 @@
+"Total Balance" = "Total Balance";
+"Recent Transactions" = "Recent Transactions";
+"App Theme" = "App Theme";
+"Language" = "Language";
+"Settings" = "Settings";
+"Notifications" = "Notifications";
+"Profile" = "Profile";
+"Manage Budget" = "Manage Budget";
+"Categories & Rules" = "Categories & Rules";
+"Linked Accounts" = "Linked Accounts";
+"Log Out" = "Log Out";
+
+/* Dashboard */
+"Bank Accounts" = "Bank Accounts";
+"Connect Your Bank" = "Connect Your Bank";
+"Link an account to see balances" = "Link an account to see balances";
+"Disconnect" = "Disconnect";
+"Analytics" = "Analytics";
+"No transactions yet" = "No transactions yet";
+"Bank Error" = "Bank Error";
+"OK" = "OK";
+"Session expired." = "Session expired.";
+"Today" = "Today";
+"MONTHLY SAVINGS" = "MONTHLY SAVINGS";
+
+/* Spending */
+"Spending Info" = "Spending Info";
+"Total Spent" = "Total Spent";
+"Breakdown" = "Breakdown";
+"No Data" = "No Data";
+"You have no expenses recorded for this timeframe." = "You have no expenses recorded for this timeframe.";
+"Unknown Date" = "Unknown Date";
+
+/* Settings Content */
+"Appearance" = "Appearance";
+"Preferences" = "Preferences";
+"Primary Currency" = "Primary Currency";
+"Security" = "Security";
+"Use Face ID" = "Use Face ID";
+"Data Management" = "Data Management";
+"Clear Cache" = "Clear Cache";
+"Export My Data" = "Export My Data";
+
+/* Timeframes */
+"Week" = "Week";
+"Month" = "Month";
+"Year" = "Year";
+
+/* Categories */
+"Food & Drink" = "Food & Drink";
+"Transport" = "Transport";
+"Home Bills" = "Home Bills";
+"Self-Care" = "Self-Care";
+"Shopping" = "Shopping";
+"Health" = "Health";
+"Salary" = "Salary";
+"Others" = "Others";
+
+/* Side Menu & New Settings */
+"Hi there 👋" = "Hi there 👋";
+"Refer a Friend" = "Refer a Friend";
+"Chat" = "Chat";
+"Demo Mode" = "Demo Mode";
+"Share Account" = "Share Account";
+"Join me on FinanceApp to manage our budget together!" = "Join me on FinanceApp to manage our budget together!";
+"Premium" = "Premium";
+"Help & Privacy" = "Help & Privacy";
+
+/* Add Transaction */
+"New Transaction" = "New Transaction";
+"Expense" = "Expense";
+"Income" = "Income";
+"Enter amount" = "Enter amount";
+"What was this for?" = "What was this for?";
+"Date" = "Date";
+"Save Transaction" = "Save Transaction";
+"Category" = "Category";
+
+/* Transactions */
+"No Transactions" = "No Transactions";
+"Your bank movements will appear here." = "Your bank movements will appear here.";
+"Transactions" = "Transactions";
+
+/* Budget */
+"Monthly Budget" = "Monthly Budget";
+"Spent" = "Spent";
+"Remaining" = "Remaining";
+"Categories" = "Categories";
+"No budgets set yet" = "No budgets set yet";
+"Set first budget" = "Set first budget";
+"New Budget" = "New Budget";
+"Select Category" = "Select Category";
+"Limit" = "Limit";
+"Amount" = "Amount";
+"Cancel" = "Cancel";
+"Save" = "Save";
+
+/* Category Detail */
+"No Expenses" = "No Expenses";
+"No expenses for %@" = "No expenses for %@";
+"in this timeframe." = "in this timeframe.";
+
+/* Linked Accounts */
+"Connection Status" = "Connection Status";
+"Connected to Plaid" = "Connected to Plaid";
+"Not Connected" = "Not Connected";
+"Link your bank accounts" = "Link your bank accounts";
+"Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Connect your bank securely via Plaid to automatically sync your transactions and balances.";
+"Connect with Plaid" = "Connect with Plaid";
+"Error" = "Error";
+"Error" = "Error";

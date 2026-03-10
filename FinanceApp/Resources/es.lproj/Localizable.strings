@@ -1,0 +1,111 @@
+"Total Balance" = "Balance Total";
+"Recent Transactions" = "Transacciones Recientes";
+"App Theme" = "Tema de la App";
+"Language" = "Idioma";
+"Settings" = "Ajustes";
+"Notifications" = "Notificaciones";
+"Profile" = "Perfil";
+"Manage Budget" = "Gestionar Presupuesto";
+"Categories & Rules" = "Categorías y Reglas";
+"Linked Accounts" = "Cuentas Vinculadas";
+"Log Out" = "Cerrar Sesión";
+
+/* Dashboard */
+"Bank Accounts" = "Cuentas Bancarias";
+"Connect Your Bank" = "Conecta tu Banco";
+"Link an account to see balances" = "Vincula una cuenta para ver saldos";
+"Disconnect" = "Desconectar";
+"Analytics" = "Análisis";
+"No transactions yet" = "Aún no hay transacciones";
+"Bank Error" = "Error Bancario";
+"OK" = "Aceptar";
+"Session expired." = "Sesión expirada.";
+"Today" = "Hoy";
+"MONTHLY SAVINGS" = "AHORRO MENSUAL";
+
+/* Spending */
+"Spending Info" = "Información de Gastos";
+"Total Spent" = "Total Gastado";
+"Breakdown" = "Desglose";
+"No Data" = "Sin Datos";
+"You have no expenses recorded for this timeframe." = "No tienes gastos registrados para este periodo.";
+"Unknown Date" = "Fecha Desconocida";
+
+/* Settings Content */
+"Appearance" = "Apariencia";
+"Preferences" = "Preferencias";
+"Primary Currency" = "Moneda Principal";
+"Security" = "Seguridad";
+"Use Face ID" = "Usar Face ID";
+"Data Management" = "Gestión de Datos";
+"Clear Cache" = "Limpiar Caché";
+"Export My Data" = "Exportar mis Datos";
+
+/* Timeframes */
+"Week" = "Semana";
+"Month" = "Mes";
+"Year" = "Año";
+
+/* Categories */
+"Food & Drink" = "Comida y Bebida";
+"Transport" = "Transporte";
+"Home Bills" = "Facturas del Hogar";
+"Self-Care" = "Cuidado Personal";
+"Shopping" = "Compras";
+"Health" = "Salud";
+"Salary" = "Salario";
+"Others" = "Otros";
+
+/* Side Menu & New Settings */
+"Hi there 👋" = "Hola 👋";
+"Refer a Friend" = "Recomienda a un Amigo";
+"Chat" = "Chat";
+"Demo Mode" = "Modo Demo";
+"Share Account" = "Compartir Cuenta";
+"Join me on FinanceApp to manage our budget together!" = "¡Únete a mí en FinanceApp para gestionar nuestro presupuesto juntos!";
+"Premium" = "Premium";
+"Help & Privacy" = "Ayuda y Privacidad";
+
+/* Add Transaction */
+"New Transaction" = "Nueva Transacción";
+"Expense" = "Gasto";
+"Income" = "Ingreso";
+"Enter amount" = "Ingresa el monto";
+"What was this for?" = "¿Para qué fue esto?";
+"Date" = "Fecha";
+"Save Transaction" = "Guardar Transacción";
+"Category" = "Categoría";
+
+/* Transactions */
+"No Transactions" = "Sin Transacciones";
+"Your bank movements will appear here." = "Tus movimientos bancarios aparecerán aquí.";
+"Transactions" = "Transacciones";
+
+/* Budget */
+"Monthly Budget" = "Presupuesto Mensual";
+"Spent" = "Gastado";
+"Remaining" = "Restante";
+"Categories" = "Categorías";
+"No budgets set yet" = "Aún no hay presupuestos establecidos";
+"Set first budget" = "Establecer primer presupuesto";
+"New Budget" = "Nuevo Presupuesto";
+"Select Category" = "Seleccionar Categoría";
+"Limit" = "Límite";
+"Amount" = "Monto";
+"Cancel" = "Cancelar";
+"Save" = "Guardar";
+
+/* Category Detail */
+"No Expenses" = "Sin Gastos";
+"No expenses for %@" = "No hay gastos para %@";
+"in this timeframe." = "en este periodo.";
+
+/* Linked Accounts */
+"Connection Status" = "Estado de Conexión";
+"Connected to Plaid" = "Conectado a Plaid";
+"Not Connected" = "No Conectado";
+"Link your bank accounts" = "Vincula tus cuentas bancarias";
+"Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Conecta tu banco de forma segura a través de Plaid para sincronizar automáticamente tus transacciones y saldos.";
+"Connect with Plaid" = "Conectar con Plaid";
+"Error" = "Error";
+"Error" = "Error";

@@ -63,14 +63,36 @@ final class FinanceViewModel {
         try? context.save()
     }
     
-    // Auto-categorize existing transactions using the updated CategorizationService
-    func autoCategorizeTransactions(context: ModelContext, transactions: [Transaction]) {
+    // Seed initial categories
+    func seedDefaultCategoriesIfNeeded(context: ModelContext, existingCategories: [Category]) {
+        guard existingCategories.isEmpty else { return }
+        
+        Category.defaultData.forEach { context.insert($0) }
+        try? context.save()
+    }
+    
+    // Auto-categorize existing transactions using custom rules and CategorizationService
+    func autoCategorizeTransactions(context: ModelContext, transactions: [Transaction], rules: [Rule], categories: [Category]) {
         var didUpdate = false
         
         for transaction in transactions {
-            let newSymbol = CategorizationService.mapCategory(title: transaction.title, plaidCategories: nil)
+            var newSymbol: String?
             
-            if transaction.categorySymbol != newSymbol {
+            // 1. Check custom rules (User preferences take priority)
+            for rule in rules {
+                if transaction.title.lowercased().contains(rule.pattern.lowercased()) {
+                    newSymbol = rule.categorySymbol
+                    break
+                }
+            }
+            
+            // 2. Fallback to default categorization service
+            if newSymbol == nil {
+                newSymbol = CategorizationService.mapCategory(title: transaction.title, plaidCategories: nil)
+            }
+            
+            if let newSymbol = newSymbol, transaction.categorySymbol != newSymbol {
+                // Ensure the symbol actually exists in our categories (optional but good)
                 transaction.categorySymbol = newSymbol
                 didUpdate = true
             }

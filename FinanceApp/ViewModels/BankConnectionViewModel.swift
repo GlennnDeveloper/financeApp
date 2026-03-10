@@ -92,125 +92,81 @@ class BankConnectionViewModel: ObservableObject {
             
             self.isConnected = true
 
-            // Extract selected accounts from Plaid metadata
-            var selectedAccountNames: [(name: String, subtype: String)] = []
-            if let meta = metadata as? SuccessMetadata {
-                selectedAccountNames = meta.accounts.map { (name: $0.name, subtype: String(describing: $0.subtype)) }
-            }
-
-            // Trigger initial sync with the selected accounts
-            await syncMockTransactions(context: context, plaidAccounts: selectedAccountNames)
-            
-            // In a full implementation, the Edge Function would trigger a webhook 
-            // or return initial data. For now, we rely on Supabase realtime or 
-            // manual fetch if needed. We'll leave the local sync disabled until 
-            // the full remote sync is ready.
+            // Trigger real sync from remote database
+            await syncRemoteData(context: context)
             
         } catch {
             self.errorMessage = "Failed to exchange token: \(error.localizedDescription)"
         }
     }
     
-    /// Step 3: Fetch and save transactions to SwiftData
-    func syncMockTransactions(context: ModelContext, plaidAccounts: [(name: String, subtype: String)] = []) async {
-        let calendar = Calendar.current
-        let today = Date()
-        let lastMonth = calendar.date(byAdding: .month, value: -1, to: today)!
-        let twoMonthsAgo = calendar.date(byAdding: .month, value: -2, to: today)!
-        
-        // Mock data from Plaid API - extended to 3 months with recurring flags
-        // Tuple: (Title, Amount, Date, Categories, isRecurring)
-        let mockData: [(String, Double, Date, [String], Bool)] = [
-            // Current Month
-            ("Netflix", 15.99, calendar.date(byAdding: .day, value: -2, to: today)!, ["Entertainment", "Subscription"], true),
-            ("Starbucks Coffee", 5.45, calendar.date(byAdding: .day, value: -5, to: today)!, ["Food and Drink", "Coffee Shop"], false),
-            ("Uber Trip", 14.20, calendar.date(byAdding: .day, value: -10, to: today)!, ["Travel", "Taxi"], false),
-            ("Salary Deposit", 2500.00, calendar.date(byAdding: .day, value: -15, to: today)!, ["Income", "Payroll"], false),
-            ("Gym Membership", 40.00, calendar.date(byAdding: .day, value: -20, to: today)!, ["Personal Care", "Gym"], true),
-            ("Whole Foods", 120.50, calendar.date(byAdding: .day, value: -25, to: today)!, ["Food and Drink", "Groceries"], false),
-            
-            // Last Month
-            ("Netflix", 15.99, calendar.date(byAdding: .day, value: -2, to: lastMonth)!, ["Entertainment", "Subscription"], true),
-            ("Apple Music", 10.99, calendar.date(byAdding: .day, value: -4, to: lastMonth)!, ["Entertainment", "Music"], true),
-            ("Salary Deposit", 2500.00, calendar.date(byAdding: .day, value: -15, to: lastMonth)!, ["Income", "Payroll"], false),
-            ("Gym Membership", 40.00, calendar.date(byAdding: .day, value: -20, to: lastMonth)!, ["Personal Care", "Gym"], true),
-            ("Amazon Prime", 14.99, calendar.date(byAdding: .day, value: -22, to: lastMonth)!, ["Shopping", "Subscription"], true),
-            ("Restaurant Meal", 65.00, calendar.date(byAdding: .day, value: -28, to: lastMonth)!, ["Food and Drink", "Restaurant"], false),
-
-            // Two Months Ago
-            ("Netflix", 15.99, calendar.date(byAdding: .day, value: -2, to: twoMonthsAgo)!, ["Entertainment", "Subscription"], true),
-            ("Apple Music", 10.99, calendar.date(byAdding: .day, value: -4, to: twoMonthsAgo)!, ["Entertainment", "Music"], true),
-            ("Salary Deposit", 2500.00, calendar.date(byAdding: .day, value: -15, to: twoMonthsAgo)!, ["Income", "Payroll"], false),
-            ("Gym Membership", 40.00, calendar.date(byAdding: .day, value: -20, to: twoMonthsAgo)!, ["Personal Care", "Gym"], true),
-            ("Amazon Prime", 14.99, calendar.date(byAdding: .day, value: -22, to: twoMonthsAgo)!, ["Shopping", "Subscription"], true),
-            ("Gas Station", 45.00, calendar.date(byAdding: .day, value: -25, to: twoMonthsAgo)!, ["Travel", "Gas"], false)
-        ]
-        
-        for (title, amount, date, categories, isRecurring) in mockData {
-            let externalId = "plaid_\(title.replacingOccurrences(of: " ", with: "_"))_\(date.timeIntervalSince1970)"
-            
-            // Check for duplicates
-            let descriptor = FetchDescriptor<Transaction>(predicate: #Predicate { $0.externalId == externalId })
-            if let existing = try? context.fetch(descriptor), !existing.isEmpty {
-                continue // Already imported
-            }
-            
-            let isIncome = title.contains("Salary")
-            let symbol = CategorizationService.mapCategory(title: title, plaidCategories: categories)
-            
-            let newTransaction = Transaction(
-                title: title,
-                amount: amount,
-                date: date,
-                isIncome: isIncome,
-                categorySymbol: symbol,
-                externalId: externalId,
-                isRecurring: isRecurring
-            )
-            
-            context.insert(newTransaction)
-        }
-        
-        // Create accounts based on what Plaid returned
-        // Map Plaid subtypes to symbols and mock balances
-        let subtypeConfig: [String: (symbol: String, color: String, balance: Double, isLiability: Bool)] = [
-            "checking":    ("building.columns.fill", "blue",  4500.50,  false),
-            "savings":     ("leaf.fill",             "green", 12500.00, false),
-            "credit card": ("creditcard.fill",       "red",   1250.25,  true),
-            "money market": ("dollarsign.circle.fill","green", 8000.00,  false),
-            "cd":          ("lock.circle.fill",      "purple",5000.00,  false)
-        ]
-
-        for (idx, plaidAccount) in plaidAccounts.enumerated() {
-            let config = subtypeConfig[plaidAccount.subtype.lowercased()]
-                ?? ("banknote.fill", "gray", 0.0, false)
-
-            let accountName = plaidAccount.name
-            let descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.name == accountName })
-            let existing = (try? context.fetch(descriptor)) ?? []
-
-            if existing.isEmpty {
-                let newAccount = Account(
-                    name: accountName,
-                    balance: config.balance,
-                    symbol: config.symbol,
-                    colorName: config.color,
-                    orderIndex: idx + 10,
-                    isLiability: config.isLiability
-                )
-                context.insert(newAccount)
-            } else if let account = existing.first {
-                account.balance = config.balance
-            }
-        }
+    /// Step 3: Fetch and save real data from Supabase to SwiftData
+    func syncRemoteData(context: ModelContext) async {
+        isLoading = true
+        defer { isLoading = false }
         
         do {
+            // 1. Fetch Accounts
+            let remoteAccounts = try await SupabaseManager.shared.fetchAccounts()
+            
+            for remote in remoteAccounts {
+                let extId = remote.externalId
+                let descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.externalId == extId })
+                let existing = (try? context.fetch(descriptor)) ?? []
+                
+                if existing.isEmpty {
+                    let newAccount = Account(
+                        name: remote.name,
+                        balance: remote.balance,
+                        symbol: remote.symbol,
+                        colorName: remote.colorName,
+                        orderIndex: remote.orderIndex,
+                        isLiability: remote.isLiability,
+                        externalId: remote.externalId
+                    )
+                    context.insert(newAccount)
+                } else if let account = existing.first {
+                    account.balance = remote.balance
+                    account.name = remote.name
+                    account.symbol = remote.symbol
+                    account.colorName = remote.colorName
+                }
+            }
+            
+            // 2. Fetch Transactions
+            let remoteTransactions = try await SupabaseManager.shared.fetchTransactions()
+            
+            for remote in remoteTransactions {
+                let extId = remote.externalId
+                let descriptor = FetchDescriptor<Transaction>(predicate: #Predicate { $0.externalId == extId })
+                let existing = (try? context.fetch(descriptor)) ?? []
+                
+                if existing.isEmpty {
+                    let newTx = Transaction(
+                        title: remote.title,
+                        amount: remote.amount,
+                        date: remote.date,
+                        isIncome: remote.isIncome,
+                        categorySymbol: remote.categorySymbol,
+                        externalId: remote.externalId,
+                        isRecurring: remote.isRecurring
+                    )
+                    context.insert(newTx)
+                } else if let tx = existing.first {
+                    tx.title = remote.title
+                    tx.amount = remote.amount
+                    tx.date = remote.date
+                    tx.categorySymbol = remote.categorySymbol
+                    tx.isRecurring = remote.isRecurring
+                }
+            }
+            
             try context.save()
+            self.isConnected = true
+            
         } catch {
-            self.errorMessage = "Save error: \(error.localizedDescription)"
+            self.errorMessage = "Sync failed: \(error.localizedDescription)"
         }
-        
-        self.isConnected = true
     }
     
     func disconnectBank(context: ModelContext) {

@@ -73,10 +73,7 @@ struct NetWorthView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .top) {
-                Color.black.ignoresSafeArea()
-                
-                ScrollView(showsIndicators: false) {
+            ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         
                         // Header Box Network
@@ -87,7 +84,7 @@ struct NetWorthView: View {
                             
                             Text(currentNetWorth, format: .currency(code: "USD"))
                                 .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                                 .contentTransition(.numericText())
                         }
                         .padding(.top, 20)
@@ -96,7 +93,7 @@ struct NetWorthView: View {
                         VStack(alignment: .leading) {
                             Text("6 Month Trend")
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                                 .padding(.horizontal)
                             
                             Chart(historicalData) { item in
@@ -151,14 +148,13 @@ struct NetWorthView: View {
                         }
                         .padding(.horizontal)
                     }
-                    .padding(.bottom, 30)
                 }
+                .padding(.bottom, 30)
+                .navigationTitle("Net Worth")
+                .navigationBarTitleDisplayMode(.inline)
+                // Make the inline title invisible so it doesn't clutter the top, but keeps nav layout
+                .toolbarBackground(.hidden, for: .navigationBar)
             }
-            .navigationTitle("Net Worth")
-            .navigationBarTitleDisplayMode(.inline)
-            // Make the inline title invisible so it doesn't clutter the top, but keeps nav layout
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {
                 recalculateHistoricalData()
             }
@@ -170,7 +166,7 @@ struct NetWorthView: View {
             }
         }
     }
-}
+
 
 // Reusable Section for Assets and Liabilities
 struct AccountSectionView: View {
@@ -184,7 +180,7 @@ struct AccountSectionView: View {
             HStack {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 Spacer()
                 Text(total, format: .currency(code: "USD"))
                     .font(.headline)
@@ -206,7 +202,7 @@ struct AccountSectionView: View {
                                 .frame(width: 32)
                             
                             Text(account.name)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                             
                             Spacer()
                             
@@ -214,7 +210,7 @@ struct AccountSectionView: View {
                                 .foregroundStyle(.gray)
                         }
                         .padding()
-                        .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16))
+                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
                     }
                 }
             }

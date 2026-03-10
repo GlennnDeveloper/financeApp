@@ -5,12 +5,20 @@ struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    @Query(sort: \Category.orderIndex) private var categories: [Category]
+    
     @State private var title: String = ""
-    // We use String for the text field to avoid erratic behavior with Double
     @State private var amountText: String = ""
     @State private var date: Date = .now
     @State private var isIncome: Bool = false
-    @State private var selectedCategory: Category = Category.defaults.first!
+    @State private var selectedSymbol: String?
+    
+    private var selectedCategory: Category? {
+        if let selectedSymbol = selectedSymbol {
+            return categories.first(where: { $0.symbol == selectedSymbol })
+        }
+        return categories.first
+    }
     
     // Focus to invoke the keyboard automatically
     @FocusState private var isAmountFocused: Bool
@@ -51,12 +59,12 @@ struct AddTransactionView: View {
                     VStack(spacing: 24) {
                         // Toggle Expense / Income Stylized (Pill mode)
                         HStack(spacing: 0) {
-                            SegmentButton(title: "Expense", isSelected: !isIncome) {
+                            SegmentButton(title: NSLocalizedString("Expense", comment: ""), isSelected: !isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = false
                                 }
                             }
-                            SegmentButton(title: "Income", isSelected: isIncome) {
+                            SegmentButton(title: NSLocalizedString("Income", comment: ""), isSelected: isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = true
                                 }
@@ -87,7 +95,7 @@ struct AddTransactionView: View {
                                 Image(systemName: "pencil")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-                                TextField("What was this for?", text: $title)
+                                TextField(NSLocalizedString("What was this for?", comment: ""), text: $title)
                             }
                             .padding()
                             .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -113,14 +121,14 @@ struct AddTransactionView: View {
 
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
-                                        ForEach(Category.defaults) { category in
-                                            CategoryPill(category: category, isSelected: selectedCategory.id == category.id)
+                                        ForEach(categories) { category in
+                                            CategoryPill(category: category, isSelected: selectedCategory?.id == category.id)
                                                 .onTapGesture {
                                                     let generator = UIImpactFeedbackGenerator(style: .light)
                                                     generator.impactOccurred()
 
                                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                        selectedCategory = category
+                                                        selectedSymbol = category.symbol
                                                     }
                                                 }
                                         }
@@ -177,7 +185,7 @@ struct AddTransactionView: View {
             amount: amount,
             date: date,
             isIncome: isIncome,
-            categorySymbol: selectedCategory.symbol
+            categorySymbol: selectedCategory?.symbol ?? "fork.knife"
         )
         
         modelContext.insert(transaction)
@@ -224,7 +232,7 @@ struct CategoryPill: View {
             }
             .scaleEffect(isSelected ? 1.05 : 1.0) // Small "pop" when selected
             
-            Text(category.name)
+            Text(category.localizedName)
                 .font(.caption2.weight(isSelected ? .bold : .regular))
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }

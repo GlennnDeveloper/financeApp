@@ -3,13 +3,10 @@ import SwiftUI
 /// Individual shared transaction row (Extracted for global use)
 struct TransactionRow: View {
     var transaction: Transaction
+    var categories: [Category]
 
-    // Resolved once at init instead of on every render pass
-    private let categoryColor: Color
-
-    init(transaction: Transaction) {
-        self.transaction = transaction
-        self.categoryColor = Category.symbolColorMap[transaction.categorySymbol] ?? .gray
+    private var categoryColor: Color {
+        categories.first(where: { $0.symbol == transaction.categorySymbol })?.color ?? .gray
     }
 
     var body: some View {
@@ -49,5 +46,8 @@ struct TransactionRow: View {
 }
 
 #Preview {
-    TransactionRow(transaction: Transaction(title: "Preview Example", amount: 120.0, isIncome: false, categorySymbol: "cart.fill"))
+    TransactionRow(
+        transaction: Transaction(title: "Preview Example", amount: 120.0, isIncome: false, categorySymbol: "cart.fill"),
+        categories: []
+    )
 }

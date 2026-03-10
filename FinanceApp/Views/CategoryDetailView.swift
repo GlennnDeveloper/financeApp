@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct CategoryDetailView: View {
+    @Query(sort: \Category.orderIndex) private var categories: [Category]
     let transactions: [Transaction]
     let category: Category
     let dateRangeText: String
@@ -21,14 +22,14 @@ struct CategoryDetailView: View {
             
             if transactions.isEmpty {
                 ContentUnavailableView(
-                    "No Expenses",
+                    NSLocalizedString("No Expenses", comment: ""),
                     systemImage: category.symbol,
-                    description: Text("No expenses for \(category.name) in this timeframe.")
+                    description: Text("No expenses for \(category.localizedName) in this timeframe.")
                 )
             } else {
                 List {
                     ForEach(transactions, id: \.id) { transaction in
-                        TransactionRow(transaction: transaction)
+                        TransactionRow(transaction: transaction, categories: categories)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)

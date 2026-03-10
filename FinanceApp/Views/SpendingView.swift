@@ -11,6 +11,7 @@ struct SpendingCategoryData: Identifiable, Equatable {
 
 struct SpendingView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+    @Query(sort: \Category.orderIndex) private var categories: [Category]
 
     // Defaulting to "Month" timeframe for the analysis
     @State private var selectedTimeframe: Timeframe = .month
@@ -18,13 +19,14 @@ struct SpendingView: View {
     
     // Async State Properties
     @State private var filteredTransactions: [Transaction] = []
-    @State private var chartData: [SpendingCategoryData] = Category.defaults.map { SpendingCategoryData(category: $0, totalSpent: 0, percentage: 0) }
+    @State private var chartData: [SpendingCategoryData] = []
     @State private var totalSpentFiltered: Double = 0
     
     // Asynchronous calculation of all spending data
     private func recalculateSpendingData() {
         Task(priority: .userInitiated) {
             let currentTx = transactions // Capture snapshot
+            let currentCategories = categories
             let currentOffset = dateOffset
             let currentTimeframe = selectedTimeframe
             
@@ -71,8 +73,8 @@ struct SpendingView: View {
             let grouped = Dictionary(grouping: newFilteredTransactions, by: { $0.categorySymbol })
             let newTotalSpend = newFilteredTransactions.reduce(0) { $0 + $1.amount }
 
-            // Initialize result with ALL default categories (zero-padded)
-            var newChartData: [SpendingCategoryData] = Category.defaults.map { category in
+            // Initialize result with ALL categories (zero-padded)
+            var newChartData: [SpendingCategoryData] = currentCategories.map { category in
                 SpendingCategoryData(category: category, totalSpent: 0, percentage: 0)
             }
 
@@ -89,7 +91,7 @@ struct SpendingView: View {
             }
 
             // Sort by alphabetical category name for a fixed, stable order
-            let sortedChartData = newChartData.sorted { $0.category.name < $1.category.name }
+            let sortedChartData = newChartData.sorted { $0.category.localizedName < $1.category.localizedName }
 
             await MainActor.run {
                 withAnimation {
@@ -135,207 +137,218 @@ struct SpendingView: View {
             }
 
         case .year:
-            if let adjustedAnchor = calendar.date(byAdding: .year, value: dateOffset, to: baseDate) {
-                return Self.yearFormatter.string(from: adjustedAnchor)
+            if calendar.date(byAdding: .year, value: dateOffset, to: baseDate) != nil {
+                return NSLocalizedString("Unknown Date", comment: "")
             }
         }
 
-        return "Unknown Date"
+        return NSLocalizedString("Unknown Date", comment: "")
+    }
+    
+    @ViewBuilder
+    private var headerArea: some View {
+        // Header and Timeframe Picker
+        HStack {
+            Text("Spending Info")
+                .font(.system(size: 34, weight: .bold))
+                .foregroundStyle(.primary)
+            Spacer()
+            
+            HStack(spacing: 0) {
+                ForEach(Timeframe.allCases, id: \.self) { tf in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTimeframe = tf
+                            dateOffset = 0 // Reset when mode changes
+                        }
+                    } label: {
+                        Text(tf.localizedName)
+                            .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
+                            .foregroundStyle(selectedTimeframe == tf ? .primary : .secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(selectedTimeframe == tf ? Color(uiColor: .systemBackground) : Color.clear, in: Capsule())
+                    }
+                }
+            }
+            .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+        }
+        .padding(.horizontal)
+        .padding(.top, 10)
+        
+        // Date Navigation Controls
+        HStack {
+            Button {
+                withAnimation {
+                    dateOffset -= 1
+                }
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .padding(8)
+            }
+            
+            Spacer()
+            
+            Text(dateRangeText)
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .id(dateRangeText) // Helps with transition animations
+                .transition(.opacity)
+            
+            Spacer()
+            
+            Button {
+                withAnimation {
+                    if dateOffset < 0 { // Prevent going into the future unnecessarily
+                        dateOffset += 1
+                    }
+                }
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(dateOffset < 0 ? .primary : Color.gray.opacity(0.3)) // Visually disable future
+                    .padding(8)
+            }
+            .disabled(dateOffset >= 0)
+        }
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private var chartArea: some View {
+        ZStack {
+            Chart(chartData, id: \.category.name) { item in
+                SectorMark(
+                    angle: .value("Spent", item.totalSpent),
+                    innerRadius: .ratio(0.65),
+                    angularInset: 2.0
+                )
+                .cornerRadius(6)
+                .foregroundStyle(by: .value("Category", item.category.name))
+            }
+            .chartForegroundStyleScale(domain: categories.map(\.localizedName)) { categoryName in
+                if let color = categories.first(where: { $0.localizedName == categoryName })?.color {
+                    AnyShapeStyle(color.gradient)
+                } else {
+                    AnyShapeStyle(Color.gray.gradient)
+                }
+            }
+            .chartLegend(.hidden)
+            .frame(height: 280)
+            
+            // Center Label
+            VStack(spacing: 4) {
+                Text("Total Spent")
+                    .font(.subheadline)
+                    .foregroundStyle(.gray)
+                Text(totalSpentFiltered, format: .currency(code: "USD"))
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.primary)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: chartData)
+        .padding(.vertical)
+    }
+
+    @ViewBuilder
+    private var breakdownArea: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Breakdown")
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .padding(.horizontal)
+            
+            VStack(spacing: 12) {
+                // Only show non-zero categories in the list
+                ForEach(chartData.filter { $0.totalSpent > 0 }, id: \.category.name) { item in
+                    NavigationLink {
+                        CategoryDetailView(
+                            category: item.category,
+                            dateRangeText: dateRangeText,
+                            filteredTransactions: self.filteredTransactions // Pass exactly what is on the chart
+                        )
+                    } label: {
+                        HStack(spacing: 16) {
+                            // Icon
+                            ZStack {
+                                Circle()
+                                    .fill(item.category.color.opacity(0.15))
+                                    .frame(width: 48, height: 48)
+                                
+                                Image(systemName: item.category.symbol)
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(item.category.color)
+                            }
+                            
+                            // Label & Percentage bar
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text(item.category.localizedName)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    Text(item.totalSpent, format: .currency(code: "USD"))
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                }
+                                
+                                HStack {
+                                    // Visual percentage bar
+                                    GeometryReader { geo in
+                                        ZStack(alignment: .leading) {
+                                            Capsule()
+                                                .fill(Color(uiColor: .systemGray5))
+                                                .frame(height: 6)
+                                            Capsule()
+                                                .fill(item.category.color)
+                                                .frame(width: geo.size.width * CGFloat(item.percentage), height: 6)
+                                        }
+                                    }
+                                    .frame(height: 6)
+                                    
+                                    Text("\(Int(item.percentage * 100))%")
+                                        .font(.caption2.monospacedDigit())
+                                        .foregroundStyle(.gray)
+                                        .frame(width: 30, alignment: .trailing)
+                                }
+                            }
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(Color.gray.opacity(0.5))
+                        }
+                        .padding(16)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+        }
     }
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .top) {
-                Color.black.ignoresSafeArea()
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        
-                        // Header and Timeframe Picker
-                        HStack {
-                            Text("Spending Info")
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundStyle(.white)
-                            Spacer()
-                            
-                            HStack(spacing: 0) {
-                                ForEach(Timeframe.allCases, id: \.self) { tf in
-                                    Button {
-                                        withAnimation(.easeInOut(duration: 0.2)) {
-                                            selectedTimeframe = tf
-                                            dateOffset = 0 // Reset when mode changes
-                                        }
-                                    } label: {
-                                        Text(tf.rawValue)
-                                            .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
-                                            .foregroundStyle(selectedTimeframe == tf ? .black : .gray)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
-                                    }
-                                }
-                            }
-                            .background(Color(white: 0.15), in: Capsule())
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                        
-                        // Date Navigation Controls
-                        HStack {
-                            Button {
-                                withAnimation {
-                                    dateOffset -= 1
-                                }
-                            } label: {
-                                Image(systemName: "chevron.left")
-                                    .font(.title3.weight(.bold))
-                                    .foregroundStyle(.white)
-                                    .padding(8)
-                            }
-                            
-                            Spacer()
-                            
-                            Text(dateRangeText)
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .id(dateRangeText) // Helps with transition animations
-                                .transition(.opacity)
-                            
-                            Spacer()
-                            
-                            Button {
-                                withAnimation {
-                                    if dateOffset < 0 { // Prevent going into the future unnecessarily
-                                        dateOffset += 1
-                                    }
-                                }
-                            } label: {
-                                Image(systemName: "chevron.right")
-                                    .font(.title3.weight(.bold))
-                                    .foregroundStyle(dateOffset < 0 ? .white : .gray.opacity(0.3)) // Visually disable future
-                                    .padding(8)
-                            }
-                            .disabled(dateOffset >= 0)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Donut Chart Area
-                        if totalSpentFiltered == 0 {
-                            ContentUnavailableView(
-                                "No Data",
-                                systemImage: "chart.pie.fill",
-                                description: Text("You have no expenses recorded for this timeframe.")
-                            )
-                            .frame(height: 300)
-                        } else {
-                            ZStack {
-                                Chart(chartData, id: \.category.name) { item in
-                                    SectorMark(
-                                        angle: .value("Spent", item.totalSpent),
-                                        innerRadius: .ratio(0.65),
-                                        angularInset: 2.0
-                                    )
-                                    .cornerRadius(6)
-                                    .foregroundStyle(by: .value("Category", item.category.name))
-                                }
-                                .chartForegroundStyleScale(
-                                    domain: Category.defaults.map { $0.name },
-                                    range: Category.defaults.map { AnyShapeStyle($0.color.gradient) }
-                                )
-                                .chartLegend(.hidden)
-                                .frame(height: 280)
-                                
-                                // Center Label
-                                VStack(spacing: 4) {
-                                    Text("Total Spent")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.gray)
-                                    Text(totalSpentFiltered, format: .currency(code: "USD"))
-                                        .font(.title2.weight(.bold))
-                                        .foregroundStyle(.white)
-                                }
-                            }
-                            .animation(.easeInOut(duration: 0.3), value: chartData)
-                            .padding(.vertical)
-                            
-                            // Category Breakdown List
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Breakdown")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal)
-                                
-                                VStack(spacing: 12) {
-                                    // Only show non-zero categories in the list
-                                    ForEach(chartData.filter { $0.totalSpent > 0 }, id: \.category.name) { item in
-                                        NavigationLink {
-                                            CategoryDetailView(
-                                                category: item.category,
-                                                dateRangeText: dateRangeText,
-                                                filteredTransactions: self.filteredTransactions // Pass exactly what is on the chart
-                                            )
-                                        } label: {
-                                            HStack(spacing: 16) {
-                                                // Icon
-                                                ZStack {
-                                                    Circle()
-                                                        .fill(item.category.color.opacity(0.15))
-                                                        .frame(width: 48, height: 48)
-                                                    
-                                                    Image(systemName: item.category.symbol)
-                                                        .font(.title3.weight(.semibold))
-                                                        .foregroundStyle(item.category.color)
-                                                }
-                                                
-                                                // Label & Percentage bar
-                                                VStack(alignment: .leading, spacing: 6) {
-                                                    HStack {
-                                                        Text(item.category.name)
-                                                            .font(.subheadline.weight(.semibold))
-                                                            .foregroundStyle(.white)
-                                                        Spacer()
-                                                        Text(item.totalSpent, format: .currency(code: "USD"))
-                                                            .font(.subheadline.weight(.semibold))
-                                                            .foregroundStyle(.white)
-                                                    }
-                                                    
-                                                    HStack {
-                                                        // Visual percentage bar
-                                                        GeometryReader { geo in
-                                                            ZStack(alignment: .leading) {
-                                                                Capsule()
-                                                                    .fill(Color(white: 0.2))
-                                                                    .frame(height: 6)
-                                                                Capsule()
-                                                                    .fill(item.category.color)
-                                                                    .frame(width: geo.size.width * CGFloat(item.percentage), height: 6)
-                                                            }
-                                                        }
-                                                        .frame(height: 6)
-                                                        
-                                                        Text("\(Int(item.percentage * 100))%")
-                                                            .font(.caption2.monospacedDigit())
-                                                            .foregroundStyle(.gray)
-                                                            .frame(width: 30, alignment: .trailing)
-                                                    }
-                                                }
-                                                
-                                                Image(systemName: "chevron.right")
-                                                    .font(.caption.weight(.bold))
-                                                    .foregroundStyle(.gray.opacity(0.5))
-                                            }
-                                            .padding(16)
-                                            .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    headerArea
+                    
+                    // Donut Chart Area
+                    if totalSpentFiltered == 0 {
+                        ContentUnavailableView(
+                            "No Data",
+                            systemImage: "chart.pie.fill",
+                            description: Text("You have no expenses recorded for this timeframe.")
+                        )
+                        .frame(height: 300)
+                    } else {
+                        chartArea
+                        breakdownArea
                     }
-                    .padding(.bottom, 24)
                 }
+                .padding(.bottom, 24)
             }
             .onAppear {
                 recalculateSpendingData()

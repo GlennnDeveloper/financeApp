@@ -27,7 +27,7 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            Color.black.ignoresSafeArea()
+            Color(uiColor: .systemBackground).ignoresSafeArea()
 
             menu()
                 .frame(width: menuWidth, alignment: .leading)

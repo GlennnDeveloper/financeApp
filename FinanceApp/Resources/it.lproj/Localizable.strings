@@ -1,0 +1,108 @@
+"Total Balance" = "Saldo Totale";
+"Recent Transactions" = "Transazioni Recenti";
+"App Theme" = "Tema dell'App";
+"Language" = "Lingua";
+"Settings" = "Impostazioni";
+"Notifications" = "Notifiche";
+"Profile" = "Profilo";
+"Manage Budget" = "Gestisci Budget";
+"Categories & Rules" = "Categorie e Regole";
+"Linked Accounts" = "Conti Collegati";
+"Log Out" = "Disconnetti";
+
+/* Dashboard */
+"Bank Accounts" = "Conti Bancari";
+"Connect Your Bank" = "Connetti la tua Banca";
+"Link an account to see balances" = "Collega un conto per vedere i saldi";
+"Disconnect" = "Disconnetti";
+"Analytics" = "Analitica";
+"No transactions yet" = "Nessuna transazione ancora";
+"Bank Error" = "Errore Bancario";
+"OK" = "OK";
+"Session expired." = "Sessione scaduta.";
+"Today" = "Oggi";
+"MONTHLY SAVINGS" = "RISPARMI MENSILI";
+
+/* Spending */
+"Spending Info" = "Info Spese";
+"Total Spent" = "Totale Speso";
+"Breakdown" = "Ripartizione";
+"No Data" = "Nessun Dato";
+"You have no expenses recorded for this timeframe." = "Non hai spese registrate per questo periodo.";
+"Unknown Date" = "Data Sconosciuta";
+
+/* Settings Content */
+"Appearance" = "Aspetto";
+"Preferences" = "Preferenze";
+"Primary Currency" = "Valuta Principale";
+"Security" = "Sicurezza";
+"Use Face ID" = "Usa Face ID";
+"Data Management" = "Gestione Dati";
+"Clear Cache" = "Svuota Cache";
+"Export My Data" = "Esporta i miei Dati";
+
+/* Timeframes */
+"Week" = "Settimana";
+"Month" = "Mese";
+"Year" = "Anno";
+
+/* Categories */
+"Food & Drink" = "Cibo e Bevande";
+"Transport" = "Trasporto";
+"Home Bills" = "Bollette di Casa";
+"Self-Care" = "Cura di Sé";
+"Shopping" = "Shopping";
+"Health" = "Salute";
+"Salary" = "Stipendio";
+"Others" = "Altro";
+/* Side Menu & New Settings */
+"Hi there 👋" = "Ciao 👋";
+"Refer a Friend" = "Invita un amico";
+"Chat" = "Chat";
+"Demo Mode" = "Modalità Demo";
+"Share Account" = "Condividi Account";
+"Join me on FinanceApp to manage our budget together!" = "Unisciti a me su FinanceApp per gestire insieme il nostro budget!";
+"Premium" = "Premium";
+"Help & Privacy" = "Aiuto e Privacy";
+
+/* Add Transaction */
+"New Transaction" = "Nuova Transazione";
+"Expense" = "Spesa";
+"Income" = "Entrata";
+"Enter amount" = "Inserisci l'importo";
+"What was this for?" = "Per cosa era questo?";
+"Date" = "Data";
+"Save Transaction" = "Salva Transazione";
+"Category" = "Categoria";
+/* Transactions */
+"No Transactions" = "Nessuna Transazione";
+"Your bank movements will appear here." = "I tuoi movimenti bancari appariranno qui.";
+"Transactions" = "Transazioni";
+
+/* Budget */
+"Monthly Budget" = "Budget Mensile";
+"Spent" = "Speso";
+"Remaining" = "Rimanente";
+"Categories" = "Categorie";
+"No budgets set yet" = "Nessun budget impostato ancora";
+"Set first budget" = "Imposta il primo budget";
+"New Budget" = "Nuovo Budget";
+"Select Category" = "Seleziona Categoria";
+"Limit" = "Limite";
+"Amount" = "Importo";
+"Cancel" = "Annulla";
+"Save" = "Salva";
+
+/* Category Detail */
+"No Expenses" = "Nessuna Spesa";
+"No expenses for %@" = "Nessuna spesa per %@";
+"in this timeframe." = "in questo periodo.";
+
+/* Linked Accounts */
+"Connection Status" = "Stato della Connessione";
+"Connected to Plaid" = "Connesso a Plaid";
+"Not Connected" = "Non Connesso";
+"Link your bank accounts" = "Collega i tuoi conti bancari";
+"Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Connetti la tua banca in modo sicuro tramite Plaid per sincronizzare automaticamente le tue transazioni e i saldi.";
+"Connect with Plaid" = "Connetti con Plaid";
+"Error" = "Errore";

@@ -4,6 +4,7 @@ import SwiftUI
 struct RecurringView: View {
     @Query(filter: #Predicate<Transaction> { $0.isRecurring == true }, sort: \Transaction.date, order: .reverse) 
     private var recurringTransactions: [Transaction]
+    @Query(sort: \Category.orderIndex) private var categories: [Category]
     
     // Compute unique recurring expenses based on title
     var uniqueSubscriptions: [Transaction] {
@@ -38,7 +39,7 @@ struct RecurringView: View {
                     List {
                         Section {
                             ForEach(uniqueSubscriptions) { transaction in
-                                TransactionRow(transaction: transaction)
+                                TransactionRow(transaction: transaction, categories: categories)
                                     .listRowInsets(EdgeInsets())
                                     .listRowSeparator(.hidden)
                                     .listRowBackground(Color.clear)
@@ -52,18 +53,16 @@ struct RecurringView: View {
                                     .foregroundStyle(.red)
                             }
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .padding(.vertical, 8)
                         }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .background(Color.black)
                     .environment(\.defaultMinListRowHeight, 10)
                 }
             }
             .navigationTitle("Recurring")
-            .background(Color.black.ignoresSafeArea())
         }
     }
 }

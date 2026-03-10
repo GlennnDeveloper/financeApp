@@ -10,8 +10,17 @@ final class Account {
     var colorName: String
     var orderIndex: Int
     var isLiability: Bool? // Optional to avoid migration crashes on old data
+    @Attribute(.unique) var externalId: String? // Plaid account_id
     
-    init(id: UUID = UUID(), name: String, balance: Double, symbol: String, colorName: String, orderIndex: Int, isLiability: Bool? = false) {
+    init(id: UUID = UUID(), 
+         name: String, 
+         balance: Double, 
+         symbol: String, 
+         colorName: String, 
+         orderIndex: Int, 
+         isLiability: Bool? = false,
+         externalId: String? = nil) {
+        
         self.id = id
         self.name = name
         self.balance = balance
@@ -19,5 +28,6 @@ final class Account {
         self.colorName = colorName
         self.orderIndex = orderIndex
         self.isLiability = isLiability
+        self.externalId = externalId
     }
 }

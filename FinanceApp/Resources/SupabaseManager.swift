@@ -58,12 +58,14 @@ struct RemoteAccount: Codable, Identifiable {
     let colorName: String
     let orderIndex: Int
     let isLiability: Bool
+    let externalId: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, balance, symbol
         case colorName = "color_name"
         case orderIndex = "order_index"
         case isLiability = "is_liability"
+        case externalId = "external_id"
     }
 }
 
