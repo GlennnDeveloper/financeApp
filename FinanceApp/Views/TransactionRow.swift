@@ -3,11 +3,15 @@ import SwiftUI
 /// Individual shared transaction row (Extracted for global use)
 struct TransactionRow: View {
     var transaction: Transaction
-    
-    private var categoryColor: Color {
-        Category.defaults.first(where: { $0.symbol == transaction.categorySymbol })?.color ?? .gray
+
+    // Resolved once at init instead of on every render pass
+    private let categoryColor: Color
+
+    init(transaction: Transaction) {
+        self.transaction = transaction
+        self.categoryColor = Category.symbolColorMap[transaction.categorySymbol] ?? .gray
     }
-    
+
     var body: some View {
         HStack(spacing: 16) {
             // Smooth circular icon with category color
@@ -15,25 +19,25 @@ struct TransactionRow: View {
                 Circle()
                     .fill(Color(white: 0.15))
                     .frame(width: 50, height: 50)
-                
+
                 Image(systemName: transaction.categorySymbol)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(categoryColor)
             }
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.title)
                     .font(.headline)
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                
+
                 Text(transaction.date, format: .dateTime.day().month().year())
                     .font(.caption)
                     .foregroundStyle(.gray)
             }
-            
+
             Spacer()
-            
+
             // Monospaced amount for perfect digit alignment
             Text(transaction.amount, format: .currency(code: "USD"))
                 .font(.headline.monospacedDigit())

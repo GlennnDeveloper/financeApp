@@ -4,8 +4,6 @@ import Supabase
 
 @MainActor
 class AuthViewModel: ObservableObject {
-    @Published var email = ""
-    @Published var password = ""
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var session: Session? = nil
@@ -15,7 +13,6 @@ class AuthViewModel: ObservableObject {
     init() {}
     
     func startListening() async {
-        // Escuchamos cambios en el estado de autenticación (login, logout, refresco de sesión)
         for await (_, session) in client.auth.authStateChanges {
             self.session = session
         }
@@ -25,13 +22,13 @@ class AuthViewModel: ObservableObject {
         self.session = try? await client.auth.session
     }
     
-    func signUp() async {
+    // Ahora recibe los datos directamente desde la vista
+    func signUp(email: String, password: String) async {
         isLoading = true
         errorMessage = nil
         
         do {
             try await client.auth.signUp(email: email, password: password)
-            // After signup, we might need to wait for email confirmation depending on Supabase settings
             await checkSession()
         } catch {
             errorMessage = error.localizedDescription
@@ -40,7 +37,7 @@ class AuthViewModel: ObservableObject {
         isLoading = false
     }
     
-    func signIn() async {
+    func signIn(email: String, password: String) async {
         isLoading = true
         errorMessage = nil
         

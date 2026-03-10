@@ -29,9 +29,9 @@ struct AddTransactionView: View {
             Rectangle()
                 .fill(.ultraThinMaterial)
                 .ignoresSafeArea() // This creates the premium frosted glass effect
-            
-            VStack(spacing: 24) {
-                // Header Custom: Title + Close Button
+
+            VStack(spacing: 0) {
+                // Header Custom: Title + Close Button (PINNED)
                 HStack {
                     Text("New Transaction")
                         .font(.title3.weight(.bold))
@@ -44,110 +44,115 @@ struct AddTransactionView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
-                
-                // Toggle Expense / Income Stylized (Pill mode)
-                HStack(spacing: 0) {
-                    SegmentButton(title: "Expense", isSelected: !isIncome) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            isIncome = false
-                        }
-                    }
-                    SegmentButton(title: "Income", isSelected: isIncome) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            isIncome = true
-                        }
-                    }
-                }
-                .background(Color(UIColor.systemGray5).opacity(0.6), in: Capsule())
-                .padding(.horizontal, 40)
-                
-                // Giant Amount Field (Apple Cash style)
-                VStack(spacing: 8) {
-                    TextField("$0", text: $amountText)
-                        .font(.system(size: 72, weight: .bold, design: .rounded))
-                        .multilineTextAlignment(.center)
-                        .keyboardType(.decimalPad)
-                        .focused($isAmountFocused)
-                        .foregroundStyle(isIncome ? .green : .primary)
-                    
-                    Text("Enter amount")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 16)
-                
-                // Main Form (Glass Cards)
-                VStack(spacing: 16) {
-                    // Title (Note)
-                    HStack {
-                        Image(systemName: "pencil")
-                            .foregroundStyle(.secondary)
-                            .frame(width: 24)
-                        TextField("What was this for?", text: $title)
-                    }
-                    .padding()
-                    .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    
-                    // Date Selector
-                    HStack {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(.secondary)
-                            .frame(width: 24)
-                        DatePicker("Date", selection: $date, displayedComponents: .date)
-                            .labelsHidden()
-                        Spacer()
-                    }
-                    .padding()
-                    .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    
-                    // Category Selector (Custom Horizontal Scroll)
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Category")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 8)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ForEach(Category.defaults) { category in
-                                    CategoryPill(category: category, isSelected: selectedCategory.id == category.id)
-                                        .onTapGesture {
-                                            let generator = UIImpactFeedbackGenerator(style: .light)
-                                            generator.impactOccurred()
-                                            
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                selectedCategory = category
-                                            }
-                                        }
+                .padding(.bottom, 16)
+
+                // Scrollable content area
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        // Toggle Expense / Income Stylized (Pill mode)
+                        HStack(spacing: 0) {
+                            SegmentButton(title: "Expense", isSelected: !isIncome) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    isIncome = false
                                 }
                             }
-                            .padding(.horizontal, 8)
+                            SegmentButton(title: "Income", isSelected: isIncome) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    isIncome = true
+                                }
+                            }
                         }
+                        .background(Color(UIColor.systemGray5).opacity(0.6), in: Capsule())
+                        .padding(.horizontal, 40)
+
+                        // Giant Amount Field (Apple Cash style)
+                        VStack(spacing: 8) {
+                            TextField("$0", text: $amountText)
+                                .font(.system(size: 72, weight: .bold, design: .rounded))
+                                .multilineTextAlignment(.center)
+                                .keyboardType(.decimalPad)
+                                .focused($isAmountFocused)
+                                .foregroundStyle(isIncome ? .green : .primary)
+
+                            Text("Enter amount")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 16)
+
+                        // Main Form (Glass Cards)
+                        VStack(spacing: 16) {
+                            // Title (Note)
+                            HStack {
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 24)
+                                TextField("What was this for?", text: $title)
+                            }
+                            .padding()
+                            .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                            // Date Selector
+                            HStack {
+                                Image(systemName: "calendar")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 24)
+                                DatePicker("Date", selection: $date, displayedComponents: .date)
+                                    .labelsHidden()
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                            // Category Selector (Custom Horizontal Scroll)
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Category")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 8)
+
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(Category.defaults) { category in
+                                            CategoryPill(category: category, isSelected: selectedCategory.id == category.id)
+                                                .onTapGesture {
+                                                    let generator = UIImpactFeedbackGenerator(style: .light)
+                                                    generator.impactOccurred()
+
+                                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                        selectedCategory = category
+                                                    }
+                                                }
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                }
+                            }
+                            .padding(.top, 8)
+                        }
+                        .padding(.horizontal, 24)
+
+                        // Save Button (Glow Effect)
+                        Button(action: saveTransaction) {
+                            Text("Save Transaction")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 18)
+                                .background(
+                                    canSave ? brandGradient : LinearGradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)], startPoint: .top, endPoint: .bottom),
+                                    in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                )
+                                .shadow(color: canSave ? Color(red: 0.8, green: 0.1, blue: 0.3).opacity(0.4) : .clear, radius: 10, x: 0, y: 5)
+                        }
+                        .disabled(!canSave)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 32)
                     }
-                    .padding(.top, 8)
                 }
-                .padding(.horizontal, 24)
-                
-                Spacer()
-                
-                // Save Button (Glow Effect)
-                Button(action: saveTransaction) {
-                    Text("Save Transaction")
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(
-                            canSave ? brandGradient : LinearGradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)], startPoint: .top, endPoint: .bottom),
-                            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        )
-                        .shadow(color: canSave ? Color(red: 0.8, green: 0.1, blue: 0.3).opacity(0.4) : .clear, radius: 10, x: 0, y: 5)
-                }
-                .disabled(!canSave)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
             }
         }
+        .ignoresSafeArea(.keyboard) // Keyboard overlaps instead of pushing content up
         .onAppear {
             isAmountFocused = true
         }

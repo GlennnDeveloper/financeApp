@@ -10,55 +10,52 @@ struct HistoricalNetWorth: Identifiable {
 
 struct NetWorthView: View {
     @Environment(\.modelContext) private var modelContext
-    
+
     @Query(sort: \Account.orderIndex) private var accounts: [Account]
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
-    
-    private var totalAssets: Double {
-        accounts.filter { !($0.isLiability ?? false) }.reduce(0) { $0 + $1.balance }
-    }
-    
-    private var totalLiabilities: Double {
-        accounts.filter { $0.isLiability ?? false }.reduce(0) { $0 + $1.balance }
-    }
-    
-    private var currentNetWorth: Double {
-        totalAssets - totalLiabilities
-    }
+
+    // Partition accounts once, reference everywhere
+    private var assets: [Account] { accounts.filter { !($0.isLiability ?? false) } }
+    private var liabilities: [Account] { accounts.filter { $0.isLiability ?? false } }
+
+    private var totalAssets: Double { assets.reduce(0) { $0 + $1.balance } }
+    private var totalLiabilities: Double { liabilities.reduce(0) { $0 + $1.balance } }
+    private var currentNetWorth: Double { totalAssets - totalLiabilities }
     
     // Calculates historical net worth over the last 6 months
     private var historicalData: [HistoricalNetWorth] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
         var data: [HistoricalNetWorth] = []
-        
+
         // Empezamos con el Net Worth actual
         var runningNetWorth = currentNetWorth
         data.append(HistoricalNetWorth(date: today, amount: runningNetWorth))
-        
+
         // Iteramos hacia atrás mes a mes
         for i in 1...5 {
-            guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today) else { continue }
-            
+            guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today),
+                  let currentMonthDate  = calendar.date(byAdding: .month, value: -(i - 1), to: today)
+            else { continue }
+
             // Queremos saber el NetWorth al inicio del mes anterior.
             // Para eso, tomamos el runningNetWorth y le RESTAMOS el flujo de caja neto que ocurrió en ese mes.
-            // Flujo = Ingresos - Gastos
             let transactionsInMonth = transactions.filter {
-                calendar.component(.month, from: $0.date) == calendar.component(.month, from: calendar.date(byAdding: .month, value: -(i-1), to: today)!) &&
-                calendar.component(.year, from: $0.date) == calendar.component(.year, from: calendar.date(byAdding: .month, value: -(i-1), to: today)!)
+                calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .month) &&
+                calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .year)
             }
-            
+
             let netCashFlow = transactionsInMonth.reduce(0) { total, tx in
                 total + (tx.isIncome ? tx.amount : -tx.amount)
             }
-            
+
             // Revertir el flujo de caja
             runningNetWorth -= netCashFlow
-            
+
             // Guardar el punto en el tiempo
             data.append(HistoricalNetWorth(date: previousMonthDate, amount: runningNetWorth))
         }
-        
+
         return data.sorted { $0.date < $1.date }
     }
     
@@ -128,14 +125,14 @@ struct NetWorthView: View {
                         VStack(spacing: 24) {
                             AccountSectionView(
                                 title: "Assets",
-                                accounts: accounts.filter { !($0.isLiability ?? false) },
+                                accounts: assets,
                                 total: totalAssets,
                                 isLiability: false
                             )
-                            
+
                             AccountSectionView(
                                 title: "Liabilities",
-                                accounts: accounts.filter { $0.isLiability ?? false },
+                                accounts: liabilities,
                                 total: totalLiabilities,
                                 isLiability: true
                             )

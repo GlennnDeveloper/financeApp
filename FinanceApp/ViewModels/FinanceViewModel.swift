@@ -1,65 +1,64 @@
 import SwiftUI
 import SwiftData
-import Observation
 
 @Observable
 final class FinanceViewModel {
-    
+
     // Calcula el balance total (Ingresos - Gastos)
     func calculateTotalBalance(transactions: [Transaction]) -> Double {
         transactions.reduce(0) { total, transaction in
             total + (transaction.isIncome ? transaction.amount : -transaction.amount)
         }
     }
-    
+
     // Calcula el ahorro del mes actual
     func calculateMonthlySavings(transactions: [Transaction]) -> Double {
         let calendar = Calendar.current
-        let currentMonth = calendar.component(.month, from: .now)
-        let currentYear = calendar.component(.year, from: .now)
-        
+        let now = Date.now
+
         let monthTransactions = transactions.filter {
-            calendar.component(.month, from: $0.date) == currentMonth &&
-            calendar.component(.year, from: $0.date) == currentYear
+            calendar.isDate($0.date, equalTo: now, toGranularity: .month) &&
+            calendar.isDate($0.date, equalTo: now, toGranularity: .year)
         }
-        
+
         return calculateTotalBalance(transactions: monthTransactions)
     }
-    
+
     // Calcula los gastos (solo expenses) del mes actual
     func calculateCurrentMonthSpend(transactions: [Transaction]) -> Double {
         let calendar = Calendar.current
-        let currentMonth = calendar.component(.month, from: .now)
-        let currentYear = calendar.component(.year, from: .now)
-        
+        let now = Date.now
+
         let monthExpenses = transactions.filter {
-            !$0.isIncome && 
-            calendar.component(.month, from: $0.date) == currentMonth &&
-            calendar.component(.year, from: $0.date) == currentYear
+            !$0.isIncome &&
+            calendar.isDate($0.date, equalTo: now, toGranularity: .month) &&
+            calendar.isDate($0.date, equalTo: now, toGranularity: .year)
         }
-        
+
         return monthExpenses.reduce(0) { $0 + $1.amount }
     }
     
     // Generador de cuentas iniciales (para la vista de "ACCOUNTS")
     func insertDefaultAccountsIfNeeded(context: ModelContext, existingAccounts: [Account]) {
         // Migration: Fix any existing accounts stuck with the old invalid symbol
+        var didMigrate = false
         for account in existingAccounts where account.symbol == "piggybank" {
             account.symbol = "dollarsign.circle"
+            didMigrate = true
         }
-        
+
         guard existingAccounts.isEmpty else {
-            try? context.save()
+            if didMigrate { try? context.save() }
             return
         }
-        
+
         let defaults = [
             Account(name: "Checking", balance: 5848.0, symbol: "building.columns.circle", colorName: "purple", orderIndex: 0, isLiability: false),
             Account(name: "Savings", balance: 2267.0, symbol: "dollarsign.circle", colorName: "purple", orderIndex: 1, isLiability: false),
             Account(name: "Investments", balance: 10400.0, symbol: "chart.bar.xaxis", colorName: "purple", orderIndex: 2, isLiability: false),
             Account(name: "Credit Card", balance: 2001.0, symbol: "creditcard.circle", colorName: "purple", orderIndex: 3, isLiability: true)
         ]
-        
+
         defaults.forEach { context.insert($0) }
         try? context.save()
     }

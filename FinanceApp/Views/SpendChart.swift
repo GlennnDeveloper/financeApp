@@ -13,14 +13,13 @@ struct SpendSummaryChart: View {
     // Simularemos un gradiente de área morada para los gastos acumulados del mes
     private var chartData: [SpendChartData] {
         let calendar = Calendar.current
-        let currentMonth = calendar.component(.month, from: .now)
-        let currentYear = calendar.component(.year, from: .now)
-        
+        let now = Date.now
+
         // Filtramos solo los gastos de este mes
         let expenses = transactions.filter {
             !$0.isIncome &&
-            calendar.component(.month, from: $0.date) == currentMonth &&
-            calendar.component(.year, from: $0.date) == currentYear
+            calendar.isDate($0.date, equalTo: now, toGranularity: .month) &&
+            calendar.isDate($0.date, equalTo: now, toGranularity: .year)
         }.sorted(by: { $0.date < $1.date }) // Orden cronológico
         
         var accumulated: Double = 0

@@ -19,6 +19,7 @@ struct MainTabView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     
     @State private var showAddSheet = false
+    @State private var showSettings = false
     @State private var selectedTimeframe: Timeframe = .week
     
     // Performance Optimization: Pre-calculated states
@@ -27,6 +28,11 @@ struct MainTabView: View {
     @State private var chartData: [ChartItem] = []
     
     var body: some View {
+        SideMenuContainerView(isOpen: $showSettings) {
+            // ── Side Menu ──
+            SideMenuContent(isOpen: $showSettings)
+                .environmentObject(authViewModel)
+        } main: {
         TabView {
             // Dashboard Tab
             ZStack(alignment: .top) {
@@ -35,26 +41,30 @@ struct MainTabView: View {
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        // Header "Finanzas"
+                        // Header
                         HStack {
-                            Text("Finance")
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundStyle(.white)
-                            Spacer()
-                            Menu {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await authViewModel.signOut()
-                                    }
-                                } label: {
-                                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    showSettings.toggle()
                                 }
                             } label: {
-                                Image(systemName: "person.circle.fill")
-                                    .font(.system(size: 32))
-                                    .foregroundStyle(.gray.opacity(0.5))
-                                    .background(Circle().fill(Color(white: 0.15)))
+                                Image(systemName: "gearshape.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.gray)
                             }
+
+                            Spacer()
+
+                            Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
+                                .font(.headline)
+                                .foregroundStyle(.white)
+
+                            Spacer()
+
+                            // Placeholder right icon for visual balance
+                            Image(systemName: "bell.fill")
+                                .font(.title2)
+                                .foregroundStyle(.gray.opacity(0.5))
                         }
                         .padding(.horizontal)
                         .padding(.top, 10)
@@ -67,48 +77,47 @@ struct MainTabView: View {
                         .padding(.horizontal)
                         
                         // Bank Accounts / Connect Section
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Bank Accounts")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                Spacer()
-                                if bankViewModel.isLoading {
-                                    ProgressView().tint(.blue)
-                                } else if bankViewModel.isConnected {
-                                    Button {
-                                        bankViewModel.disconnectBank(context: modelContext)
-                                    } label: {
-                                        Text("Disconnect")
-                                            .font(.caption.bold())
-                                            .foregroundStyle(.red)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(.red.opacity(0.15), in: Capsule())
-                                    }
-                                } else {
-                                    Button {
-                                        Task {
-                                            if let session = authViewModel.session {
-                                                await bankViewModel.preparePlaidLink(session: session)
-                                            } else {
-                                                bankViewModel.errorMessage = "Session expired or missing. Please restart the app."
+                        if bankViewModel.isConnected {
+                            // ── Connected: Show accounts ──
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Bank Accounts")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                    Spacer()
+                                    if bankViewModel.isLoading {
+                                        ProgressView().tint(.blue)
+                                    } else {
+                                        HStack(spacing: 8) {
+                                            Button {
+                                                Task {
+                                                    if let session = authViewModel.session {
+                                                        await bankViewModel.preparePlaidLink(session: session)
+                                                    }
+                                                }
+                                            } label: {
+                                                Image(systemName: "plus")
+                                                    .font(.caption.bold())
+                                                    .foregroundStyle(.blue)
+                                                    .padding(6)
+                                                    .background(.blue.opacity(0.15), in: Circle())
+                                            }
+
+                                            Button {
+                                                bankViewModel.disconnectBank(context: modelContext)
+                                            } label: {
+                                                Text("Disconnect")
+                                                    .font(.caption.bold())
+                                                    .foregroundStyle(.red)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 6)
+                                                    .background(.red.opacity(0.15), in: Capsule())
                                             }
                                         }
-                                    } label: {
-                                        Text("Connect")
-                                            .font(.caption.bold())
-                                            .foregroundStyle(.blue)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(.blue.opacity(0.15), in: Capsule())
                                     }
                                 }
-                            }
-                            .padding(.horizontal)
-                            
-                            // Mock showing linked bank if any (for visual demo)
-                            if !accounts.isEmpty {
+                                .padding(.horizontal)
+
                                 ForEach(accounts) { account in
                                     HStack {
                                         Image(systemName: account.symbol)
@@ -126,6 +135,42 @@ struct MainTabView: View {
                                     .padding(.horizontal)
                                 }
                             }
+                        } else {
+                            // ── Not connected: Compact prompt ──
+                            Button {
+                                Task {
+                                    if let session = authViewModel.session {
+                                        await bankViewModel.preparePlaidLink(session: session)
+                                    } else {
+                                        bankViewModel.errorMessage = "Session expired. Please restart the app."
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 14) {
+                                    Image(systemName: "building.columns.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(.blue)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Connect Your Bank")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.white)
+                                        Text("Link an account to see balances & transactions")
+                                            .font(.caption)
+                                            .foregroundStyle(.gray)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.bold))
+                                        .foregroundStyle(.gray.opacity(0.5))
+                                }
+                                .padding(16)
+                                .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal)
                         }
                         
                         // Chart Section
@@ -253,7 +298,10 @@ struct MainTabView: View {
             AddTransactionView()
         }
         .onAppear {
-            viewModel.insertDefaultAccountsIfNeeded(context: modelContext, existingAccounts: accounts)
+            // Clean up legacy default accounts (non-Plaid, zero balance)
+            for account in accounts where account.balance == 0 && !account.name.hasPrefix("Plaid") {
+                modelContext.delete(account)
+            }
             viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions)
             recalculateDashboard()
         }
@@ -276,6 +324,7 @@ struct MainTabView: View {
                 Text(error)
             }
         }
+        } // SideMenuContainerView
     }
     
     // MARK: - Performance Optimizations
@@ -284,12 +333,12 @@ struct MainTabView: View {
             let currentAccounts = accounts
             let currentTransactions = transactions
             let currentTimeframe = selectedTimeframe
-            
+
             // Background calculations
             let newBalance = currentAccounts.reduce(0) { $0 + $1.balance }
             let newSavings = viewModel.calculateMonthlySavings(transactions: currentTransactions)
             let newChartData = generateChartData(transactions: currentTransactions, timeframe: currentTimeframe)
-            
+
             // UI Update
             await MainActor.run {
                 withAnimation {
@@ -300,28 +349,35 @@ struct MainTabView: View {
             }
         }
     }
-    
+
+    // Static formatters: DateFormatter is expensive to create; allocate once.
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+
+    private static let monthFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM"
+        return f
+    }()
+
     private func generateChartData(transactions: [Transaction], timeframe: Timeframe) -> [ChartItem] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
         var items: [ChartItem] = []
-        
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "EEE"
-        
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "MMM"
-        
+
         switch timeframe {
         case .week:
             for i in (0..<7).reversed() {
                 guard let date = calendar.date(byAdding: .day, value: -i, to: today) else { continue }
-                let label = i == 0 ? "Today" : dayFormatter.string(from: date)
-                
+                let label = i == 0 ? "Today" : Self.dayFormatter.string(from: date)
+
                 let daySpend = transactions.filter {
                     !$0.isIncome && calendar.isDate($0.date, inSameDayAs: date)
                 }.reduce(0) { $0 + $1.amount }
-                
+
                 items.append(ChartItem(label: label, amount: daySpend, date: date))
             }
         case .month:
@@ -330,24 +386,24 @@ struct MainTabView: View {
                 let startDay = (week - 1) * 7
                 guard let weekStart = calendar.date(byAdding: .day, value: startDay, to: startOfMonth),
                       let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) else { continue }
-                
+
                 let weekSpend = transactions.filter {
                     !$0.isIncome && $0.date >= weekStart && $0.date < weekEnd
                 }.reduce(0) { $0 + $1.amount }
-                
+
                 items.append(ChartItem(label: "W\(week)", amount: weekSpend, date: weekStart))
             }
         case .year:
             for i in (0..<6).reversed() {
                 guard let date = calendar.date(byAdding: .month, value: -i, to: today) else { continue }
-                let label = monthFormatter.string(from: date)
-                
+                let label = Self.monthFormatter.string(from: date)
+
                 let monthSpend = transactions.filter {
                     !$0.isIncome &&
-                    calendar.component(.month, from: $0.date) == calendar.component(.month, from: date) &&
-                    calendar.component(.year, from: $0.date) == calendar.component(.year, from: date)
+                    calendar.isDate($0.date, equalTo: date, toGranularity: .month) &&
+                    calendar.isDate($0.date, equalTo: date, toGranularity: .year)
                 }.reduce(0) { $0 + $1.amount }
-                
+
                 items.append(ChartItem(label: label, amount: monthSpend, date: date))
             }
         }

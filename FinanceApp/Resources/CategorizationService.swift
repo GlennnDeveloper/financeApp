@@ -1,9 +1,6 @@
 import Foundation
 
 /// Helper to map Plaid categories and titles to app categories
-import Foundation
-
-/// Helper to map Plaid categories and titles to app categories
 struct CategorizationService {
     
     /// Maps a transaction title and Plaid categories to one of our internal symbols

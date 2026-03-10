@@ -7,248 +7,151 @@ enum FocusField {
 
 struct LoginView: View {
     @EnvironmentObject var viewModel: AuthViewModel
+    
+    @State private var email = ""
+    @State private var password = ""
     @State private var isSignUp = false
+    
     @FocusState private var focusedField: FocusField?
     
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 0) {
-                // Spacer for top padding to keep form centered when keyboard is down
-                Spacer()
-                    .frame(height: 80)
-                
-                // Header
-                VStack(spacing: 12) {
-                    Image(systemName: "hand.raised.fill")
-                        .font(.system(size: 70))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.orange, .red],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .shadow(color: .orange.opacity(0.5), radius: 15, x: 0, y: 5)
-                    
-                    Text("Antigravity Finance")
-                        .font(.system(size: 32, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
-                }
-                .padding(.bottom, 40)
-                
-                // Extracted to isolate state changes and avoid full view redraws
-                LoginFormView(
-                    viewModel: viewModel,
-                    isSignUp: $isSignUp,
-                    focusedField: $focusedField
-                )
-                
-                Spacer()
-                    .frame(height: 100) // Bottom padding for scroll area
-            }
-            .containerRelativeFrame(.vertical, alignment: .center) // Replaces UIScreen.main.bounds.height
-        }
-        .background(
-            // Option 1: Static Image background (if available in assets)
-            // Option 2: Solid fallback optimized for 0ms initial render
+        // GEOMETRY READER: Congela las dimensiones de la pantalla
+        GeometryReader { proxy in
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                // Static Fallback Geometry
-                Circle()
-                    .fill(Color.orange.opacity(0.15))
-                    .frame(width: 400, height: 400)
-                    .offset(x: -100, y: -200)
-                
-                Circle()
-                    .fill(Color.red.opacity(0.1))
-                    .frame(width: 350, height: 350)
-                    .offset(x: 150, y: 250)
+                VStack(spacing: 0) {
+                    // --- HEADER ---
+                    VStack(spacing: 12) {
+                        Image(systemName: "hand.raised.fill")
+                            .font(.system(size: 70))
+                            .foregroundStyle(LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .shadow(color: .orange.opacity(0.5), radius: 15)
+                            .drawingGroup()
+                        
+                        Text("MyFinance")
+                            .font(.system(size: 32, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.bottom, 40)
                     
-                // If "background_static" is in assets, it will overlay instantly here
-                Image("background_static")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
+                    // --- FORMULARIO ---
+                    VStack(spacing: 20) {
+                        Text(isSignUp ? "Create Account" : "Welcome Back")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        VStack(spacing: 16) {
+                            // CAMPO EMAIL
+                            HStack(spacing: 16) {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundStyle(focusedField == .email ? .orange : .white.opacity(0.5))
+                                    .frame(width: 24)
+                                
+                                TextField("", text: $email, prompt: Text("Email Address").foregroundStyle(.white.opacity(0.4)))
+                                    .foregroundStyle(.white)
+                                    .keyboardType(.emailAddress)
+                                    .textContentType(.username)
+                                    .autocorrectionDisabled(true)
+                                    .textInputAutocapitalization(.never)
+                                    .submitLabel(.next)
+                                    .focused($focusedField, equals: .email)
+                            }
+                            .padding(.horizontal, 20).frame(height: 60)
+                            .contentShape(Rectangle())
+                            .onTapGesture { focusedField = .email }
+                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(focusedField == .email ? 0.12 : 0.05)))
+                            
+                            // CAMPO PASSWORD
+                            HStack(spacing: 16) {
+                                Image(systemName: "lock.fill")
+                                    .foregroundStyle(focusedField == .password ? .orange : .white.opacity(0.5))
+                                    .frame(width: 24)
+                                
+                                SecureField("", text: $password, prompt: Text("Password").foregroundStyle(.white.opacity(0.4)))
+                                    .foregroundStyle(.white)
+                                    .textContentType(.password)
+                                    .submitLabel(.done)
+                                    .focused($focusedField, equals: .password)
+                            }
+                            .padding(.horizontal, 20).frame(height: 60)
+                            .contentShape(Rectangle())
+                            .onTapGesture { focusedField = .password }
+                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(focusedField == .password ? 0.12 : 0.05)))
+                        }
+                        
+                        if let error = viewModel.errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red.opacity(0.9))
+                                .padding(.vertical, 4)
+                        }
+                        
+                        // BOTÓN
+                        Button {
+                            focusedField = nil
+                            submitAction()
+                        } label: {
+                            HStack {
+                                if viewModel.isLoading {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Text(isSignUp ? "Sign Up" : "Sign In").font(.headline).fontWeight(.bold)
+                                }
+                            }
+                            .frame(maxWidth: .infinity).frame(height: 56)
+                            .background(LinearGradient(colors: [.orange, .red], startPoint: .leading, endPoint: .trailing))
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        }
+                        .disabled(viewModel.isLoading)
+                        .padding(.top, 8)
+                        
+                        // TOGGLE
+                        Button {
+                            withAnimation(.spring()) {
+                                isSignUp.toggle()
+                                viewModel.errorMessage = nil
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(isSignUp ? "Already have an account?" : "Don't have an account?")
+                                    .foregroundStyle(.white.opacity(0.7))
+                                Text(isSignUp ? "Sign In" : "Sign Up")
+                                    .fontWeight(.bold).foregroundStyle(.orange)
+                            }
+                            .font(.footnote)
+                        }
+                        .padding(.top, 4)
+                    }
+                    .padding(28)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .padding(.horizontal, 24)
+                }
+                // Usamos el GeometryReader para empujarlo dinámicamente un 10% hacia abajo
+                .padding(.top, proxy.size.height * 0.10)
+                // Congelamos el frame exacto de la pantalla
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             }
-            .drawingGroup() // Flattens strictly the static background into an instant GPU bitmap
-        )
-        // Dismiss keyboard when tapping outside
-        .onTapGesture {
-            focusedField = nil
+        }
+        // Este modificador ahora trabaja en conjunto con GeometryReader de manera perfecta
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .background {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture { focusedField = nil }
         }
     }
-}
-
-// MARK: - Isolated Form View to prevent Parent Redraws
-struct LoginFormView: View {
-    @ObservedObject var viewModel: AuthViewModel
-    @Binding var isSignUp: Bool
-    var focusedField: FocusState<FocusField?>.Binding
     
-    var body: some View {
-        VStack(spacing: 20) {
-            Text(isSignUp ? "Create Account" : "Welcome Back")
-                .font(.title2.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            VStack(spacing: 16) {
-                CustomTextField(
-                    placeholder: "Email Address",
-                    text: $viewModel.email,
-                    icon: "envelope.fill",
-                    isSecure: false,
-                    keyboardType: .emailAddress,
-                    isFocused: focusedField.wrappedValue == .email
-                )
-                .focused(focusedField, equals: .email)
-                .onSubmit {
-                    focusedField.wrappedValue = .password
-                }
-                
-                CustomTextField(
-                    placeholder: "Password",
-                    text: $viewModel.password,
-                    icon: "lock.fill",
-                    isSecure: true,
-                    keyboardType: .default,
-                    isFocused: focusedField.wrappedValue == .password
-                )
-                .focused(focusedField, equals: .password)
-                .onSubmit {
-                    focusedField.wrappedValue = nil
-                    Task {
-                        if isSignUp { await viewModel.signUp() }
-                        else { await viewModel.signIn() }
-                    }
-                }
-            }
-            
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red.opacity(0.9))
-                    .padding(.vertical, 4)
-                    .multilineTextAlignment(.center)
-                    .transition(.opacity)
-            }
-            
-            // Main Action Button
-            Button {
-                focusedField.wrappedValue = nil // Hide keyboard
-                Task {
-                    if isSignUp {
-                        await viewModel.signUp()
-                    } else {
-                        await viewModel.signIn()
-                    }
-                }
-            } label: {
-                HStack {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text(isSignUp ? "Sign Up" : "Sign In")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    LinearGradient(colors: [.orange, .red], startPoint: .leading, endPoint: .trailing)
-                )
-                .foregroundColor(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: .orange.opacity(0.4), radius: 10, x: 0, y: 5)
-            }
-            .disabled(viewModel.isLoading)
-            .padding(.top, 8)
-            
-            // Toggle Mode Button
-            Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    isSignUp.toggle()
-                    viewModel.errorMessage = nil
-                }
-            } label: {
-                HStack(spacing: 4) {
-                    Text(isSignUp ? "Already have an account?" : "Don't have an account?")
-                        .foregroundStyle(.white.opacity(0.7))
-                    Text(isSignUp ? "Sign In" : "Sign Up")
-                        .fontWeight(.bold)
-                        .foregroundStyle(.orange)
-                }
-                .font(.footnote)
-            }
-            .padding(.top, 4)
-        }
-        .padding(28)
-        .background(
-            LinearGradient(
-                colors: [.black.opacity(0.4), .black.opacity(0.1)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            // NO drawingGroup here!
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-        .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 5)
-        .overlay(
-            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1) // Slightly darker border
-        )
-        .padding(.horizontal, 24)
-    }
-}
-
-// MARK: - Custom Input Field
-struct CustomTextField: View {
-    let placeholder: String
-    @Binding var text: String
-    let icon: String
-    var isSecure: Bool = false
-    var keyboardType: UIKeyboardType = .default
-    var isFocused: Bool = false
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundStyle(isFocused ? .orange : .white.opacity(0.5))
-                .frame(width: 24)
-                .animation(.easeInOut, value: isFocused)
-            
-            if isSecure {
-                SecureField("", text: $text, prompt: Text(placeholder).foregroundStyle(.white.opacity(0.4)))
-                    .foregroundStyle(.white)
-                    .textContentType(.password)
+    private func submitAction() {
+        Task {
+            if isSignUp {
+                await viewModel.signUp(email: email, password: password)
             } else {
-                TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(.white.opacity(0.4)))
-                    .foregroundStyle(.white)
-                    .keyboardType(keyboardType)
-                    .textInputAutocapitalization(.never)
-                    .textContentType(keyboardType == .emailAddress ? .emailAddress : nil)
+                await viewModel.signIn(email: email, password: password)
             }
         }
-        .padding(.horizontal, 20)
-        .frame(height: 56)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(isFocused ? 0.1 : 0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(isFocused ? Color.orange.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
-        )
-        .animation(.easeInOut(duration: 0.2), value: isFocused)
     }
-}
-
-#Preview {
-    LoginView()
-        .environmentObject(AuthViewModel())
 }

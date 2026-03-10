@@ -54,35 +54,40 @@ struct TransactionsView: View {
     }
     
     // MARK: - Performance Optimizations
+
+    // Static formatter: created once, reused on every grouping call
+    private static let monthYearFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale.current
+        f.dateFormat = "MMMM yyyy"
+        return f
+    }()
+
     private func recalculateGroups() {
         Task(priority: .userInitiated) {
             let currentList = transactions
             let calendar = Calendar.current
-            
-            let formatter = DateFormatter()
-            formatter.locale = Locale.current
-            formatter.dateFormat = "MMMM yyyy"
-            
+
             // 1. Group in background
             let grouped = Dictionary(grouping: currentList) { transaction -> String in
-                return formatter.string(from: transaction.date).capitalized
+                return Self.monthYearFormatter.string(from: transaction.date).capitalized
             }
-            
+
             // 2. Sort keys in background
             let sortedGroups = grouped.sorted { (first, second) -> Bool in
                 guard let firstTransaction = first.value.first, let secondTransaction = second.value.first else {
                     return false
                 }
-                
+
                 let components1 = calendar.dateComponents([.year, .month], from: firstTransaction.date)
                 let components2 = calendar.dateComponents([.year, .month], from: secondTransaction.date)
-                
+
                 let date1 = calendar.date(from: components1) ?? Date()
                 let date2 = calendar.date(from: components2) ?? Date()
-                
+
                 return date1 > date2
             }
-            
+
             // 3. Update UI on Main thread
             await MainActor.run {
                 withAnimation {

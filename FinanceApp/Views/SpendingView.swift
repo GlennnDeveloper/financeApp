@@ -10,30 +10,20 @@ struct SpendingCategoryData: Identifiable, Equatable {
 }
 
 struct SpendingView: View {
-    @Environment(\.modelContext) private var modelContext
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
-    
+
     // Defaulting to "Month" timeframe for the analysis
     @State private var selectedTimeframe: Timeframe = .month
     @State private var dateOffset: Int = 0 // Negatives go back in time
-    
-    // Static dictionary mapping each category name to its exact color
-    private let categoryColors: [String: Color] = {
-        var dict = [String: Color]()
-        for category in Category.defaults {
-            dict[category.name] = category.color
-        }
-        return dict
-    }()
     
     // 1. Filter transactions based on timeframe and exclude income
     private var filteredTransactions: [Transaction] {
         let calendar = Calendar.current
         var today = calendar.startOfDay(for: .now)
-        
+
         var offsetComponent: Calendar.Component = .day
         var offsetValue = 0
-        
+
         switch selectedTimeframe {
         case .week:
             offsetComponent = .day
@@ -45,14 +35,14 @@ struct SpendingView: View {
             offsetComponent = .year
             offsetValue = dateOffset
         }
-        
+
         if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: today) {
             today = adjustedAnchor
         }
-        
+
         return transactions.filter { tx in
             guard !tx.isIncome else { return false }
-            
+
             switch selectedTimeframe {
             case .week:
                 guard let weekAgo = calendar.date(byAdding: .day, value: -6, to: today) else { return false }
@@ -100,49 +90,45 @@ struct SpendingView: View {
         return result.sorted { $0.category.name < $1.category.name }
     }
     
+    // Static formatters — created once for the app lifetime
+    private static let weekRangeFormatter: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "MMM d"; return f
+    }()
+    private static let monthYearFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("MMMM yyyy")
+        return f
+    }()
+    private static let yearFormatter: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "yyyy"; return f
+    }()
+
     // Helper to render the specific timeline range
     private var dateRangeText: String {
         let calendar = Calendar.current
         let baseDate = calendar.startOfDay(for: .now)
-        
-        var offsetComponent: Calendar.Component = .day
-        var offsetValue = 0
-        
+
         switch selectedTimeframe {
         case .week:
-            offsetComponent = .day
-            offsetValue = dateOffset * 7
-            if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: baseDate),
+            let offsetValue = dateOffset * 7
+            if let adjustedAnchor = calendar.date(byAdding: .day, value: offsetValue, to: baseDate),
                let startOfWeek = calendar.date(byAdding: .day, value: -6, to: adjustedAnchor) {
-                
-                let formatter = DateFormatter()
-                formatter.dateFormat = "MMM d"
-                
-                let startStr = formatter.string(from: startOfWeek)
-                let endStr = formatter.string(from: adjustedAnchor)
+                let startStr = Self.weekRangeFormatter.string(from: startOfWeek)
+                let endStr   = Self.weekRangeFormatter.string(from: adjustedAnchor)
                 return "\(startStr) - \(endStr)"
             }
-            
+
         case .month:
-            offsetComponent = .month
-            offsetValue = dateOffset
-            if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: baseDate) {
-                let formatter = DateFormatter()
-                // Translates automatically standard DateFormatter logic via current locale but force month/year
-                formatter.setLocalizedDateFormatFromTemplate("MMMM yyyy") 
-                return formatter.string(from: adjustedAnchor)
+            if let adjustedAnchor = calendar.date(byAdding: .month, value: dateOffset, to: baseDate) {
+                return Self.monthYearFormatter.string(from: adjustedAnchor)
             }
-            
+
         case .year:
-            offsetComponent = .year
-            offsetValue = dateOffset
-            if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: baseDate) {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy"
-                return formatter.string(from: adjustedAnchor)
+            if let adjustedAnchor = calendar.date(byAdding: .year, value: dateOffset, to: baseDate) {
+                return Self.yearFormatter.string(from: adjustedAnchor)
             }
         }
-        
+
         return "Unknown Date"
     }
     

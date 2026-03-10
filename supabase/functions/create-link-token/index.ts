@@ -19,7 +19,7 @@ serve(async (req) => {
                 client_id: PLAID_CLIENT_ID,
                 secret: PLAID_SECRET,
                 user: { client_user_id: user_id },
-                client_name: 'Antigravity Finance',
+                client_name: 'MyFinance',
                 products: ['transactions'],
                 country_codes: ['US'],
                 language: 'en',

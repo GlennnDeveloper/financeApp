@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import SwiftData
 import Supabase
+import LinkKit
 
 /// Manages the connection to Plaid and syncing of bank data
 @MainActor
@@ -90,9 +91,15 @@ class BankConnectionViewModel: ObservableObject {
             )
             
             self.isConnected = true
-            
-            // Trigger initial sync to show results immediately
-            await syncMockTransactions(context: context)
+
+            // Extract selected accounts from Plaid metadata
+            var selectedAccountNames: [(name: String, subtype: String)] = []
+            if let meta = metadata as? SuccessMetadata {
+                selectedAccountNames = meta.accounts.map { (name: $0.name, subtype: String(describing: $0.subtype)) }
+            }
+
+            // Trigger initial sync with the selected accounts
+            await syncMockTransactions(context: context, plaidAccounts: selectedAccountNames)
             
             // In a full implementation, the Edge Function would trigger a webhook 
             // or return initial data. For now, we rely on Supabase realtime or 
@@ -105,7 +112,7 @@ class BankConnectionViewModel: ObservableObject {
     }
     
     /// Step 3: Fetch and save transactions to SwiftData
-    func syncMockTransactions(context: ModelContext) async {
+    func syncMockTransactions(context: ModelContext, plaidAccounts: [(name: String, subtype: String)] = []) async {
         let calendar = Calendar.current
         let today = Date()
         let lastMonth = calendar.date(byAdding: .month, value: -1, to: today)!
@@ -164,28 +171,36 @@ class BankConnectionViewModel: ObservableObject {
             context.insert(newTransaction)
         }
         
-        // Add the new Plaid mock accounts that the user just selected
-        let newAccounts: [(String, Double, String, String, Bool)] = [
-            ("Plaid Checking", 4500.50, "building.columns.fill", "blue", false),
-            ("Plaid Saving", 12500.00, "leaf.fill", "green", false),
-            ("Plaid Credit Card", 1250.25, "creditcard.fill", "red", true)
+        // Create accounts based on what Plaid returned
+        // Map Plaid subtypes to symbols and mock balances
+        let subtypeConfig: [String: (symbol: String, color: String, balance: Double, isLiability: Bool)] = [
+            "checking":    ("building.columns.fill", "blue",  4500.50,  false),
+            "savings":     ("leaf.fill",             "green", 12500.00, false),
+            "credit card": ("creditcard.fill",       "red",   1250.25,  true),
+            "money market": ("dollarsign.circle.fill","green", 8000.00,  false),
+            "cd":          ("lock.circle.fill",      "purple",5000.00,  false)
         ]
-        
-        for (idx, accountData) in newAccounts.enumerated() {
-            let accountName = accountData.0
+
+        for (idx, plaidAccount) in plaidAccounts.enumerated() {
+            let config = subtypeConfig[plaidAccount.subtype.lowercased()]
+                ?? ("banknote.fill", "gray", 0.0, false)
+
+            let accountName = plaidAccount.name
             let descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.name == accountName })
-            if let existing = try? context.fetch(descriptor), existing.isEmpty {
+            let existing = (try? context.fetch(descriptor)) ?? []
+
+            if existing.isEmpty {
                 let newAccount = Account(
-                    name: accountData.0,
-                    balance: accountData.1,
-                    symbol: accountData.2,
-                    colorName: accountData.3,
+                    name: accountName,
+                    balance: config.balance,
+                    symbol: config.symbol,
+                    colorName: config.color,
                     orderIndex: idx + 10,
-                    isLiability: accountData.4
+                    isLiability: config.isLiability
                 )
                 context.insert(newAccount)
-            } else if let account = try? context.fetch(descriptor).first {
-                account.balance = accountData.1
+            } else if let account = existing.first {
+                account.balance = config.balance
             }
         }
         
@@ -201,29 +216,20 @@ class BankConnectionViewModel: ObservableObject {
     func disconnectBank(context: ModelContext) {
         isLoading = true
         defer { isLoading = false }
-        
-        // Remove ALL transactions to start from scratch as requested
-        let descriptor = FetchDescriptor<Transaction>()
-        if let allTransactions = try? context.fetch(descriptor) {
-            for transaction in allTransactions {
-                context.delete(transaction)
-            }
-        }
-        
-        // Reset ALL account balances to 0 or initial state
+
+        // Batch-delete all transactions
+        try? context.delete(model: Transaction.self)
+
+        // Reset ALL account balances to 0
         let accountDescriptor = FetchDescriptor<Account>()
         if let allAccounts = try? context.fetch(accountDescriptor) {
             for account in allAccounts {
                 account.balance = 0.0
             }
         }
-        
-        do {
-            try context.save()
-        } catch {
-            // Error handling can be managed via UI if needed in the future
-        }
-        
+
+        try? context.save()
+
         self.linkToken = nil
         self.isConnected = false
     }
