@@ -22,41 +22,53 @@ struct NetWorthView: View {
     private var totalLiabilities: Double { liabilities.reduce(0) { $0 + $1.balance } }
     private var currentNetWorth: Double { totalAssets - totalLiabilities }
     
-    // Calculates historical net worth over the last 6 months
-    private var historicalData: [HistoricalNetWorth] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: .now)
-        var data: [HistoricalNetWorth] = []
+    @State private var historicalData: [HistoricalNetWorth] = []
+    
+    // Asynchronous calculation of historical net worth over the last 6 months
+    private func recalculateHistoricalData() {
+        Task(priority: .userInitiated) {
+            let currentTx = transactions // Capture snapshot
+            let netWorthNow = currentNetWorth // Capture snapshot
+            
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: .now)
+            var data: [HistoricalNetWorth] = []
 
-        // Empezamos con el Net Worth actual
-        var runningNetWorth = currentNetWorth
-        data.append(HistoricalNetWorth(date: today, amount: runningNetWorth))
+            // Empezamos con el Net Worth actual
+            var runningNetWorth = netWorthNow
+            data.append(HistoricalNetWorth(date: today, amount: runningNetWorth))
 
-        // Iteramos hacia atrás mes a mes
-        for i in 1...5 {
-            guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today),
-                  let currentMonthDate  = calendar.date(byAdding: .month, value: -(i - 1), to: today)
-            else { continue }
+            // Iteramos hacia atrás mes a mes
+            for i in 1...5 {
+                guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today),
+                      let currentMonthDate  = calendar.date(byAdding: .month, value: -(i - 1), to: today)
+                else { continue }
 
-            // Queremos saber el NetWorth al inicio del mes anterior.
-            // Para eso, tomamos el runningNetWorth y le RESTAMOS el flujo de caja neto que ocurrió en ese mes.
-            let transactionsInMonth = transactions.filter {
-                calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .month) &&
-                calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .year)
+                // Queremos saber el NetWorth al inicio del mes anterior.
+                // Usando granularity .month compara año y mes internamente
+                let transactionsInMonth = currentTx.filter {
+                    calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .month)
+                }
+
+                let netCashFlow = transactionsInMonth.reduce(0) { total, tx in
+                    total + (tx.isIncome ? tx.amount : -tx.amount)
+                }
+
+                // Revertir el flujo de caja
+                runningNetWorth -= netCashFlow
+
+                // Guardar el punto en el tiempo
+                data.append(HistoricalNetWorth(date: previousMonthDate, amount: runningNetWorth))
             }
 
-            let netCashFlow = transactionsInMonth.reduce(0) { total, tx in
-                total + (tx.isIncome ? tx.amount : -tx.amount)
+            let sortedData = data.sorted { $0.date < $1.date }
+            
+            await MainActor.run {
+                withAnimation {
+                    self.historicalData = sortedData
+                }
             }
-
-            // Revertir el flujo de caja
-            runningNetWorth -= netCashFlow
-
-            // Guardar el punto en el tiempo
-            data.append(HistoricalNetWorth(date: previousMonthDate, amount: runningNetWorth))
         }
-
-        return data.sorted { $0.date < $1.date }
     }
     
     var body: some View {
@@ -147,6 +159,15 @@ struct NetWorthView: View {
             // Make the inline title invisible so it doesn't clutter the top, but keeps nav layout
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
+            .onAppear {
+                recalculateHistoricalData()
+            }
+            .onChange(of: transactions) { _, _ in
+                recalculateHistoricalData()
+            }
+            .onChange(of: accounts) { _, _ in
+                recalculateHistoricalData()
+            }
         }
     }
 }

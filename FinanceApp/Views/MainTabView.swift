@@ -27,6 +27,14 @@ struct MainTabView: View {
     @State private var monthlySavings: Double = 0.0
     @State private var chartData: [ChartItem] = []
     
+    init() {
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = .black
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+    }
+    
     var body: some View {
         SideMenuContainerView(isOpen: $showSettings) {
             // ── Side Menu ──
@@ -34,243 +42,7 @@ struct MainTabView: View {
                 .environmentObject(authViewModel)
         } main: {
         TabView {
-            // Dashboard Tab
-            ZStack(alignment: .top) {
-                // Background pure black
-                Color.black.ignoresSafeArea()
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        // Header
-                        HStack {
-                            Button {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                    showSettings.toggle()
-                                }
-                            } label: {
-                                Image(systemName: "gearshape.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(.gray)
-                            }
-
-                            Spacer()
-
-                            Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
-                                .font(.headline)
-                                .foregroundStyle(.white)
-
-                            Spacer()
-
-                            // Placeholder right icon for visual balance
-                            Image(systemName: "bell.fill")
-                                .font(.title2)
-                                .foregroundStyle(.gray.opacity(0.5))
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                        
-                        // Main Balance Card
-                        DashboardBalanceCard(
-                            balance: totalBalance,
-                            monthlySavings: monthlySavings
-                        )
-                        .padding(.horizontal)
-                        
-                        // Bank Accounts / Connect Section
-                        if bankViewModel.isConnected {
-                            // ── Connected: Show accounts ──
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Bank Accounts")
-                                        .font(.headline)
-                                        .foregroundStyle(.white)
-                                    Spacer()
-                                    if bankViewModel.isLoading {
-                                        ProgressView().tint(.blue)
-                                    } else {
-                                        HStack(spacing: 8) {
-                                            Button {
-                                                Task {
-                                                    if let session = authViewModel.session {
-                                                        await bankViewModel.preparePlaidLink(session: session)
-                                                    }
-                                                }
-                                            } label: {
-                                                Image(systemName: "plus")
-                                                    .font(.caption.bold())
-                                                    .foregroundStyle(.blue)
-                                                    .padding(6)
-                                                    .background(.blue.opacity(0.15), in: Circle())
-                                            }
-
-                                            Button {
-                                                bankViewModel.disconnectBank(context: modelContext)
-                                            } label: {
-                                                Text("Disconnect")
-                                                    .font(.caption.bold())
-                                                    .foregroundStyle(.red)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 6)
-                                                    .background(.red.opacity(0.15), in: Capsule())
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-
-                                ForEach(accounts) { account in
-                                    HStack {
-                                        Image(systemName: account.symbol)
-                                            .font(.title3)
-                                            .foregroundStyle(.blue)
-                                            .frame(width: 32)
-                                        Text(account.name)
-                                            .foregroundStyle(.white)
-                                        Spacer()
-                                        Text(account.balance, format: .currency(code: "USD"))
-                                            .foregroundStyle(.white.opacity(0.7))
-                                    }
-                                    .padding()
-                                    .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16))
-                                    .padding(.horizontal)
-                                }
-                            }
-                        } else {
-                            // ── Not connected: Compact prompt ──
-                            Button {
-                                Task {
-                                    if let session = authViewModel.session {
-                                        await bankViewModel.preparePlaidLink(session: session)
-                                    } else {
-                                        bankViewModel.errorMessage = "Session expired. Please restart the app."
-                                    }
-                                }
-                            } label: {
-                                HStack(spacing: 14) {
-                                    Image(systemName: "building.columns.fill")
-                                        .font(.title2)
-                                        .foregroundStyle(.blue)
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Connect Your Bank")
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(.white)
-                                        Text("Link an account to see balances & transactions")
-                                            .font(.caption)
-                                            .foregroundStyle(.gray)
-                                    }
-
-                                    Spacer()
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption.weight(.bold))
-                                        .foregroundStyle(.gray.opacity(0.5))
-                                }
-                                .padding(16)
-                                .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal)
-                        }
-                        
-                        // Chart Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Text("Analytics")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                Spacer()
-                                // Custom Timeframe Picker
-                                HStack(spacing: 0) {
-                                    ForEach(Timeframe.allCases, id: \.self) { tf in
-                                        Button {
-                                            withAnimation(.easeInOut(duration: 0.2)) {
-                                                selectedTimeframe = tf
-                                            }
-                                        } label: {
-                                            Text(tf.rawValue)
-                                                .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
-                                                .foregroundStyle(selectedTimeframe == tf ? .black : .gray)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
-                                        }
-                                    }
-                                }
-                                .background(Color(white: 0.15), in: Capsule())
-                            }
-                            .padding(.horizontal)
-                            
-                            DashboardBarChart(chartData: chartData)
-                                .padding(.horizontal)
-                        }
-                        
-                        // Recent Transactions Section
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Recent Transactions")
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal)
-                            
-                            VStack(spacing: 12) {
-                                ForEach(transactions.prefix(5)) { transaction in
-                                    TransactionRow(transaction: transaction)
-                                }
-                                if transactions.isEmpty {
-                                    Text("No transactions yet")
-                                        .foregroundStyle(.gray)
-                                        .padding()
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        
-                        Color.clear.frame(height: 100) // Space for FAB
-                    }
-                }
-                
-                // FAB - Glowing Blue Button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: { showAddSheet = true }) {
-                            Image(systemName: "plus")
-                                .font(.title2.weight(.bold))
-                                .foregroundStyle(.white)
-                                .frame(width: 60, height: 60)
-                                .background(.blue, in: Circle())
-                                .shadow(color: .blue.opacity(0.6), radius: 15, x: 0, y: 5)
-                        }
-                        .padding(.trailing, 24)
-                        .padding(.bottom, 24)
-                    }
-                }
-            }
-            .sheet(isPresented: $bankViewModel.isLinkActive) {
-                if let token = bankViewModel.linkToken {
-                    PlaidLinkView(linkToken: token) { publicToken, metadata in
-                        Task {
-                            if let session = authViewModel.session {
-                                await bankViewModel.handleSuccess(publicToken: publicToken, metadata: metadata, context: modelContext, session: session)
-                            }
-                        }
-                    } onExit: { error in
-                        bankViewModel.handleError(error ?? NSError(domain: "Plaid", code: -1))
-                    }
-                } else {
-                    PlaidLinkView(linkToken: "mock-token") { publicToken, metadata in
-                        Task {
-                            if let session = authViewModel.session {
-                                await bankViewModel.handleSuccess(publicToken: publicToken, metadata: metadata, context: modelContext, session: session)
-                            }
-                        }
-                    } onExit: { _ in }
-                }
-            }
-            .tabItem {
-                Label("Dashboard", systemImage: "square.grid.2x2")
-            }
+            dashboardTab
             
             RecurringView()
                 .tabItem {
@@ -292,8 +64,13 @@ struct MainTabView: View {
                     Label("Transactions", systemImage: "list.bullet")
                 }
         }
-        .tint(.white)
+        .id("MainTab") // Identidad fija para evitar pérdida de vista nativa
+        .tint(.white) // Tinte sólido, no variable
         .preferredColorScheme(.dark)
+        .background(Color.black)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(Color.black, for: .tabBar)
+        .compositingGroup() // Rasterizar como una sola capa plana
         .sheet(isPresented: $showAddSheet) {
             AddTransactionView()
         }
@@ -325,6 +102,257 @@ struct MainTabView: View {
             }
         }
         } // SideMenuContainerView
+    }
+    
+    // MARK: - Dashboard Tab (Extracted to reduce body complexity)
+    private var dashboardTab: some View {
+        ZStack(alignment: .top) {
+            Color.black.ignoresSafeArea()
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    // Header
+                    HStack {
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                showSettings.toggle()
+                            }
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.title2)
+                                .foregroundStyle(.gray)
+                        }
+
+                        Spacer()
+
+                        Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
+                            .font(.headline)
+                            .foregroundStyle(.white)
+
+                        Spacer()
+
+                        Image(systemName: "bell.fill")
+                            .font(.title2)
+                            .foregroundStyle(.gray.opacity(0.5))
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    
+                    // Main Balance Card
+                    DashboardBalanceCard(
+                        balance: totalBalance,
+                        monthlySavings: monthlySavings
+                    )
+                    .padding(.horizontal)
+                    
+                    // Bank Accounts / Connect Section
+                    bankAccountsSection
+                    
+                    // Chart Section
+                    analyticsSection
+                    
+                    // Recent Transactions Section
+                    recentTransactionsSection
+                    
+                    Color.clear.frame(height: 100)
+                }
+            }
+            
+            // FAB
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: { showAddSheet = true }) {
+                        Image(systemName: "plus")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 60, height: 60)
+                            .background(.blue, in: Circle())
+                            .shadow(color: .blue.opacity(0.6), radius: 15, x: 0, y: 5)
+                    }
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+        .sheet(isPresented: $bankViewModel.isLinkActive) {
+            if let token = bankViewModel.linkToken {
+                PlaidLinkView(linkToken: token) { publicToken, metadata in
+                    Task {
+                        if let session = authViewModel.session {
+                            await bankViewModel.handleSuccess(publicToken: publicToken, metadata: metadata, context: modelContext, session: session)
+                        }
+                    }
+                } onExit: { error in
+                    bankViewModel.handleError(error ?? NSError(domain: "Plaid", code: -1))
+                }
+            } else {
+                PlaidLinkView(linkToken: "mock-token") { publicToken, metadata in
+                    Task {
+                        if let session = authViewModel.session {
+                            await bankViewModel.handleSuccess(publicToken: publicToken, metadata: metadata, context: modelContext, session: session)
+                        }
+                    }
+                } onExit: { _ in }
+            }
+        }
+        .tabItem {
+            Label("Dashboard", systemImage: "square.grid.2x2")
+        }
+    }
+    
+    // MARK: - Bank Accounts Section
+    @ViewBuilder
+    private var bankAccountsSection: some View {
+        if bankViewModel.isConnected {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Bank Accounts")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    if bankViewModel.isLoading {
+                        ProgressView().tint(.blue)
+                    } else {
+                        HStack(spacing: 8) {
+                            Button {
+                                Task {
+                                    if let session = authViewModel.session {
+                                        await bankViewModel.preparePlaidLink(session: session)
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.blue)
+                                    .padding(6)
+                                    .background(.blue.opacity(0.15), in: Circle())
+                            }
+
+                            Button {
+                                bankViewModel.disconnectBank(context: modelContext)
+                            } label: {
+                                Text("Disconnect")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.red)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(.red.opacity(0.15), in: Capsule())
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+
+                ForEach(accounts) { account in
+                    HStack {
+                        Image(systemName: account.symbol)
+                            .font(.title3)
+                            .foregroundStyle(.blue)
+                            .frame(width: 32)
+                        Text(account.name)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        Text(account.balance, format: .currency(code: "USD"))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    .padding()
+                    .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal)
+                }
+            }
+        } else {
+            Button {
+                Task {
+                    if let session = authViewModel.session {
+                        await bankViewModel.preparePlaidLink(session: session)
+                    } else {
+                        bankViewModel.errorMessage = "Session expired. Please restart the app."
+                    }
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "building.columns.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Connect Your Bank")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                        Text("Link an account to see balances & transactions")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.gray.opacity(0.5))
+                }
+                .padding(16)
+                .background(Color(white: 0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal)
+        }
+    }
+    
+    // MARK: - Analytics Section
+    private var analyticsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Analytics")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Spacer()
+                HStack(spacing: 0) {
+                    ForEach(Timeframe.allCases, id: \.self) { tf in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedTimeframe = tf
+                            }
+                        } label: {
+                            Text(tf.rawValue)
+                                .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
+                                .foregroundStyle(selectedTimeframe == tf ? .black : .gray)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
+                        }
+                    }
+                }
+                .background(Color(white: 0.15), in: Capsule())
+            }
+            .padding(.horizontal)
+            
+            DashboardBarChart(chartData: chartData)
+                .padding(.horizontal)
+        }
+    }
+    
+    // MARK: - Recent Transactions Section
+    private var recentTransactionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recent Transactions")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .padding(.horizontal)
+            
+            VStack(spacing: 12) {
+                ForEach(transactions.prefix(5)) { transaction in
+                    TransactionRow(transaction: transaction)
+                }
+                if transactions.isEmpty {
+                    Text("No transactions yet")
+                        .foregroundStyle(.gray)
+                        .padding()
+                }
+            }
+            .padding(.horizontal)
+        }
     }
     
     // MARK: - Performance Optimizations

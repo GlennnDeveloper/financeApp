@@ -16,81 +16,92 @@ struct SpendingView: View {
     @State private var selectedTimeframe: Timeframe = .month
     @State private var dateOffset: Int = 0 // Negatives go back in time
     
-    // 1. Filter transactions based on timeframe and exclude income
-    private var filteredTransactions: [Transaction] {
-        let calendar = Calendar.current
-        var today = calendar.startOfDay(for: .now)
+    // Async State Properties
+    @State private var filteredTransactions: [Transaction] = []
+    @State private var chartData: [SpendingCategoryData] = Category.defaults.map { SpendingCategoryData(category: $0, totalSpent: 0, percentage: 0) }
+    @State private var totalSpentFiltered: Double = 0
+    
+    // Asynchronous calculation of all spending data
+    private func recalculateSpendingData() {
+        Task(priority: .userInitiated) {
+            let currentTx = transactions // Capture snapshot
+            let currentOffset = dateOffset
+            let currentTimeframe = selectedTimeframe
+            
+            let calendar = Calendar.current
+            var today = calendar.startOfDay(for: .now)
 
-        var offsetComponent: Calendar.Component = .day
-        var offsetValue = 0
+            var offsetComponent: Calendar.Component = .day
+            var offsetValue = 0
 
-        switch selectedTimeframe {
-        case .week:
-            offsetComponent = .day
-            offsetValue = dateOffset * 7
-        case .month:
-            offsetComponent = .month
-            offsetValue = dateOffset
-        case .year:
-            offsetComponent = .year
-            offsetValue = dateOffset
-        }
-
-        if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: today) {
-            today = adjustedAnchor
-        }
-
-        return transactions.filter { tx in
-            guard !tx.isIncome else { return false }
-
-            switch selectedTimeframe {
+            switch currentTimeframe {
             case .week:
-                guard let weekAgo = calendar.date(byAdding: .day, value: -6, to: today) else { return false }
-                let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: today)!
-                let startOfAgo = calendar.startOfDay(for: weekAgo)
-                return tx.date >= startOfAgo && tx.date <= endOfDay
+                offsetComponent = .day
+                offsetValue = currentOffset * 7
             case .month:
-                return calendar.isDate(tx.date, equalTo: today, toGranularity: .month) &&
-                       calendar.isDate(tx.date, equalTo: today, toGranularity: .year)
+                offsetComponent = .month
+                offsetValue = currentOffset
             case .year:
-                return calendar.isDate(tx.date, equalTo: today, toGranularity: .year)
+                offsetComponent = .year
+                offsetValue = currentOffset
             }
-        }
-    }
-    
-    // 2. Prepare visual chart data
-    private var chartData: [SpendingCategoryData] {
-        let currentFilteredTransactions = self.filteredTransactions
-        
-        // Group by category symbol
-        let grouped = Dictionary(grouping: currentFilteredTransactions, by: { $0.categorySymbol })
-        
-        let totalSpend = currentFilteredTransactions.reduce(0) { $0 + $1.amount }
-        
 
-        
-        // 3. Initialize result with ALL default categories (zero-padded)
-        var result: [SpendingCategoryData] = Category.defaults.map { category in
-            SpendingCategoryData(category: category, totalSpent: 0, percentage: 0)
-        }
-        
-        // 4. Update totals for categories that have transactions
-        for i in 0..<result.count {
-            if let txs = grouped[result[i].category.symbol] {
-                let catTotal = txs.reduce(0) { $0 + $1.amount }
-                result[i] = SpendingCategoryData(
-                    category: result[i].category,
-                    totalSpent: catTotal,
-                    percentage: totalSpend > 0 ? (catTotal / totalSpend) : 0
-                )
+            if let adjustedAnchor = calendar.date(byAdding: offsetComponent, value: offsetValue, to: today) {
+                today = adjustedAnchor
+            }
+
+            // 1. Filter Transactions
+            let newFilteredTransactions = currentTx.filter { tx in
+                guard !tx.isIncome else { return false }
+
+                switch currentTimeframe {
+                case .week:
+                    guard let weekAgo = calendar.date(byAdding: .day, value: -6, to: today) else { return false }
+                    let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: today)!
+                    let startOfAgo = calendar.startOfDay(for: weekAgo)
+                    return tx.date >= startOfAgo && tx.date <= endOfDay
+                case .month:
+                    return calendar.isDate(tx.date, equalTo: today, toGranularity: .month)
+                case .year:
+                    return calendar.isDate(tx.date, equalTo: today, toGranularity: .year)
+                }
+            }
+
+            // 2. Prepare visual chart data
+            let grouped = Dictionary(grouping: newFilteredTransactions, by: { $0.categorySymbol })
+            let newTotalSpend = newFilteredTransactions.reduce(0) { $0 + $1.amount }
+
+            // Initialize result with ALL default categories (zero-padded)
+            var newChartData: [SpendingCategoryData] = Category.defaults.map { category in
+                SpendingCategoryData(category: category, totalSpent: 0, percentage: 0)
+            }
+
+            // Update totals for categories that have transactions
+            for i in 0..<newChartData.count {
+                if let txs = grouped[newChartData[i].category.symbol] {
+                    let catTotal = txs.reduce(0) { $0 + $1.amount }
+                    newChartData[i] = SpendingCategoryData(
+                        category: newChartData[i].category,
+                        totalSpent: catTotal,
+                        percentage: newTotalSpend > 0 ? (catTotal / newTotalSpend) : 0
+                    )
+                }
+            }
+
+            // Sort by alphabetical category name for a fixed, stable order
+            let sortedChartData = newChartData.sorted { $0.category.name < $1.category.name }
+
+            await MainActor.run {
+                withAnimation {
+                    self.filteredTransactions = newFilteredTransactions
+                    self.totalSpentFiltered = newTotalSpend
+                    self.chartData = sortedChartData
+                }
             }
         }
-        
-        // 5. Sort by alphabetical category name for a fixed, stable order
-        return result.sorted { $0.category.name < $1.category.name }
     }
     
-    // Static formatters — created once for the app lifetime
+    // MARK: - Static formatters
     private static let weekRangeFormatter: DateFormatter = {
         let f = DateFormatter(); f.dateFormat = "MMM d"; return f
     }()
@@ -130,11 +141,6 @@ struct SpendingView: View {
         }
 
         return "Unknown Date"
-    }
-    
-    // Helper para el centro del Donut
-    private var totalSpentFiltered: Double {
-        chartData.reduce(0) { $0 + $1.totalSpent }
     }
     
     var body: some View {
@@ -330,6 +336,18 @@ struct SpendingView: View {
                     }
                     .padding(.bottom, 24)
                 }
+            }
+            .onAppear {
+                recalculateSpendingData()
+            }
+            .onChange(of: transactions) { _, _ in
+                recalculateSpendingData()
+            }
+            .onChange(of: selectedTimeframe) { _, _ in
+                recalculateSpendingData()
+            }
+            .onChange(of: dateOffset) { _, _ in
+                recalculateSpendingData()
             }
         }
     }
