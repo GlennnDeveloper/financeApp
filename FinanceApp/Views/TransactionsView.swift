@@ -13,9 +13,9 @@ struct TransactionsView: View {
             Group {
                 if transactions.isEmpty {
                     ContentUnavailableView(
-                        NSLocalizedString("No Transactions", comment: ""),
+                        SettingsManager.shared.localizedString(for: "No Transactions"),
                         systemImage: "tray.fill",
-                        description: Text("Your bank movements will appear here.")
+                        description: Text(SettingsManager.shared.localizedString(for: "Your bank movements will appear here."))
                     )
                 } else {
                     List {
@@ -42,7 +42,7 @@ struct TransactionsView: View {
                     .environment(\.defaultMinListRowHeight, 10)
                 }
             }
-            .navigationTitle("Transactions")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "Transactions"))
             .onAppear {
                 recalculateGroups()
             }
@@ -57,7 +57,6 @@ struct TransactionsView: View {
     // Static formatter: created once, reused on every grouping call
     private static let monthYearFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale.current
         f.dateFormat = "MMMM yyyy"
         return f
     }()
@@ -69,7 +68,9 @@ struct TransactionsView: View {
 
             // 1. Group in background
             let grouped = Dictionary(grouping: currentList) { transaction -> String in
-                return Self.monthYearFormatter.string(from: transaction.date).capitalized
+                let formatter = Self.monthYearFormatter
+                formatter.locale = SettingsManager.shared.locale
+                return formatter.string(from: transaction.date).capitalized
             }
 
             // 2. Sort keys in background

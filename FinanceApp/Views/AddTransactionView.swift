@@ -41,7 +41,7 @@ struct AddTransactionView: View {
             VStack(spacing: 0) {
                 // Header Custom: Title + Close Button (PINNED)
                 HStack {
-                    Text("New Transaction")
+                    Text(SettingsManager.shared.localizedString(for: "New Transaction"))
                         .font(.title3.weight(.bold))
                     Spacer()
                     Button(action: { dismiss() }) {
@@ -59,12 +59,12 @@ struct AddTransactionView: View {
                     VStack(spacing: 24) {
                         // Toggle Expense / Income Stylized (Pill mode)
                         HStack(spacing: 0) {
-                            SegmentButton(title: NSLocalizedString("Expense", comment: ""), isSelected: !isIncome) {
+                            SegmentButton(title: SettingsManager.shared.localizedString(for: "Expense"), isSelected: !isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = false
                                 }
                             }
-                            SegmentButton(title: NSLocalizedString("Income", comment: ""), isSelected: isIncome) {
+                            SegmentButton(title: SettingsManager.shared.localizedString(for: "Income"), isSelected: isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = true
                                 }
@@ -82,7 +82,7 @@ struct AddTransactionView: View {
                                 .focused($isAmountFocused)
                                 .foregroundStyle(isIncome ? .green : .primary)
 
-                            Text("Enter amount")
+                            Text(SettingsManager.shared.localizedString(for: "Enter amount"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -95,7 +95,7 @@ struct AddTransactionView: View {
                                 Image(systemName: "pencil")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-                                TextField(NSLocalizedString("What was this for?", comment: ""), text: $title)
+                                TextField(SettingsManager.shared.localizedString(for: "What was this for?"), text: $title)
                             }
                             .padding()
                             .background(Color(UIColor.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -105,7 +105,7 @@ struct AddTransactionView: View {
                                 Image(systemName: "calendar")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-                                DatePicker("Date", selection: $date, displayedComponents: .date)
+                                DatePicker(SettingsManager.shared.localizedString(for: "Date"), selection: $date, displayedComponents: .date)
                                     .labelsHidden()
                                 Spacer()
                             }
@@ -114,7 +114,7 @@ struct AddTransactionView: View {
 
                             // Category Selector (Custom Horizontal Scroll)
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Category")
+                                Text(SettingsManager.shared.localizedString(for: "Category"))
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 8)
@@ -142,7 +142,7 @@ struct AddTransactionView: View {
 
                         // Save Button (Glow Effect)
                         Button(action: saveTransaction) {
-                            Text("Save Transaction")
+                            Text(SettingsManager.shared.localizedString(for: "Save Transaction"))
                                 .font(.headline.weight(.bold))
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)

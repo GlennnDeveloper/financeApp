@@ -12,9 +12,10 @@ struct SpendingCategoryData: Identifiable, Equatable {
 struct SpendingView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @Query(sort: \Category.orderIndex) private var categories: [Category]
+    @EnvironmentObject var settingsManager: SettingsManager
 
     // Defaulting to "Month" timeframe for the analysis
-    @State private var selectedTimeframe: Timeframe = .month
+    @State private var selectedTimeframe: Timeframe = .week
     @State private var dateOffset: Int = 0 // Negatives go back in time
     
     // Async State Properties
@@ -137,8 +138,8 @@ struct SpendingView: View {
             }
 
         case .year:
-            if calendar.date(byAdding: .year, value: dateOffset, to: baseDate) != nil {
-                return NSLocalizedString("Unknown Date", comment: "")
+            if let adjustedAnchor = calendar.date(byAdding: .year, value: dateOffset, to: baseDate) {
+                return Self.yearFormatter.string(from: adjustedAnchor)
             }
         }
 
@@ -149,7 +150,7 @@ struct SpendingView: View {
     private var headerArea: some View {
         // Header and Timeframe Picker
         HStack {
-            Text("Spending Info")
+            Text(settingsManager.localizedString(for: "Spending Info"))
                 .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(.primary)
             Spacer()
@@ -240,7 +241,7 @@ struct SpendingView: View {
             
             // Center Label
             VStack(spacing: 4) {
-                Text("Total Spent")
+                Text(SettingsManager.shared.localizedString(for: "Total Spent"))
                     .font(.subheadline)
                     .foregroundStyle(.gray)
                 Text(totalSpentFiltered, format: .currency(code: "USD"))
@@ -255,7 +256,7 @@ struct SpendingView: View {
     @ViewBuilder
     private var breakdownArea: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Breakdown")
+            Text(SettingsManager.shared.localizedString(for: "Breakdown"))
                 .font(.headline)
                 .foregroundStyle(.primary)
                 .padding(.horizontal)
@@ -338,9 +339,9 @@ struct SpendingView: View {
                     // Donut Chart Area
                     if totalSpentFiltered == 0 {
                         ContentUnavailableView(
-                            "No Data",
+                            SettingsManager.shared.localizedString(for: "No Data"),
                             systemImage: "chart.pie.fill",
-                            description: Text("You have no expenses recorded for this timeframe.")
+                            description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
                         )
                         .frame(height: 300)
                     } else {

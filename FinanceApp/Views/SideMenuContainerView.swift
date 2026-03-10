@@ -6,7 +6,6 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
     @ViewBuilder let main: () -> MainContent
 
     private let menuWidth: CGFloat = 300
-    private let scaleEffect: CGFloat = 0.88
     private let cornerRadius: CGFloat = 30
 
     @GestureState private var dragOffset: CGFloat = 0
@@ -40,7 +39,8 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
                     .disabled(isOpen)
                     
                 if progress > 0 {
-                    Color.black.opacity(0.4 * progress)
+                    Color.clear
+                        .contentShape(Rectangle())
                         .allowsHitTesting(isOpen)
                         .onTapGesture {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -49,20 +49,8 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
                         }
                 }
             }
-            // 1. Tamaño fijo absoluto basado en la pantalla física (sin GeometryReader ni paddings)
-            .frame(width: screenSize.width, height: screenSize.height)
-            // 2. Agrupamos la vista ANTES de las transformaciones
-            .compositingGroup()
-            // 3. Recortamos, escalamos y movemos
-            .clipShape(UnevenRoundedRectangle(
-                topLeadingRadius: cornerRadius * progress,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: cornerRadius * progress
-            ))
-            .scaleEffect(1 - (1 - scaleEffect) * progress)
+            // 2. Movemos la vista
             .offset(x: effectiveOffset)
-            .shadow(color: .black.opacity(0.4 * progress), radius: 20, x: -5, y: 0)
             .gesture(
                 DragGesture()
                     .updating($dragOffset) { value, state, _ in

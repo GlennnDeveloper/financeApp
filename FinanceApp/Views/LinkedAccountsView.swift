@@ -12,7 +12,7 @@ struct LinkedAccountsView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // Status Section
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Connection Status")
+                    Text(SettingsManager.shared.localizedString(for: "Connection Status"))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.gray)
                         .padding(.horizontal)
@@ -22,14 +22,14 @@ struct LinkedAccountsView: View {
                             .fill(bankVM.isConnected ? Color.green : Color.red)
                             .frame(width: 8, height: 8)
                         
-                        Text(bankVM.isConnected ? NSLocalizedString("Connected to Plaid", comment: "") : NSLocalizedString("Not Connected", comment: ""))
+                        Text(bankVM.isConnected ? SettingsManager.shared.localizedString(for: "Connected to Plaid") : SettingsManager.shared.localizedString(for: "Not Connected"))
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.primary)
                         
                         Spacer()
                         
                         if bankVM.isConnected {
-                            Button("Disconnect") {
+                            Button(SettingsManager.shared.localizedString(for: "Disconnect")) {
                                 bankVM.disconnectBank(context: modelContext)
                             }
                             .font(.caption.weight(.bold))
@@ -44,7 +44,7 @@ struct LinkedAccountsView: View {
                 // Accounts List
                 if bankVM.isConnected && !accounts.isEmpty {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Linked Accounts")
+                        Text(SettingsManager.shared.localizedString(for: "Linked Accounts"))
                             .font(.caption.weight(.bold))
                             .foregroundStyle(.gray)
                             .padding(.horizontal)
@@ -89,11 +89,11 @@ struct LinkedAccountsView: View {
                             .font(.system(size: 48))
                             .foregroundStyle(.gray.opacity(0.3))
                         
-                        Text("Link your bank accounts")
+                        Text(SettingsManager.shared.localizedString(for: "Link your bank accounts"))
                             .font(.headline)
                             .foregroundStyle(.primary)
                         
-                        Text("Connect your bank securely via Plaid to automatically sync your transactions and balances.")
+                        Text(SettingsManager.shared.localizedString(for: "Connect your bank securely via Plaid to automatically sync your transactions and balances."))
                             .font(.subheadline)
                             .foregroundStyle(.gray)
                             .multilineTextAlignment(.center)
@@ -110,7 +110,7 @@ struct LinkedAccountsView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text("Connect with Plaid")
+                                Text(SettingsManager.shared.localizedString(for: "Connect with Plaid"))
                                     .font(.subheadline.weight(.bold))
                             }
                         }
@@ -124,7 +124,7 @@ struct LinkedAccountsView: View {
             }
             .padding(.vertical, 20)
         }
-        .navigationTitle("Linked Accounts")
+        .navigationTitle(SettingsManager.shared.localizedString(for: "Linked Accounts"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $bankVM.isLinkActive) {
             if let token = bankVM.linkToken {
@@ -139,11 +139,11 @@ struct LinkedAccountsView: View {
                 }
             }
         }
-        .alert("Error", isPresented: Binding(
+        .alert(SettingsManager.shared.localizedString(for: "Error"), isPresented: Binding(
             get: { bankVM.errorMessage != nil },
             set: { if !$0 { bankVM.errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) { }
+            Button(SettingsManager.shared.localizedString(for: "OK"), role: .cancel) { }
         } message: {
             if let error = bankVM.errorMessage {
                 Text(error)

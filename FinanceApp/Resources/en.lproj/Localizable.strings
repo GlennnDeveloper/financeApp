@@ -7,10 +7,12 @@
 "Profile" = "Profile";
 "Manage Budget" = "Manage Budget";
 "Categories & Rules" = "Categories & Rules";
+"Categories, Tags & Rules" = "Categories, Tags & Rules";
 "Linked Accounts" = "Linked Accounts";
 "Log Out" = "Log Out";
 
 /* Dashboard */
+"Dashboard" = "Dashboard";
 "Bank Accounts" = "Bank Accounts";
 "Connect Your Bank" = "Connect Your Bank";
 "Link an account to see balances" = "Link an account to see balances";
@@ -23,7 +25,14 @@
 "Today" = "Today";
 "MONTHLY SAVINGS" = "MONTHLY SAVINGS";
 
+/* Recurring */
+"Recurring" = "Recurring";
+
+/* Net Worth */
+"Net Worth" = "Net Worth";
+
 /* Spending */
+"Spending" = "Spending";
 "Spending Info" = "Spending Info";
 "Total Spent" = "Total Spent";
 "Breakdown" = "Breakdown";
@@ -46,6 +55,11 @@
 "Month" = "Month";
 "Year" = "Year";
 
+/* Themes */
+"System" = "System";
+"Light" = "Light";
+"Dark" = "Dark";
+
 /* Categories */
 "Food & Drink" = "Food & Drink";
 "Transport" = "Transport";
@@ -61,12 +75,27 @@
 "Refer a Friend" = "Refer a Friend";
 "Chat" = "Chat";
 "Demo Mode" = "Demo Mode";
+"Enter Demo Mode" = "Enter Demo Mode";
 "Share Account" = "Share Account";
 "Join me on FinanceApp to manage our budget together!" = "Join me on FinanceApp to manage our budget together!";
 "Premium" = "Premium";
+"Premium Membership" = "Premium Membership";
 "Help & Privacy" = "Help & Privacy";
+"MyFinance v1.0" = "MyFinance v1.0";
 
-/* Add Transaction */
+/* Recurring */
+"Recurring" = "Recurring";
+"No Subscriptions" = "No Subscriptions";
+"No recurring expenses were found." = "No recurring expenses were found.";
+"Active Subscriptions" = "Active Subscriptions";
+
+/* Net Worth */
+"Net Worth" = "Net Worth";
+"Current Net Worth" = "Current Net Worth";
+"6 Month Trend" = "6 Month Trend";
+"Assets" = "Assets";
+"Liabilities" = "Liabilities";
+"No accounts added." = "No accounts added.";
 "New Transaction" = "New Transaction";
 "Expense" = "Expense";
 "Income" = "Income";
@@ -97,7 +126,7 @@
 
 /* Category Detail */
 "No Expenses" = "No Expenses";
-"No expenses for %@" = "No expenses for %@";
+"No expenses for" = "No expenses for";
 "in this timeframe." = "in this timeframe.";
 
 /* Linked Accounts */
@@ -108,4 +137,42 @@
 "Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Connect your bank securely via Plaid to automatically sync your transactions and balances.";
 "Connect with Plaid" = "Connect with Plaid";
 "Error" = "Error";
-"Error" = "Error";
+
+/* Profile */
+"Account Details" = "Account Details";
+"Member Since" = "Member Since";
+"Plan" = "Plan";
+"Free" = "Free";
+"Delete Account" = "Delete Account";
+"Delete Account?" = "Delete Account?";
+"Delete" = "Delete";
+"This action is permanent and will delete all your financial data." = "This action is permanent and will delete all your financial data.";
+
+/* Category Rules */
+"Available Categories" = "Available Categories";
+"Custom Rules" = "Custom Rules";
+"No custom rules yet" = "No custom rules yet";
+"Rules help automatically categorize transactions based on their title." = "Rules help automatically categorize transactions based on their title.";
+"Categorize as" = "Categorize as";
+"Category Name" = "Category Name";
+"Hobby, Subscriptions..." = "Hobby, Subscriptions...";
+"Icon" = "Icon";
+"Color" = "Color";
+"Rule Pattern" = "Rule Pattern";
+"Title contains..." = "Title contains...";
+"Target Category" = "Target Category";
+"Whenever a transaction title matches this pattern, it will be automatically assigned to the selected category." = "Whenever a transaction title matches this pattern, it will be automatically assigned to the selected category.";
+"New Rule" = "New Rule";
+"New Category" = "New Category";
+"Select Category" = "Select Category";
+"Select Icon" = "Select Icon";
+"Select Color" = "Select Color";
+"Blue" = "Blue";
+"Green" = "Green";
+"Orange" = "Orange";
+"Red" = "Red";
+"Purple" = "Purple";
+"Pink" = "Pink";
+"Teal" = "Teal";
+"Indigo" = "Indigo";
+"Gray" = "Gray";

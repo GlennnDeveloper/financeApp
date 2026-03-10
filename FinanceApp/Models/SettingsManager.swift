@@ -8,6 +8,10 @@ enum AppTheme: String, CaseIterable, Identifiable {
     
     var id: String { self.rawValue }
     
+    var localizedName: String {
+        SettingsManager.shared.localizedString(for: self.rawValue)
+    }
+    
     var colorScheme: ColorScheme? {
         switch self {
         case .system: return nil
@@ -20,9 +24,6 @@ enum AppTheme: String, CaseIterable, Identifiable {
 enum AppLanguage: String, CaseIterable, Identifiable {
     case english = "English"
     case spanish = "Español"
-    case french = "Français"
-    case german = "Deutsch"
-    case italian = "Italiano"
     
     var id: String { self.rawValue }
     
@@ -30,9 +31,6 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         switch self {
         case .english: return "en"
         case .spanish: return "es"
-        case .french: return "fr"
-        case .german: return "de"
-        case .italian: return "it"
         }
     }
     
@@ -61,6 +59,14 @@ final class SettingsManager: ObservableObject {
     
     var locale: Locale {
         appLanguage.locale
+    }
+    
+    func localizedString(for key: String) -> String {
+        guard let path = Bundle.main.path(forResource: appLanguage.localeIdentifier, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            return NSLocalizedString(key, comment: "")
+        }
+        return bundle.localizedString(forKey: key, value: nil, table: nil)
     }
     
     private init() {}

@@ -5,26 +5,26 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-            Section(NSLocalizedString("Appearance", comment: "")) {
+            Section(SettingsManager.shared.localizedString(for: "Appearance")) {
                 Picker(selection: $settingsManager.appThemeName) {
                     ForEach(AppTheme.allCases) { theme in
-                        Text(theme.rawValue).tag(theme.rawValue)
+                        Text(theme.localizedName).tag(theme.rawValue)
                     }
                 } label: {
                     HStack {
                         Image(systemName: "paintbrush.fill")
                             .foregroundStyle(.pink)
-                        Text("App Theme")
+                        Text(SettingsManager.shared.localizedString(for: "App Theme"))
                     }
                 }
             }
 
-            Section(NSLocalizedString("Preferences", comment: "")) {
+            Section(SettingsManager.shared.localizedString(for: "Preferences")) {
                 NavigationLink(destination: NotificationsView()) {
                     HStack {
                         Image(systemName: "bell.badge.fill")
                             .foregroundStyle(.red)
-                        Text("Notifications")
+                        Text(SettingsManager.shared.localizedString(for: "Notifications"))
                     }
                 }
                 
@@ -36,7 +36,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "globe")
                             .foregroundStyle(.blue)
-                        Text("Language")
+                        Text(SettingsManager.shared.localizedString(for: "Language"))
                     }
                 }
                 
@@ -48,28 +48,28 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "dollarsign.circle.fill")
                             .foregroundStyle(.green)
-                        Text("Primary Currency")
+                        Text(SettingsManager.shared.localizedString(for: "Primary Currency"))
                     }
                 }
             }
             
-            Section(NSLocalizedString("Security", comment: "")) {
+            Section(SettingsManager.shared.localizedString(for: "Security")) {
                 Toggle(isOn: $settingsManager.useBiometrics) {
                     HStack {
                         Image(systemName: "faceid")
                             .foregroundStyle(.purple)
-                        Text("Use Face ID")
+                        Text(SettingsManager.shared.localizedString(for: "Use Face ID"))
                     }
                 }
             }
             
-            Section(NSLocalizedString("Data Management", comment: "")) {
+            Section(SettingsManager.shared.localizedString(for: "Data Management")) {
                 Button(role: .destructive) {
                     // Action for clearing cache
                 } label: {
                     HStack {
                         Image(systemName: "trash.fill")
-                        Text("Clear Cache")
+                        Text(SettingsManager.shared.localizedString(for: "Clear Cache"))
                     }
                 }
                 
@@ -78,12 +78,12 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "square.and.arrow.up")
-                        Text("Export My Data")
+                        Text(SettingsManager.shared.localizedString(for: "Export My Data"))
                     }
                 }
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle(SettingsManager.shared.localizedString(for: "Settings"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

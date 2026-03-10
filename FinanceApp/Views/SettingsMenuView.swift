@@ -17,7 +17,7 @@ struct SettingsMenuView: View {
                     versionLabel
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "Settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -33,7 +33,7 @@ struct SettingsMenuView: View {
 
     private var greetingSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Hi there 👋")
+            Text(SettingsManager.shared.localizedString(for: "Hi there 👋"))
                 .font(.title.weight(.bold))
                 .foregroundStyle(.primary)
 
@@ -50,53 +50,53 @@ struct SettingsMenuView: View {
 
     private var quickActionsSection: some View {
         SettingsSection {
-            SettingsRow(icon: "gift.fill", iconColor: .purple, title: "Refer a Friend")
+            SettingsRow(icon: "gift.fill", iconColor: .purple, title: SettingsManager.shared.localizedString(for: "Refer a Friend"))
             Divider().overlay(Color.white.opacity(0.06))
-            SettingsRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: "Chat")
+            SettingsRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Chat"))
             Divider().overlay(Color.white.opacity(0.06))
-            SettingsRow(icon: "play.circle.fill", iconColor: .green, title: "Enter Demo Mode")
+            SettingsRow(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Enter Demo Mode"))
         }
     }
 
     private var accountSection: some View {
         SettingsSection {
             NavigationLink(destination: ProfileView()) {
-                SettingsRowContent(icon: "person.fill", iconColor: .orange, title: "Profile")
+                SettingsRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
             }
             Divider().overlay(Color.white.opacity(0.06))
             
-            ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text("Join me on FinanceApp to manage our budget together!")) {
-                SettingsRowContent(icon: "person.2.fill", iconColor: .cyan, title: "Share Account")
+            ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text(SettingsManager.shared.localizedString(for: "Join me on FinanceApp to manage our budget together!"))) {
+                SettingsRowContent(icon: "person.2.fill", iconColor: .cyan, title: SettingsManager.shared.localizedString(for: "Share Account"))
             }
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: BudgetView()) {
-                SettingsRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: "Manage Budget")
+                SettingsRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
             }
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: CategoryRulesView()) {
-                SettingsRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: "Categories, Tags & Rules")
+                SettingsRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories, Tags & Rules"))
             }
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: LinkedAccountsView()) {
-                SettingsRowContent(icon: "building.columns.fill", iconColor: .blue, title: "Linked Accounts")
+                SettingsRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
             }
         }
     }
 
     private var preferencesSection: some View {
         SettingsSection {
-            SettingsRow(icon: "crown.fill", iconColor: .yellow, title: "Premium Membership")
+            SettingsRow(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium Membership"))
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: SettingsView()) {
-                SettingsRowContent(icon: "gearshape.fill", iconColor: .gray, title: "Settings")
+                SettingsRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
             }
             Divider().overlay(Color.white.opacity(0.06))
             
-            SettingsRow(icon: "questionmark.circle.fill", iconColor: .gray, title: "Help & Privacy")
+            SettingsRow(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
         }
     }
 
@@ -112,7 +112,7 @@ struct SettingsMenuView: View {
             HStack {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
                     .font(.body.weight(.semibold))
-                Text("Log Out")
+                Text(SettingsManager.shared.localizedString(for: "Log Out"))
                     .font(.body.weight(.semibold))
             }
             .foregroundStyle(.red)

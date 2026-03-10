@@ -15,7 +15,7 @@ struct CategoryRulesView: View {
                     // Categories Section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            Text("Available Categories")
+                            Text(SettingsManager.shared.localizedString(for: "Available Categories"))
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
@@ -42,7 +42,7 @@ struct CategoryRulesView: View {
                                                 .foregroundStyle(category.color)
                                         }
                                     
-                                    Text(category.name)
+                                    Text(category.localizedName)
                                         .font(.subheadline.weight(.medium))
                                         .foregroundStyle(.primary)
                                     
@@ -73,7 +73,7 @@ struct CategoryRulesView: View {
                     // Rules Section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            Text("Custom Rules")
+                            Text(SettingsManager.shared.localizedString(for: "Custom Rules"))
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
@@ -93,10 +93,10 @@ struct CategoryRulesView: View {
                                 Image(systemName: "checklist")
                                     .font(.system(size: 40))
                                     .foregroundStyle(.gray.opacity(0.3))
-                                Text("No custom rules yet")
+                                Text(SettingsManager.shared.localizedString(for: "No custom rules yet"))
                                     .font(.subheadline)
                                     .foregroundStyle(.gray)
-                                Text("Rules help automatically categorize transactions based on their title.")
+                                Text(SettingsManager.shared.localizedString(for: "Rules help automatically categorize transactions based on their title."))
                                     .font(.caption)
                                     .foregroundStyle(.gray.opacity(0.6))
                                     .multilineTextAlignment(.center)
@@ -112,7 +112,7 @@ struct CategoryRulesView: View {
                                             Text(rule.pattern)
                                                 .font(.subheadline.weight(.medium))
                                                 .foregroundStyle(.primary)
-                                            Text("Categorize as \(categories.first(where: { $0.symbol == rule.categorySymbol })?.name ?? "Others")")
+                                            Text("\(SettingsManager.shared.localizedString(for: "Categorize as")) \(categories.first(where: { $0.symbol == rule.categorySymbol })?.localizedName ?? SettingsManager.shared.localizedString(for: "Others"))")
                                                 .font(.caption)
                                                 .foregroundStyle(.gray)
                                         }
@@ -142,7 +142,7 @@ struct CategoryRulesView: View {
                 }
                 .padding(.vertical, 20)
             }
-            .navigationTitle("Categories & Rules")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "Categories & Rules"))
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingAddRule) {
                 AddRuleSheet(categories: categories)
@@ -169,12 +169,12 @@ private struct AddCategorySheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Category Name") {
-                    TextField("Hobby, Subscriptions...", text: $name)
+                Section(SettingsManager.shared.localizedString(for: "Category Name")) {
+                    TextField(SettingsManager.shared.localizedString(for: "Hobby, Subscriptions..."), text: $name)
                 }
                 
-                Section("Icon") {
-                    Picker("Icon", selection: $selectedSymbol) {
+                Section(SettingsManager.shared.localizedString(for: "Icon")) {
+                    Picker(SettingsManager.shared.localizedString(for: "Icon"), selection: $selectedSymbol) {
                         ForEach(symbols, id: \.self) { sym in
                             Image(systemName: sym).tag(sym)
                         }
@@ -183,25 +183,25 @@ private struct AddCategorySheet: View {
                     .frame(height: 100)
                 }
                 
-                Section("Color") {
-                    Picker("Color", selection: $selectedColor) {
+                Section(SettingsManager.shared.localizedString(for: "Color")) {
+                    Picker(SettingsManager.shared.localizedString(for: "Color"), selection: $selectedColor) {
                         ForEach(colorNames, id: \.self) { color in
                             HStack {
                                 Circle().fill(mapColor(color)).frame(width: 12)
-                                Text(color.capitalized)
+                                Text(SettingsManager.shared.localizedString(for: color.capitalized))
                             }.tag(color)
                         }
                     }
                 }
             }
-            .navigationTitle("New Category")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "New Category"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(SettingsManager.shared.localizedString(for: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(SettingsManager.shared.localizedString(for: "Save")) {
                         let newCat = Category(name: name, symbol: selectedSymbol, colorName: selectedColor, isDefault: false, orderIndex: orderIndex)
                         modelContext.insert(newCat)
                         dismiss()
@@ -243,18 +243,18 @@ private struct AddRuleSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Rule Pattern") {
-                    TextField("Title contains...", text: $pattern)
+                Section(SettingsManager.shared.localizedString(for: "Rule Pattern")) {
+                    TextField(SettingsManager.shared.localizedString(for: "Title contains..."), text: $pattern)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                 }
                 
-                Section("Target Category") {
-                    Picker("Category", selection: $selectedSymbol) {
+                Section(SettingsManager.shared.localizedString(for: "Target Category")) {
+                    Picker(SettingsManager.shared.localizedString(for: "Category"), selection: $selectedSymbol) {
                         ForEach(categories) { cat in
                             HStack {
                                 Image(systemName: cat.symbol)
-                                Text(cat.name)
+                                Text(cat.localizedName)
                             }
                             .tag(cat.symbol)
                         }
@@ -262,19 +262,19 @@ private struct AddRuleSheet: View {
                 }
                 
                 Section {
-                    Text("Whenever a transaction title matches this pattern, it will be automatically assigned to the selected category.")
+                    Text(SettingsManager.shared.localizedString(for: "Whenever a transaction title matches this pattern, it will be automatically assigned to the selected category."))
                         .font(.caption)
                         .foregroundStyle(.gray)
                 }
             }
-            .navigationTitle("New Rule")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "New Rule"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(SettingsManager.shared.localizedString(for: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(SettingsManager.shared.localizedString(for: "Save")) {
                         let newRule = Rule(pattern: pattern, categorySymbol: selectedSymbol)
                         modelContext.insert(newRule)
                         dismiss()

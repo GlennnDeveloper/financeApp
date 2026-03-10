@@ -5,6 +5,7 @@ struct RecurringView: View {
     @Query(filter: #Predicate<Transaction> { $0.isRecurring == true }, sort: \Transaction.date, order: .reverse) 
     private var recurringTransactions: [Transaction]
     @Query(sort: \Category.orderIndex) private var categories: [Category]
+    @EnvironmentObject var settingsManager: SettingsManager
     
     // Compute unique recurring expenses based on title
     var uniqueSubscriptions: [Transaction] {
@@ -31,9 +32,9 @@ struct RecurringView: View {
             Group {
                 if uniqueSubscriptions.isEmpty {
                     ContentUnavailableView(
-                        "No Subscriptions",
+                        settingsManager.localizedString(for: "No Subscriptions"),
                         systemImage: "calendar.badge.minus",
-                        description: Text("No recurring expenses were found.")
+                        description: Text(settingsManager.localizedString(for: "No recurring expenses were found."))
                     )
                 } else {
                     List {
@@ -47,7 +48,7 @@ struct RecurringView: View {
                             }
                         } header: {
                             HStack {
-                                Text("Active Subscriptions")
+                                Text(settingsManager.localizedString(for: "Active Subscriptions"))
                                 Spacer()
                                 Text(totalMonthlyCost, format: .currency(code: "USD"))
                                     .foregroundStyle(.red)
@@ -62,7 +63,8 @@ struct RecurringView: View {
                     .environment(\.defaultMinListRowHeight, 10)
                 }
             }
-            .navigationTitle("Recurring")
+            .navigationTitle(settingsManager.localizedString(for: "Recurring"))
+            .environment(\.locale, settingsManager.locale)
         }
     }
 }

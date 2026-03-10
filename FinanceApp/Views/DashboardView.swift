@@ -6,6 +6,7 @@ import Charts
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var settingsManager: SettingsManager
     
     // Queries
     @Query(sort: \Account.name) private var accounts: [Account]
@@ -58,6 +59,7 @@ struct DashboardView: View {
             
             fabSection
         }
+        .environment(\.locale, settingsManager.locale)
         .sheet(isPresented: $showAddSheet) {
             AddTransactionView()
         }
@@ -94,7 +96,7 @@ struct DashboardView: View {
 
             Spacer()
 
-            Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
+            Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day().locale(settingsManager.locale))
                 .font(.headline)
                 .foregroundStyle(.primary)
 
@@ -158,6 +160,20 @@ struct DashboardView: View {
         f.dateFormat = "MMM"
         return f
     }()
+    
+    private var chartDayFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = settingsManager.locale
+        f.dateFormat = "EEE"
+        return f
+    }
+
+    private var chartMonthFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = settingsManager.locale
+        f.dateFormat = "MMM"
+        return f
+    }
 
     private func generateChartData(transactions: [Transaction], timeframe: Timeframe) -> [ChartItem] {
         let calendar = Calendar.current
@@ -168,7 +184,7 @@ struct DashboardView: View {
         case .week:
             for i in (0..<7).reversed() {
                 guard let date = calendar.date(byAdding: .day, value: -i, to: today) else { continue }
-                let label = i == 0 ? NSLocalizedString("Today", comment: "") : Self.dayFormatter.string(from: date)
+                let label = i == 0 ? settingsManager.localizedString(for: "Today") : chartDayFormatter.string(from: date)
                 let daySpend = transactions.filter {
                     !$0.isIncome && calendar.isDate($0.date, inSameDayAs: date)
                 }.reduce(0) { $0 + $1.amount }
@@ -188,7 +204,7 @@ struct DashboardView: View {
         case .year:
             for i in (0..<6).reversed() {
                 guard let date = calendar.date(byAdding: .month, value: -i, to: today) else { continue }
-                let label = Self.monthFormatter.string(from: date)
+                let label = chartMonthFormatter.string(from: date)
                 let monthSpend = transactions.filter {
                     !$0.isIncome && calendar.isDate($0.date, equalTo: date, toGranularity: .month) && calendar.isDate($0.date, equalTo: date, toGranularity: .year)
                 }.reduce(0) { $0 + $1.amount }
@@ -211,7 +227,7 @@ private struct BankAccountsSection: View {
         if bankViewModel.isConnected {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Bank Accounts")
+                    Text(SettingsManager.shared.localizedString(for: "Bank Accounts"))
                         .font(.headline)
                         .foregroundStyle(.primary)
                     Spacer()
@@ -238,7 +254,7 @@ private struct BankAccountsSection: View {
                                     .background(.blue.opacity(0.15), in: Circle())
                             }
                             Button { bankViewModel.disconnectBank(context: modelContext) } label: {
-                                Text("Disconnect").font(.caption.bold()).foregroundStyle(.red).padding(.horizontal, 12).padding(.vertical, 6).background(.red.opacity(0.15), in: Capsule())
+                                Text(SettingsManager.shared.localizedString(for: "Disconnect")).font(.caption.bold()).foregroundStyle(.red).padding(.horizontal, 12).padding(.vertical, 6).background(.red.opacity(0.15), in: Capsule())
                             }
                         }
                     }
@@ -263,8 +279,8 @@ private struct BankAccountsSection: View {
                 HStack(spacing: 14) {
                     Image(systemName: "building.columns.fill").font(.title2).foregroundStyle(.blue)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Connect Your Bank").font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-                        Text("Link an account to see balances").font(.caption).foregroundStyle(.gray)
+                        Text(SettingsManager.shared.localizedString(for: "Connect Your Bank")).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                        Text(SettingsManager.shared.localizedString(for: "Link an account to see balances")).font(.caption).foregroundStyle(.gray)
                     }
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.gray.opacity(0.5))
@@ -280,7 +296,7 @@ private struct AnalyticsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Analytics").font(.headline).foregroundStyle(.primary)
+                Text(SettingsManager.shared.localizedString(for: "Analytics")).font(.headline).foregroundStyle(.primary)
                 Spacer()
                 HStack(spacing: 0) {
                     ForEach(Timeframe.allCases, id: \.self) { tf in
@@ -300,10 +316,10 @@ private struct RecentTransactionsSection: View {
     let categories: [Category]
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Transactions").font(.headline).foregroundStyle(.primary).padding(.horizontal)
+            Text(SettingsManager.shared.localizedString(for: "Recent Transactions")).font(.headline).foregroundStyle(.primary).padding(.horizontal)
             VStack(spacing: 12) {
                 ForEach(transactions.prefix(5)) { TransactionRow(transaction: $0, categories: categories) }
-                if transactions.isEmpty { Text("No transactions yet").foregroundStyle(.gray).padding() }
+                if transactions.isEmpty { Text(SettingsManager.shared.localizedString(for: "No transactions yet")).foregroundStyle(.gray).padding() }
             }.padding(.horizontal)
         }
     }
@@ -333,7 +349,7 @@ struct DashboardBalanceCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Total Balance")
+                Text(SettingsManager.shared.localizedString(for: "Total Balance"))
                     .font(.subheadline)
                     .foregroundStyle(.gray)
                 
@@ -344,7 +360,7 @@ struct DashboardBalanceCard: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("MONTHLY SAVINGS")
+                Text(SettingsManager.shared.localizedString(for: "MONTHLY SAVINGS"))
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.gray)

@@ -25,15 +25,15 @@ struct ProfileView: View {
                 VStack(spacing: 20) {
                     // Info Section
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Account Details")
+                        Text(SettingsManager.shared.localizedString(for: "Account Details"))
                             .font(.caption.weight(.bold))
                             .foregroundStyle(.gray)
                             .padding(.horizontal, 4)
                         
                         VStack(spacing: 0) {
-                            ProfileRow(title: "Member Since", value: "March 2026")
+                            ProfileRow(title: SettingsManager.shared.localizedString(for: "Member Since"), value: "March 2026")
                             Divider().overlay(Color.white.opacity(0.06))
-                            ProfileRow(title: "Plan", value: "Free")
+                            ProfileRow(title: SettingsManager.shared.localizedString(for: "Plan"), value: SettingsManager.shared.localizedString(for: "Free"))
                         }
                         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
@@ -53,7 +53,7 @@ struct ProfileView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .font(.subheadline.weight(.semibold))
-                                Text("Log Out")
+                                Text(SettingsManager.shared.localizedString(for: "Log Out"))
                                     .font(.subheadline.weight(.semibold))
                             }
                             .foregroundStyle(.red)
@@ -65,7 +65,7 @@ struct ProfileView: View {
                         Button(role: .destructive) {
                             showingDeleteAlert = true
                         } label: {
-                            Text("Delete Account")
+                            Text(SettingsManager.shared.localizedString(for: "Delete Account"))
                                 .font(.caption.weight(.medium))
                                 .foregroundStyle(.red.opacity(0.8))
                         }
@@ -76,15 +76,15 @@ struct ProfileView: View {
                 
             Spacer()
         }
-        .navigationTitle("Profile")
+        .navigationTitle(SettingsManager.shared.localizedString(for: "Profile"))
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Delete Account?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert(SettingsManager.shared.localizedString(for: "Delete Account?"), isPresented: $showingDeleteAlert) {
+            Button(SettingsManager.shared.localizedString(for: "Cancel"), role: .cancel) { }
+            Button(SettingsManager.shared.localizedString(for: "Delete"), role: .destructive) {
                 // Handle account deletion logic here
             }
         } message: {
-            Text("This action is permanent and will delete all your financial data.")
+            Text(SettingsManager.shared.localizedString(for: "This action is permanent and will delete all your financial data."))
         }
     }
 }

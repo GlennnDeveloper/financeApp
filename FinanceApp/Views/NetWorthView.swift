@@ -13,6 +13,7 @@ struct NetWorthView: View {
 
     @Query(sort: \Account.orderIndex) private var accounts: [Account]
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+    @EnvironmentObject var settingsManager: SettingsManager
 
     // Partition accounts once, reference everywhere
     private var assets: [Account] { accounts.filter { !($0.isLiability ?? false) } }
@@ -78,7 +79,7 @@ struct NetWorthView: View {
                         
                         // Header Box Network
                         VStack(spacing: 8) {
-                            Text("Current Net Worth")
+                            Text(settingsManager.localizedString(for: "Current Net Worth"))
                                 .font(.subheadline)
                                 .foregroundStyle(.gray)
                             
@@ -91,7 +92,7 @@ struct NetWorthView: View {
                         
                         // Historic Area Chart
                         VStack(alignment: .leading) {
-                            Text("6 Month Trend")
+                            Text(settingsManager.localizedString(for: "6 Month Trend"))
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                                 .padding(.horizontal)
@@ -120,7 +121,7 @@ struct NetWorthView: View {
                             }
                             .chartXAxis {
                                 AxisMarks(values: .stride(by: .month)) { value in
-                                    AxisValueLabel(format: .dateTime.month(.abbreviated))
+                                    AxisValueLabel(format: .dateTime.month(.abbreviated).locale(settingsManager.locale))
                                         .foregroundStyle(.gray)
                                         .font(.caption2)
                                 }
@@ -133,14 +134,14 @@ struct NetWorthView: View {
                         // Breakdowns
                         VStack(spacing: 24) {
                             AccountSectionView(
-                                title: "Assets",
+                                title: settingsManager.localizedString(for: "Assets"),
                                 accounts: assets,
                                 total: totalAssets,
                                 isLiability: false
                             )
 
                             AccountSectionView(
-                                title: "Liabilities",
+                                title: settingsManager.localizedString(for: "Liabilities"),
                                 accounts: liabilities,
                                 total: totalLiabilities,
                                 isLiability: true
@@ -150,11 +151,12 @@ struct NetWorthView: View {
                     }
                 }
                 .padding(.bottom, 30)
-                .navigationTitle("Net Worth")
+                .navigationTitle(settingsManager.localizedString(for: "Net Worth"))
                 .navigationBarTitleDisplayMode(.inline)
                 // Make the inline title invisible so it doesn't clutter the top, but keeps nav layout
                 .toolbarBackground(.hidden, for: .navigationBar)
             }
+            .environment(\.locale, settingsManager.locale)
             .onAppear {
                 recalculateHistoricalData()
             }
@@ -188,7 +190,7 @@ struct AccountSectionView: View {
             }
             
             if accounts.isEmpty {
-                Text("No accounts added.")
+                Text(SettingsManager.shared.localizedString(for: "No accounts added."))
                     .font(.subheadline)
                     .foregroundStyle(.gray)
                     .padding()

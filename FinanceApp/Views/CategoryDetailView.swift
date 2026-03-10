@@ -22,9 +22,9 @@ struct CategoryDetailView: View {
             
             if transactions.isEmpty {
                 ContentUnavailableView(
-                    NSLocalizedString("No Expenses", comment: ""),
+                    SettingsManager.shared.localizedString(for: "No Expenses"),
                     systemImage: category.symbol,
-                    description: Text("No expenses for \(category.localizedName) in this timeframe.")
+                    description: Text("\(SettingsManager.shared.localizedString(for: "No expenses for")) \(category.localizedName) \(SettingsManager.shared.localizedString(for: "in this timeframe."))")
                 )
             } else {
                 List {
@@ -40,7 +40,7 @@ struct CategoryDetailView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .navigationTitle(category.name)
+        .navigationTitle(category.localizedName)
         // Simplified modifiers for cross-platform compatibility
     }
 }

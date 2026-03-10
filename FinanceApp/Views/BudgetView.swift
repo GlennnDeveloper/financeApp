@@ -6,6 +6,7 @@ struct BudgetView: View {
     @Query private var budgets: [Budget]
     @Query private var transactions: [Transaction]
     @Query(sort: \Category.orderIndex) private var categories: [Category]
+    @EnvironmentObject var settingsManager: SettingsManager
     
     @State private var showingAddBudget = false
     @State private var selectedCategory: Category?
@@ -19,7 +20,7 @@ struct BudgetView: View {
             VStack(spacing: 24) {
                 // Summary Header
                 VStack(spacing: 8) {
-                    Text("Monthly Budget")
+                    Text(SettingsManager.shared.localizedString(for: "Monthly Budget"))
                         .font(.subheadline)
                         .foregroundStyle(.gray)
                         
@@ -28,9 +29,9 @@ struct BudgetView: View {
                         .foregroundStyle(.primary)
                     
                     HStack {
-                        Text("Spent: $\(Int(totalSpent))")
+                        Text("\(SettingsManager.shared.localizedString(for: "Spent")): $\(Int(totalSpent))")
                         Text("•")
-                        Text("Remaining: $\(Int(max(0, totalBudget - totalSpent)))")
+                        Text("\(SettingsManager.shared.localizedString(for: "Remaining")): $\(Int(max(0, totalBudget - totalSpent)))")
                     }
                     .font(.caption)
                     .foregroundStyle(.gray)
@@ -39,7 +40,7 @@ struct BudgetView: View {
                 
                 // Budget List
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Categories")
+                    Text(SettingsManager.shared.localizedString(for: "Categories"))
                         .font(.headline)
                         .foregroundStyle(.primary)
                         .padding(.horizontal)
@@ -49,10 +50,10 @@ struct BudgetView: View {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 40))
                                 .foregroundStyle(.gray.opacity(0.3))
-                            Text("No budgets set yet")
+                            Text(SettingsManager.shared.localizedString(for: "No budgets set yet"))
                                 .font(.subheadline)
                                 .foregroundStyle(.gray)
-                            Button("Set first budget") {
+                            Button(SettingsManager.shared.localizedString(for: "Set first budget")) {
                                 showingAddBudget = true
                             }
                             .buttonStyle(.bordered)
@@ -78,7 +79,7 @@ struct BudgetView: View {
                 }
             }
         }
-        .navigationTitle("Manage Budget")
+        .navigationTitle(SettingsManager.shared.localizedString(for: "Manage Budget"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -161,8 +162,8 @@ private struct AddBudgetSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Category") {
-                    Picker("Select Category", selection: $selectedSymbol) {
+                Section(SettingsManager.shared.localizedString(for: "Category")) {
+                    Picker(SettingsManager.shared.localizedString(for: "Select Category"), selection: $selectedSymbol) {
                         ForEach(categories) { cat in
                             HStack {
                                 Image(systemName: cat.symbol)
@@ -173,19 +174,20 @@ private struct AddBudgetSheet: View {
                     }
                 }
                 
-                Section("Limit") {
-                    TextField("Amount", text: $amount)
+                Section(SettingsManager.shared.localizedString(for: "Limit")) {
+                    TextField(SettingsManager.shared.localizedString(for: "Amount"), text: $amount)
                         .keyboardType(.decimalPad)
                 }
             }
-            .navigationTitle("New Budget")
+            .navigationTitle(SettingsManager.shared.localizedString(for: "New Budget"))
             .navigationBarTitleDisplayMode(.inline)
+            .environment(\.locale, SettingsManager.shared.locale)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(SettingsManager.shared.localizedString(for: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(SettingsManager.shared.localizedString(for: "Save")) {
                         if let value = Double(amount) {
                             let newBudget = Budget(categorySymbol: selectedSymbol ?? categories.first?.symbol ?? "fork.knife", amount: value)
                             modelContext.insert(newBudget)

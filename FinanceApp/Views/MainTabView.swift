@@ -25,30 +25,31 @@ struct MainTabView: View {
                 TabView {
                     DashboardView(showSettings: $showSettings)
                         .tabItem {
-                            Label("Dashboard", systemImage: "square.grid.2x2")
+                            Label(SettingsManager.shared.localizedString(for: "Dashboard"), systemImage: "square.grid.2x2")
                         }
                     
                     RecurringView()
                         .tabItem {
-                            Label("Recurring", systemImage: "calendar")
+                            Label(SettingsManager.shared.localizedString(for: "Recurring"), systemImage: "calendar")
                         }
                     
                     NetWorthView()
                         .tabItem {
-                            Label("Net Worth", systemImage: "chart.bar.fill")
+                            Label(SettingsManager.shared.localizedString(for: "Net Worth"), systemImage: "chart.bar.fill")
                         }
                     
                     SpendingView()
                         .tabItem {
-                            Label("Spending", systemImage: "wallet.pass")
+                            Label(SettingsManager.shared.localizedString(for: "Spending"), systemImage: "wallet.pass")
                         }
                     
                     TransactionsView()
                         .tabItem {
-                            Label("Transactions", systemImage: "list.bullet")
+                            Label(SettingsManager.shared.localizedString(for: "Transactions"), systemImage: "list.bullet")
                         }
                 }
                 .tint(.blue)
+                .environment(\.locale, settingsManager.locale)
             }
         }
         .onAppear {

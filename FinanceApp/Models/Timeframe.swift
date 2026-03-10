@@ -6,6 +6,6 @@ enum Timeframe: String, CaseIterable, Codable {
     case year = "Year"
     
     var localizedName: String {
-        NSLocalizedString(self.rawValue, comment: "")
+        SettingsManager.shared.localizedString(for: self.rawValue)
     }
 }

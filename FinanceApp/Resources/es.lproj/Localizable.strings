@@ -7,10 +7,12 @@
 "Profile" = "Perfil";
 "Manage Budget" = "Gestionar Presupuesto";
 "Categories & Rules" = "Categorías y Reglas";
+"Categories, Tags & Rules" = "Categorías, Etiquetas y Reglas";
 "Linked Accounts" = "Cuentas Vinculadas";
 "Log Out" = "Cerrar Sesión";
 
 /* Dashboard */
+"Dashboard" = "Panel";
 "Bank Accounts" = "Cuentas Bancarias";
 "Connect Your Bank" = "Conecta tu Banco";
 "Link an account to see balances" = "Vincula una cuenta para ver saldos";
@@ -23,7 +25,14 @@
 "Today" = "Hoy";
 "MONTHLY SAVINGS" = "AHORRO MENSUAL";
 
+/* Recurring */
+"Recurring" = "Recurrentes";
+
+/* Net Worth */
+"Net Worth" = "Patrimonio Neto";
+
 /* Spending */
+"Spending" = "Gastos";
 "Spending Info" = "Información de Gastos";
 "Total Spent" = "Total Gastado";
 "Breakdown" = "Desglose";
@@ -46,6 +55,11 @@
 "Month" = "Mes";
 "Year" = "Año";
 
+/* Themes */
+"System" = "Sistema";
+"Light" = "Claro";
+"Dark" = "Oscuro";
+
 /* Categories */
 "Food & Drink" = "Comida y Bebida";
 "Transport" = "Transporte";
@@ -61,12 +75,27 @@
 "Refer a Friend" = "Recomienda a un Amigo";
 "Chat" = "Chat";
 "Demo Mode" = "Modo Demo";
+"Enter Demo Mode" = "Activar Modo Demo";
 "Share Account" = "Compartir Cuenta";
 "Join me on FinanceApp to manage our budget together!" = "¡Únete a mí en FinanceApp para gestionar nuestro presupuesto juntos!";
 "Premium" = "Premium";
+"Premium Membership" = "Suscripción Premium";
 "Help & Privacy" = "Ayuda y Privacidad";
+"MyFinance v1.0" = "MyFinance v1.0";
 
-/* Add Transaction */
+/* Recurring */
+"Recurring" = "Recurrentes";
+"No Subscriptions" = "Sin Suscripciones";
+"No recurring expenses were found." = "No se encontraron gastos recurrentes.";
+"Active Subscriptions" = "Suscripciones Activas";
+
+/* Net Worth */
+"Net Worth" = "Patrimonio Neto";
+"Current Net Worth" = "Patrimonio Neto Actual";
+"6 Month Trend" = "Tendencia de 6 Meses";
+"Assets" = "Activos";
+"Liabilities" = "Pasivos";
+"No accounts added." = "No hay cuentas añadidas.";
 "New Transaction" = "Nueva Transacción";
 "Expense" = "Gasto";
 "Income" = "Ingreso";
@@ -97,7 +126,7 @@
 
 /* Category Detail */
 "No Expenses" = "Sin Gastos";
-"No expenses for %@" = "No hay gastos para %@";
+"No expenses for" = "No hay gastos para";
 "in this timeframe." = "en este periodo.";
 
 /* Linked Accounts */
@@ -108,4 +137,42 @@
 "Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Conecta tu banco de forma segura a través de Plaid para sincronizar automáticamente tus transacciones y saldos.";
 "Connect with Plaid" = "Conectar con Plaid";
 "Error" = "Error";
-"Error" = "Error";
+
+/* Profile */
+"Account Details" = "Detalles de la Cuenta";
+"Member Since" = "Miembro desde";
+"Plan" = "Plan";
+"Free" = "Gratis";
+"Delete Account" = "Eliminar Cuenta";
+"Delete Account?" = "¿Eliminar Cuenta?";
+"Delete" = "Eliminar";
+"This action is permanent and will delete all your financial data." = "Esta acción es permanente y eliminará todos tus datos financieros.";
+
+/* Category Rules */
+"Available Categories" = "Categorías Disponibles";
+"Custom Rules" = "Reglas Personalizadas";
+"No custom rules yet" = "Aún no hay reglas personalizadas";
+"Rules help automatically categorize transactions based on their title." = "Las reglas ayudan a categorizar automáticamente las transacciones según su título.";
+"Categorize as" = "Categorizar como";
+"Category Name" = "Nombre de la Categoría";
+"Hobby, Subscriptions..." = "Hobby, Suscripciones...";
+"Icon" = "Icono";
+"Color" = "Color";
+"Rule Pattern" = "Patrón de Regla";
+"Title contains..." = "El título contiene...";
+"Target Category" = "Categoría de Destino";
+"Whenever a transaction title matches this pattern, it will be automatically assigned to the selected category." = "Cada vez que el título de una transacción coincida con este patrón, se asignará automáticamente a la categoría seleccionada.";
+"New Rule" = "Nueva Regla";
+"New Category" = "Nueva Categoría";
+"Select Category" = "Seleccionar Categoría";
+"Select Icon" = "Seleccionar Icono";
+"Select Color" = "Seleccionar Color";
+"Blue" = "Azul";
+"Green" = "Verde";
+"Orange" = "Naranja";
+"Red" = "Rojo";
+"Purple" = "Morado";
+"Pink" = "Rosa";
+"Teal" = "Turquesa";
+"Indigo" = "Índigo";
+"Gray" = "Gris";

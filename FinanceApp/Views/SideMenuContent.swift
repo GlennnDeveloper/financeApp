@@ -22,11 +22,12 @@ struct SideMenuContent: View {
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
+        .environment(\.locale, settingsManager.locale)
     }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("Hi there 👋", comment: ""))
+            Text(SettingsManager.shared.localizedString(for: "Hi there 👋"))
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.primary)
 
@@ -43,9 +44,9 @@ struct SideMenuContent: View {
 
     private var quickActionsSection: some View {
         MenuSection {
-            MenuRow(icon: "gift.fill", iconColor: .purple, title: NSLocalizedString("Refer a Friend", comment: ""))
-            MenuRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: NSLocalizedString("Chat", comment: ""))
-            MenuRow(icon: "play.circle.fill", iconColor: .green, title: NSLocalizedString("Demo Mode", comment: ""))
+            MenuRow(icon: "gift.fill", iconColor: .purple, title: SettingsManager.shared.localizedString(for: "Refer a Friend"))
+            MenuRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Chat"))
+            MenuRow(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Demo Mode"))
         }
     }
 
@@ -53,29 +54,29 @@ struct SideMenuContent: View {
         MenuSection {
             Button { withAnimation { isOpen = false } } label: {
                 NavigationLink(destination: ProfileView()) {
-                    MenuRowContent(icon: "person.fill", iconColor: .orange, title: NSLocalizedString("Profile", comment: ""))
+                    MenuRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
                 }
             }
             
-            ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text(NSLocalizedString("Join me on FinanceApp to manage our budget together!", comment: ""))) {
-                MenuRowContent(icon: "person.2.fill", iconColor: .cyan, title: NSLocalizedString("Share Account", comment: ""))
+            ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text(SettingsManager.shared.localizedString(for: "Join me on FinanceApp to manage our budget together!"))) {
+                MenuRowContent(icon: "person.2.fill", iconColor: .cyan, title: SettingsManager.shared.localizedString(for: "Share Account"))
             }
             
             Button { withAnimation { isOpen = false } } label: {
                 NavigationLink(destination: BudgetView()) {
-                    MenuRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: NSLocalizedString("Manage Budget", comment: ""))
+                    MenuRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
                 }
             }
             
             Button { withAnimation { isOpen = false } } label: {
                 NavigationLink(destination: CategoryRulesView()) {
-                    MenuRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: NSLocalizedString("Categories & Rules", comment: ""))
+                    MenuRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories & Rules"))
                 }
             }
             
             Button { withAnimation { isOpen = false } } label: {
                 NavigationLink(destination: LinkedAccountsView()) {
-                    MenuRowContent(icon: "building.columns.fill", iconColor: .blue, title: NSLocalizedString("Linked Accounts", comment: ""))
+                    MenuRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
                 }
             }
         }
@@ -83,15 +84,15 @@ struct SideMenuContent: View {
 
     private var preferencesSection: some View {
         MenuSection {
-            MenuRow(icon: "crown.fill", iconColor: .yellow, title: NSLocalizedString("Premium", comment: ""))
+            MenuRow(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium"))
             
             Button { withAnimation { isOpen = false } } label: {
                 NavigationLink(destination: SettingsView()) {
-                    MenuRowContent(icon: "gearshape.fill", iconColor: .gray, title: NSLocalizedString("Settings", comment: ""))
+                    MenuRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
                 }
             }
             
-            MenuRow(icon: "questionmark.circle.fill", iconColor: .gray, title: NSLocalizedString("Help & Privacy", comment: ""))
+            MenuRow(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
         }
     }
 
@@ -108,7 +109,7 @@ struct SideMenuContent: View {
             HStack(spacing: 10) {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
                     .font(.subheadline.weight(.semibold))
-                Text(NSLocalizedString("Log Out", comment: ""))
+                Text(SettingsManager.shared.localizedString(for: "Log Out"))
                     .font(.subheadline.weight(.semibold))
             }
             .foregroundStyle(.red)
@@ -120,7 +121,7 @@ struct SideMenuContent: View {
     }
 
     private var versionLabel: some View {
-        Text("MyFinance v1.0")
+        Text(settingsManager.localizedString(for: "MyFinance v1.0"))
             .font(.caption2)
             .foregroundStyle(.gray.opacity(0.4))
             .padding(.bottom, 24)

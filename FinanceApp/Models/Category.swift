@@ -41,7 +41,7 @@ final class Category {
     var color: Color { Self.colorMap[colorName] ?? .primary }
 
     var localizedName: String {
-        NSLocalizedString(name, comment: "")
+        SettingsManager.shared.localizedString(for: name)
     }
 
     static let defaultData: [Category] = [
