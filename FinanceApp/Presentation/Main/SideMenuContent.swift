@@ -53,47 +53,49 @@ struct SideMenuContent: View {
 
     private var accountSection: some View {
         MenuSection {
-            Button { withAnimation { isOpen = false } } label: {
-                NavigationLink(destination: ProfileView()) {
-                    MenuRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
-                }
+            NavigationLink(destination: ProfileView()) {
+                MenuRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
             }
+            .buttonStyle(.plain)
             
             ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text(SettingsManager.shared.localizedString(for: "Join me on FinanceApp to manage our budget together!"))) {
                 MenuRowContent(icon: "person.2.fill", iconColor: .cyan, title: SettingsManager.shared.localizedString(for: "Share Account"))
             }
+            .buttonStyle(.plain)
             
-            Button { withAnimation { isOpen = false } } label: {
-                NavigationLink(destination: BudgetView()) {
-                    MenuRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
-                }
+            NavigationLink(destination: BudgetView()) {
+                MenuRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
             }
+            .buttonStyle(.plain)
             
-            Button { withAnimation { isOpen = false } } label: {
-                NavigationLink(destination: CategoryRulesView()) {
-                    MenuRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories & Rules"))
-                }
+            NavigationLink(destination: CategoryRulesView()) {
+                MenuRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories & Rules"))
             }
+            .buttonStyle(.plain)
             
-            Button { withAnimation { isOpen = false } } label: {
-                NavigationLink(destination: LinkedAccountsView()) {
-                    MenuRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
-                }
+            NavigationLink(destination: LinkedAccountsView()) {
+                MenuRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
             }
+            .buttonStyle(.plain)
         }
     }
 
     private var preferencesSection: some View {
         MenuSection {
-            MenuRow(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium"))
-            
-            Button { withAnimation { isOpen = false } } label: {
-                NavigationLink(destination: SettingsView()) {
-                    MenuRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
-                }
+            NavigationLink(destination: PremiumView()) {
+                MenuRowContent(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium"))
             }
+            .buttonStyle(.plain)
             
-            MenuRow(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
+            NavigationLink(destination: SettingsView()) {
+                MenuRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
+            }
+            .buttonStyle(.plain)
+            
+            NavigationLink(destination: HelpPrivacyView()) {
+                MenuRowContent(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
+            }
+            .buttonStyle(.plain)
         }
     }
 

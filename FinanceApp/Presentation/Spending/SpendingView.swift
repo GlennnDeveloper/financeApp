@@ -172,7 +172,7 @@ struct SpendingView: View {
                     }
                 }
             }
-            .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+            .background(Color.primary.opacity(0.06), in: Capsule())
         }
         .padding(.horizontal)
         .padding(.top, 10)
@@ -244,11 +244,14 @@ struct SpendingView: View {
                 Text(SettingsManager.shared.localizedString(for: "Total Spent"))
                     .font(.subheadline)
                     .foregroundStyle(.gray)
-                Text(totalSpentFiltered, format: .currency(code: "USD"))
+                Text(totalSpentFiltered, format: .currency(code: settingsManager.appCurrency))
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.primary)
             }
         }
+        .padding()
+        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: chartData)
         .padding(.vertical)
     }
@@ -290,7 +293,7 @@ struct SpendingView: View {
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(.primary)
                                     Spacer()
-                                    Text(item.totalSpent, format: .currency(code: "USD"))
+                                    Text(item.totalSpent, format: .currency(code: settingsManager.appCurrency))
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(.primary)
                                 }
@@ -351,6 +354,7 @@ struct SpendingView: View {
                 }
                 .padding(.bottom, 24)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             .onAppear {
                 recalculateSpendingData()
             }

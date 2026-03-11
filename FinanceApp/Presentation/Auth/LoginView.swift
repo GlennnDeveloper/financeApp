@@ -7,6 +7,7 @@ enum FocusField {
 
 struct LoginView: View {
     @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var settingsManager: SettingsManager
     
     @State private var email = ""
     @State private var password = ""
@@ -31,26 +32,26 @@ struct LoginView: View {
                         
                         Text("MyFinance")
                             .font(.system(size: 32, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.white)
                     }
                     .padding(.bottom, 40)
                     
                     // --- FORMULARIO ---
                     VStack(spacing: 20) {
-                        Text(isSignUp ? "Create Account" : "Welcome Back")
+                        Text(settingsManager.localizedString(for: isSignUp ? "Create Account" : "Welcome Back"))
                             .font(.title2.weight(.bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         VStack(spacing: 16) {
                             // CAMPO EMAIL
                             HStack(spacing: 16) {
                                 Image(systemName: "envelope.fill")
-                                    .foregroundStyle(focusedField == .email ? .orange : .white.opacity(0.5))
+                                    .foregroundStyle(focusedField == .email ? Color.orange : Color.white.opacity(0.5))
                                     .frame(width: 24)
                                 
-                                TextField("", text: $email, prompt: Text("Email Address").foregroundStyle(.white.opacity(0.4)))
-                                    .foregroundStyle(.white)
+                                TextField("", text: $email, prompt: Text(settingsManager.localizedString(for: "Email Address")).foregroundStyle(Color.white.opacity(0.4)))
+                                    .foregroundStyle(Color.white)
                                     .keyboardType(.emailAddress)
                                     .textContentType(.username)
                                     .autocorrectionDisabled(true)
@@ -66,11 +67,11 @@ struct LoginView: View {
                             // CAMPO PASSWORD
                             HStack(spacing: 16) {
                                 Image(systemName: "lock.fill")
-                                    .foregroundStyle(focusedField == .password ? .orange : .white.opacity(0.5))
+                                    .foregroundStyle(focusedField == .password ? Color.orange : Color.white.opacity(0.5))
                                     .frame(width: 24)
                                 
-                                SecureField("", text: $password, prompt: Text("Password").foregroundStyle(.white.opacity(0.4)))
-                                    .foregroundStyle(.white)
+                                SecureField("", text: $password, prompt: Text(settingsManager.localizedString(for: "Password")).foregroundStyle(Color.white.opacity(0.4)))
+                                    .foregroundStyle(Color.white)
                                     .textContentType(.password)
                                     .submitLabel(.done)
                                     .focused($focusedField, equals: .password)
@@ -95,14 +96,14 @@ struct LoginView: View {
                         } label: {
                             HStack {
                                 if viewModel.isLoading {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(Color.white)
                                 } else {
-                                    Text(isSignUp ? "Sign Up" : "Sign In").font(.headline).fontWeight(.bold)
+                                    Text(settingsManager.localizedString(for: isSignUp ? "Sign Up" : "Sign In")).font(.headline).fontWeight(.bold)
                                 }
                             }
                             .frame(maxWidth: .infinity).frame(height: 56)
-                            .background(LinearGradient(colors: [.orange, .red], startPoint: .leading, endPoint: .trailing))
-                            .foregroundColor(.white)
+                            .background(LinearGradient(colors: [Color.orange, Color.red], startPoint: .leading, endPoint: .trailing))
+                            .foregroundColor(Color.white)
                             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
                         .disabled(viewModel.isLoading)
@@ -116,10 +117,10 @@ struct LoginView: View {
                             }
                         } label: {
                             HStack(spacing: 4) {
-                                Text(isSignUp ? "Already have an account?" : "Don't have an account?")
-                                    .foregroundStyle(.white.opacity(0.7))
-                                Text(isSignUp ? "Sign In" : "Sign Up")
-                                    .fontWeight(.bold).foregroundStyle(.orange)
+                                Text(settingsManager.localizedString(for: isSignUp ? "Already have an account?" : "Don't have an account?"))
+                                    .foregroundStyle(Color.white.opacity(0.7))
+                                Text(settingsManager.localizedString(for: isSignUp ? "Sign In" : "Sign Up"))
+                                    .fontWeight(.bold).foregroundStyle(Color.orange)
                             }
                             .font(.footnote)
                         }

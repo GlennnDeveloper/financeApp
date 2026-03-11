@@ -50,7 +50,7 @@ struct RecurringView: View {
                             HStack {
                                 Text(settingsManager.localizedString(for: "Active Subscriptions"))
                                 Spacer()
-                                Text(totalMonthlyCost, format: .currency(code: "USD"))
+                                Text(totalMonthlyCost, format: .currency(code: settingsManager.appCurrency))
                                     .foregroundStyle(.red)
                             }
                             .font(.headline)
@@ -59,10 +59,10 @@ struct RecurringView: View {
                         }
                     }
                     .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
                     .environment(\.defaultMinListRowHeight, 10)
                 }
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(settingsManager.localizedString(for: "Recurring"))
             .environment(\.locale, settingsManager.locale)
         }

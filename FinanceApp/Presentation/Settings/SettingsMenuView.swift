@@ -63,40 +63,52 @@ struct SettingsMenuView: View {
             NavigationLink(destination: ProfileView()) {
                 SettingsRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
             }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
             ShareLink(item: URL(string: "https://financeapp.example.com/invite")!, message: Text(SettingsManager.shared.localizedString(for: "Join me on FinanceApp to manage our budget together!"))) {
                 SettingsRowContent(icon: "person.2.fill", iconColor: .cyan, title: SettingsManager.shared.localizedString(for: "Share Account"))
             }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: BudgetView()) {
                 SettingsRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
             }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: CategoryRulesView()) {
                 SettingsRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories, Tags & Rules"))
             }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: LinkedAccountsView()) {
                 SettingsRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
             }
+            .buttonStyle(.plain)
         }
     }
 
     private var preferencesSection: some View {
         SettingsSection {
-            SettingsRow(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium Membership"))
+            NavigationLink(destination: PremiumView()) {
+                SettingsRowContent(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium Membership"))
+            }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
             NavigationLink(destination: SettingsView()) {
                 SettingsRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
             }
+            .buttonStyle(.plain)
             Divider().overlay(Color.white.opacity(0.06))
             
-            SettingsRow(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
+            NavigationLink(destination: HelpPrivacyView()) {
+                SettingsRowContent(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
+            }
+            .buttonStyle(.plain)
         }
     }
 

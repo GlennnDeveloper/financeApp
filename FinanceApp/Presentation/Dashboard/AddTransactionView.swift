@@ -4,6 +4,7 @@ import SwiftData
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var settingsManager: SettingsManager
     
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     
@@ -41,7 +42,7 @@ struct AddTransactionView: View {
             VStack(spacing: 0) {
                 // Header Custom: Title + Close Button (PINNED)
                 HStack {
-                    Text(SettingsManager.shared.localizedString(for: "New Transaction"))
+                    Text(settingsManager.localizedString(for: "New Transaction"))
                         .font(.title3.weight(.bold))
                     Spacer()
                     Button(action: { dismiss() }) {
@@ -59,12 +60,12 @@ struct AddTransactionView: View {
                     VStack(spacing: 24) {
                         // Toggle Expense / Income Stylized (Pill mode)
                         HStack(spacing: 0) {
-                            SegmentButton(title: SettingsManager.shared.localizedString(for: "Expense"), isSelected: !isIncome) {
+                            SegmentButton(title: settingsManager.localizedString(for: "Expense"), isSelected: !isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = false
                                 }
                             }
-                            SegmentButton(title: SettingsManager.shared.localizedString(for: "Income"), isSelected: isIncome) {
+                            SegmentButton(title: settingsManager.localizedString(for: "Income"), isSelected: isIncome) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     isIncome = true
                                 }
@@ -75,14 +76,21 @@ struct AddTransactionView: View {
 
                         // Giant Amount Field (Apple Cash style)
                         VStack(spacing: 8) {
-                            TextField("$0", text: $amountText)
+                            TextField("0", text: $amountText)
                                 .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .multilineTextAlignment(.center)
                                 .keyboardType(.decimalPad)
                                 .focused($isAmountFocused)
                                 .foregroundStyle(isIncome ? .green : .primary)
+                                .onChange(of: amountText) { _, newValue in
+                                    // Robust filtering: numbers and a single decimal point (comma or dot)
+                                    let filtered = newValue.filter { "0123456789.,".contains($0) }
+                                    if filtered != newValue {
+                                        amountText = filtered
+                                    }
+                                }
 
-                            Text(SettingsManager.shared.localizedString(for: "Enter amount"))
+                            Text(settingsManager.localizedString(for: "Enter amount"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -142,9 +150,9 @@ struct AddTransactionView: View {
 
                         // Save Button (Glow Effect)
                         Button(action: saveTransaction) {
-                            Text(SettingsManager.shared.localizedString(for: "Save Transaction"))
+                            Text(settingsManager.localizedString(for: "Save Transaction"))
                                 .font(.headline.weight(.bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 18)
                                 .background(
@@ -242,4 +250,5 @@ struct CategoryPill: View {
 #Preview {
     AddTransactionView()
         .modelContainer(for: [Transaction.self], inMemory: true)
+        .environmentObject(SettingsManager.shared)
 }

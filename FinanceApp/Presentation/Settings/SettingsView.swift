@@ -5,7 +5,7 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-            Section(SettingsManager.shared.localizedString(for: "Appearance")) {
+            Section(settingsManager.localizedString(for: "Appearance")) {
                 Picker(selection: $settingsManager.appThemeName) {
                     ForEach(AppTheme.allCases) { theme in
                         Text(theme.localizedName).tag(theme.rawValue)
@@ -14,17 +14,17 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "paintbrush.fill")
                             .foregroundStyle(.pink)
-                        Text(SettingsManager.shared.localizedString(for: "App Theme"))
+                        Text(settingsManager.localizedString(for: "App Theme"))
                     }
                 }
             }
 
-            Section(SettingsManager.shared.localizedString(for: "Preferences")) {
+            Section(settingsManager.localizedString(for: "Preferences")) {
                 NavigationLink(destination: NotificationsView()) {
                     HStack {
                         Image(systemName: "bell.badge.fill")
                             .foregroundStyle(.red)
-                        Text(SettingsManager.shared.localizedString(for: "Notifications"))
+                        Text(settingsManager.localizedString(for: "Notifications"))
                     }
                 }
                 
@@ -36,7 +36,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "globe")
                             .foregroundStyle(.blue)
-                        Text(SettingsManager.shared.localizedString(for: "Language"))
+                        Text(settingsManager.localizedString(for: "Language"))
                     }
                 }
                 
@@ -48,28 +48,28 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "dollarsign.circle.fill")
                             .foregroundStyle(.green)
-                        Text(SettingsManager.shared.localizedString(for: "Primary Currency"))
+                        Text(settingsManager.localizedString(for: "Primary Currency"))
                     }
                 }
             }
             
-            Section(SettingsManager.shared.localizedString(for: "Security")) {
+            Section(settingsManager.localizedString(for: "Security")) {
                 Toggle(isOn: $settingsManager.useBiometrics) {
                     HStack {
                         Image(systemName: "faceid")
                             .foregroundStyle(.purple)
-                        Text(SettingsManager.shared.localizedString(for: "Use Face ID"))
+                        Text(settingsManager.localizedString(for: "Use Face ID"))
                     }
                 }
             }
             
-            Section(SettingsManager.shared.localizedString(for: "Data Management")) {
+            Section(settingsManager.localizedString(for: "Data Management")) {
                 Button(role: .destructive) {
                     // Action for clearing cache
                 } label: {
                     HStack {
                         Image(systemName: "trash.fill")
-                        Text(SettingsManager.shared.localizedString(for: "Clear Cache"))
+                        Text(settingsManager.localizedString(for: "Clear Cache"))
                     }
                 }
                 
@@ -78,12 +78,12 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "square.and.arrow.up")
-                        Text(SettingsManager.shared.localizedString(for: "Export My Data"))
+                        Text(settingsManager.localizedString(for: "Export My Data"))
                     }
                 }
             }
         }
-        .navigationTitle(SettingsManager.shared.localizedString(for: "Settings"))
+        .navigationTitle(settingsManager.localizedString(for: "Settings"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

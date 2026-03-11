@@ -136,7 +136,12 @@
 "Link your bank accounts" = "Vincula tus cuentas bancarias";
 "Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Conecta tu banco de forma segura a través de Plaid para sincronizar automáticamente tus transacciones y saldos.";
 "Connect with Plaid" = "Conectar con Plaid";
-"Error" = "Error";
+"of %@" = "de %@";
+"active" = "activo";
+"Over Budget" = "Exceso";
+"Remaining" = "Restante";
+"Spent" = "Gastado";
+"New" = "Nueva";
 
 /* Profile */
 "Account Details" = "Detalles de la Cuenta";
@@ -167,6 +172,7 @@
 "Select Category" = "Seleccionar Categoría";
 "Select Icon" = "Seleccionar Icono";
 "Select Color" = "Seleccionar Color";
+"Tap to set your first budget" = "Toca para configurar tu primer presupuesto";
 "Blue" = "Azul";
 "Green" = "Verde";
 "Orange" = "Naranja";
@@ -175,4 +181,37 @@
 "Pink" = "Rosa";
 "Teal" = "Turquesa";
 "Indigo" = "Índigo";
-"Gray" = "Gris";
+/* Premium */
+"FinanceApp Premium" = "FinanceApp Premium";
+"Take control of your financial future" = "Toma el control de tu futuro financiero";
+"Advanced Analytics" = "Análisis Avanzado";
+"Deep dive into your spending habits with AI-powered insights." = "Analiza a fondo tus hábitos de gasto con inteligencia artificial.";
+"Unlimited Sync" = "Sincronización Ilimitada";
+"Connect all your bank accounts and credit cards automatically." = "Conecta todas tus cuentas bancarias y tarjetas automáticamente.";
+"Smart Alerts" = "Alertas Inteligentes";
+"Get notified before you overspend or when subscriptions increase." = "Recibe notificaciones antes de gastar de más o si suben tus suscripciones.";
+"Enhanced Security" = "Seguridad Mejorada";
+"Extra layer of protection for your sensitive financial data." = "Capa extra de protección para tus datos financieros sensibles.";
+"$9.99 / month" = "9,99 $ / mes";
+"Cancel anytime. No hidden fees." = "Cancela en cualquier momento. Sin cargos ocultos.";
+"Start 7-Day Free Trial" = "Prueba Gratis de 7 Días";
+
+/* Help & Privacy */
+"Support" = "Soporte";
+"Help Center" = "Centro de Ayuda";
+"Contact Support" = "Contactar Soporte";
+"Legal" = "Legal";
+"Privacy Policy" = "Política de Privacidad";
+"Terms of Service" = "Términos de Servicio";
+"App Info" = "Información de la App";
+"Version" = "Versión";
+
+/* Auth */
+"Welcome Back" = "Bienvenido";
+"Create Account" = "Crear Cuenta";
+"Email Address" = "Correo Electrónico";
+"Password" = "Contraseña";
+"Sign In" = "Iniciar Sesión";
+"Sign Up" = "Registrarse";
+"Don't have an account?" = "¿No tienes cuenta?";
+"Already have an account?" = "¿Ya tienes cuenta?";

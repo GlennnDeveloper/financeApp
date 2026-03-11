@@ -12,7 +12,7 @@ struct DashboardBalanceCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.gray)
                 
-                Text(balance, format: .currency(code: "USD"))
+                Text(balance, format: .currency(code: settingsManager.appCurrency))
                     .font(.system(size: 40, weight: .bold))
                     .foregroundStyle(.primary)
                     .contentTransition(.numericText())
@@ -24,7 +24,7 @@ struct DashboardBalanceCard: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.gray)
                 
-                Text(monthlySavings, format: .currency(code: "USD"))
+                Text(monthlySavings, format: .currency(code: settingsManager.appCurrency))
                     .font(.headline)
                     .foregroundStyle(.red)
                     .contentTransition(.numericText())

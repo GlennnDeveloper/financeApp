@@ -51,7 +51,7 @@ struct BankAccountsSection: View {
                         Image(systemName: account.symbol).font(.title3).foregroundStyle(.blue).frame(width: 32)
                         Text(account.name).foregroundStyle(.primary)
                         Spacer()
-                        Text(account.balance, format: .currency(code: "USD")).foregroundStyle(.primary.opacity(0.7))
+                        Text(account.balance, format: .currency(code: settingsManager.appCurrency)).foregroundStyle(.primary.opacity(0.7))
                     }.padding().background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16)).padding(.horizontal)
                 }
             }
@@ -59,7 +59,7 @@ struct BankAccountsSection: View {
             Button {
                 Task {
                     if let session = authViewModel.session { await bankViewModel.preparePlaidLink(session: session) }
-                    else { bankViewModel.errorMessage = "Session expired." }
+                    else { bankViewModel.errorMessage = settingsManager.localizedString(for: "Session expired.") }
                 }
             } label: {
                 HStack(spacing: 14) {

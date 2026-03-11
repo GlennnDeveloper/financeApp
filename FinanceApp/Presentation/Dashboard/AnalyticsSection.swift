@@ -13,12 +13,18 @@ struct AnalyticsSection: View {
                 HStack(spacing: 0) {
                     ForEach(Timeframe.allCases, id: \.self) { tf in
                         Button { withAnimation(.easeInOut(duration: 0.2)) { selectedTimeframe = tf } } label: {
-                            Text(tf.localizedName).font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium)).foregroundStyle(selectedTimeframe == tf ? .black : .gray).padding(.horizontal, 12).padding(.vertical, 6).background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
+                            Text(tf.localizedName).font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium)).foregroundStyle(selectedTimeframe == tf ? Color.primary : Color.secondary).padding(.horizontal, 12).padding(.vertical, 6).background(selectedTimeframe == tf ? Color(uiColor: .systemBackground) : Color.clear, in: Capsule())
                         }
                     }
-                }.background(Color(white: 0.15), in: Capsule())
+                }.background(Color.primary.opacity(0.06), in: Capsule())
             }.padding(.horizontal)
-            DashboardBarChart(chartData: chartData).padding(.horizontal)
+            
+            VStack {
+                DashboardBarChart(chartData: chartData)
+                    .padding()
+            }
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .padding(.horizontal)
         }
     }
 }

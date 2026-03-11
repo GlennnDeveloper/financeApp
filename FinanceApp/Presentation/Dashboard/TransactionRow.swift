@@ -4,6 +4,7 @@ import SwiftUI
 struct TransactionRow: View {
     var transaction: Transaction
     var categories: [Category]
+    @EnvironmentObject var settingsManager: SettingsManager
 
     private var categoryColor: Color {
         categories.first(where: { $0.symbol == transaction.categorySymbol })?.color ?? .gray
@@ -14,7 +15,7 @@ struct TransactionRow: View {
             // Smooth circular icon with category color
             ZStack {
                 Circle()
-                    .fill(Color(white: 0.15))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(width: 50, height: 50)
 
                 Image(systemName: transaction.categorySymbol)
@@ -25,7 +26,7 @@ struct TransactionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Text(transaction.date, format: .dateTime.day().month().year())
@@ -36,12 +37,12 @@ struct TransactionRow: View {
             Spacer()
 
             // Monospaced amount for perfect digit alignment
-            Text(transaction.amount, format: .currency(code: "USD"))
+            Text(transaction.amount, format: .currency(code: settingsManager.appCurrency))
                 .font(.headline.monospacedDigit())
-                .foregroundStyle(transaction.isIncome ? Color.green : Color.white)
+                .foregroundStyle(transaction.isIncome ? Color.green : Color.primary)
         }
         .padding(16)
-        .background(Color(red: 0.1, green: 0.1, blue: 0.1), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -50,4 +51,5 @@ struct TransactionRow: View {
         transaction: Transaction(title: "Preview Example", amount: 120.0, isIncome: false, categorySymbol: "cart.fill"),
         categories: []
     )
+    .environmentObject(SettingsManager.shared)
 }

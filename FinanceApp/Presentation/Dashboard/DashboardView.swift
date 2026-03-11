@@ -56,6 +56,7 @@ struct DashboardView: View {
                     Color.clear.frame(height: 100)
                 }
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             
             fabSection
         }
@@ -70,11 +71,11 @@ struct DashboardView: View {
         .onChange(of: transactions) { recalculateDashboard() }
         .onChange(of: accounts) { recalculateDashboard() }
         .onChange(of: selectedTimeframe) { recalculateDashboard() }
-        .alert("Bank Error", isPresented: Binding(
+        .alert(settingsManager.localizedString(for: "Bank Error"), isPresented: Binding(
             get: { bankViewModel.errorMessage != nil },
             set: { _ in bankViewModel.errorMessage = nil }
         )) {
-            Button("OK", role: .cancel) { }
+            Button(settingsManager.localizedString(for: "OK"), role: .cancel) { }
         } message: {
             if let error = bankViewModel.errorMessage {
                 Text(error)
@@ -118,10 +119,10 @@ struct DashboardView: View {
                 Button(action: { showAddSheet = true }) {
                     Image(systemName: "plus")
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.white)
                         .frame(width: 60, height: 60)
-                        .background(.blue, in: Circle())
-                        .shadow(color: .blue.opacity(0.6), radius: 15, x: 0, y: 5)
+                        .background(Color.blue, in: Circle())
+                        .shadow(color: Color.blue.opacity(0.4), radius: 10, x: 0, y: 5)
                 }
                 .padding(.trailing, 24)
                 .padding(.bottom, 24)

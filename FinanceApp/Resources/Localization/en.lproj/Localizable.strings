@@ -136,7 +136,13 @@
 "Link your bank accounts" = "Link your bank accounts";
 "Connect your bank securely via Plaid to automatically sync your transactions and balances." = "Connect your bank securely via Plaid to automatically sync your transactions and balances.";
 "Connect with Plaid" = "Connect with Plaid";
-"Error" = "Error";
+"of %@" = "of %@";
+"active" = "active";
+"Over Budget" = "Over Budget";
+"Remaining" = "Remaining";
+"Spent" = "Spent";
+"New" = "New";
+"Tap to set your first budget" = "Tap to set your first budget";
 
 /* Profile */
 "Account Details" = "Account Details";
@@ -175,4 +181,37 @@
 "Pink" = "Pink";
 "Teal" = "Teal";
 "Indigo" = "Indigo";
-"Gray" = "Gray";
+/* Premium */
+"FinanceApp Premium" = "FinanceApp Premium";
+"Take control of your financial future" = "Take control of your financial future";
+"Advanced Analytics" = "Advanced Analytics";
+"Deep dive into your spending habits with AI-powered insights." = "Deep dive into your spending habits with AI-powered insights.";
+"Unlimited Sync" = "Unlimited Sync";
+"Connect all your bank accounts and credit cards automatically." = "Connect all your bank accounts and credit cards automatically.";
+"Smart Alerts" = "Smart Alerts";
+"Get notified before you overspend or when subscriptions increase." = "Get notified before you overspend or when subscriptions increase.";
+"Enhanced Security" = "Enhanced Security";
+"Extra layer of protection for your sensitive financial data." = "Extra layer of protection for your sensitive financial data.";
+"$9.99 / month" = "$9.99 / month";
+"Cancel anytime. No hidden fees." = "Cancel anytime. No hidden fees.";
+"Start 7-Day Free Trial" = "Start 7-Day Free Trial";
+
+/* Help & Privacy */
+"Support" = "Support";
+"Help Center" = "Help Center";
+"Contact Support" = "Contact Support";
+"Legal" = "Legal";
+"Privacy Policy" = "Privacy Policy";
+"Terms of Service" = "Terms of Service";
+"App Info" = "App Info";
+"Version" = "Version";
+
+/* Auth */
+"Welcome Back" = "Welcome Back";
+"Create Account" = "Create Account";
+"Email Address" = "Email Address";
+"Password" = "Password";
+"Sign In" = "Sign In";
+"Sign Up" = "Sign Up";
+"Don't have an account?" = "Don't have an account?";
+"Already have an account?" = "Already have an account?";

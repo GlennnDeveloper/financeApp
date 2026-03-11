@@ -46,7 +46,6 @@ struct NetWorthView: View {
                 else { continue }
 
                 // Queremos saber el NetWorth al inicio del mes anterior.
-                // Usando granularity .month compara año y mes internamente
                 let transactionsInMonth = currentTx.filter {
                     calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .month)
                 }
@@ -75,103 +74,107 @@ struct NetWorthView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                VStack(spacing: 24) {
+                    
+                    // Header Box Network
+                    VStack(spacing: 8) {
+                        Text(settingsManager.localizedString(for: "Current Net Worth"))
+                            .font(.subheadline)
+                            .foregroundStyle(.gray)
                         
-                        // Header Box Network
-                        VStack(spacing: 8) {
-                            Text(settingsManager.localizedString(for: "Current Net Worth"))
-                                .font(.subheadline)
-                                .foregroundStyle(.gray)
-                            
-                            Text(currentNetWorth, format: .currency(code: "USD"))
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
-                                .contentTransition(.numericText())
-                        }
-                        .padding(.top, 20)
-                        
-                        // Historic Area Chart
-                        VStack(alignment: .leading) {
-                            Text(settingsManager.localizedString(for: "6 Month Trend"))
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                                .padding(.horizontal)
-                            
-                            Chart(historicalData) { item in
-                                LineMark(
-                                    x: .value("Month", item.date, unit: .month),
-                                    y: .value("Net Worth", item.amount)
-                                )
-                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                                .foregroundStyle(Color.green)
-                                .interpolationMethod(.monotone)
-                                
-                                AreaMark(
-                                    x: .value("Month", item.date, unit: .month),
-                                    y: .value("Net Worth", item.amount)
-                                )
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Color.green.opacity(0.3), .clear],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                                .interpolationMethod(.monotone)
-                            }
-                            .chartXAxis {
-                                AxisMarks(values: .stride(by: .month)) { value in
-                                    AxisValueLabel(format: .dateTime.month(.abbreviated).locale(settingsManager.locale))
-                                        .foregroundStyle(.gray)
-                                        .font(.caption2)
-                                }
-                            }
-                            .chartYAxis(.hidden)
-                            .frame(height: 200)
+                        Text(currentNetWorth, format: .currency(code: settingsManager.appCurrency))
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
+                            .contentTransition(.numericText())
+                    }
+                    .padding(.top, 20)
+                    
+                    // Historic Area Chart
+                    VStack(alignment: .leading) {
+                        Text(settingsManager.localizedString(for: "6 Month Trend"))
+                            .font(.headline)
+                            .foregroundStyle(.primary)
                             .padding(.horizontal)
-                        }
                         
-                        // Breakdowns
-                        VStack(spacing: 24) {
-                            AccountSectionView(
-                                title: settingsManager.localizedString(for: "Assets"),
-                                accounts: assets,
-                                total: totalAssets,
-                                isLiability: false
+                        Chart(historicalData) { item in
+                            LineMark(
+                                x: .value("Month", item.date, unit: .month),
+                                y: .value("Net Worth", item.amount)
                             )
-
-                            AccountSectionView(
-                                title: settingsManager.localizedString(for: "Liabilities"),
-                                accounts: liabilities,
-                                total: totalLiabilities,
-                                isLiability: true
+                            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                            .foregroundStyle(Color.green)
+                            .interpolationMethod(.monotone)
+                            
+                            AreaMark(
+                                x: .value("Month", item.date, unit: .month),
+                                y: .value("Net Worth", item.amount)
                             )
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.green.opacity(0.3), .clear],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .interpolationMethod(.monotone)
                         }
+                        .chartXAxis {
+                            AxisMarks(values: .stride(by: .month)) { value in
+                                AxisValueLabel(format: .dateTime.month(.abbreviated).locale(settingsManager.locale))
+                                    .foregroundStyle(.gray)
+                                    .font(.caption2)
+                            }
+                        }
+                        .chartYAxis(.hidden)
+                        .frame(height: 200)
                         .padding(.horizontal)
                     }
+                    .padding(.vertical)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .padding(.horizontal)
+                    
+                    // Breakdowns
+                    VStack(spacing: 24) {
+                        AccountSectionView(
+                            title: settingsManager.localizedString(for: "Assets"),
+                            accounts: assets,
+                            total: totalAssets,
+                            isLiability: false
+                        )
+
+                        AccountSectionView(
+                            title: settingsManager.localizedString(for: "Liabilities"),
+                            accounts: liabilities,
+                            total: totalLiabilities,
+                            isLiability: true
+                        )
+                    }
+                    .padding(.horizontal)
                 }
                 .padding(.bottom, 30)
-                .navigationTitle(settingsManager.localizedString(for: "Net Worth"))
-                .navigationBarTitleDisplayMode(.inline)
-                // Make the inline title invisible so it doesn't clutter the top, but keeps nav layout
-                .toolbarBackground(.hidden, for: .navigationBar)
             }
-            .environment(\.locale, settingsManager.locale)
-            .onAppear {
-                recalculateHistoricalData()
-            }
-            .onChange(of: transactions) { _, _ in
-                recalculateHistoricalData()
-            }
-            .onChange(of: accounts) { _, _ in
-                recalculateHistoricalData()
-            }
+            .background(Color(uiColor: .systemGroupedBackground))
+            .navigationTitle(settingsManager.localizedString(for: "Net Worth"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .environment(\.locale, settingsManager.locale)
+        .onAppear {
+            recalculateHistoricalData()
+        }
+        .onChange(of: transactions) { _, _ in
+            recalculateHistoricalData()
+        }
+        .onChange(of: accounts) { _, _ in
+            recalculateHistoricalData()
         }
     }
+}
 
 
 // Reusable Section for Assets and Liabilities
 struct AccountSectionView: View {
+    @EnvironmentObject var settingsManager: SettingsManager
     let title: String
     let accounts: [Account]
     let total: Double
@@ -184,13 +187,13 @@ struct AccountSectionView: View {
                     .font(.headline)
                     .foregroundStyle(.primary)
                 Spacer()
-                Text(total, format: .currency(code: "USD"))
+                Text(total, format: .currency(code: settingsManager.appCurrency))
                     .font(.headline)
                     .foregroundStyle(isLiability ? .red : .green)
             }
             
             if accounts.isEmpty {
-                Text(SettingsManager.shared.localizedString(for: "No accounts added."))
+                Text(settingsManager.localizedString(for: "No accounts added."))
                     .font(.subheadline)
                     .foregroundStyle(.gray)
                     .padding()
@@ -208,7 +211,7 @@ struct AccountSectionView: View {
                             
                             Spacer()
                             
-                            Text(account.balance, format: .currency(code: "USD"))
+                            Text(account.balance, format: .currency(code: settingsManager.appCurrency))
                                 .foregroundStyle(.gray)
                         }
                         .padding()
