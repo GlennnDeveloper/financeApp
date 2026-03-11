@@ -215,3 +215,14 @@
 "Sign Up" = "Sign Up";
 "Don't have an account?" = "Don't have an account?";
 "Already have an account?" = "Already have an account?";
+
+/* Notifications */
+"Enable Notifications" = "Enable Notifications";
+"General" = "General";
+"Receive alerts and updates about your financial activity." = "Receive alerts and updates about your financial activity.";
+"Alert Types" = "Alert Types";
+"Budget Overrun Alerts" = "Budget Overrun Alerts";
+"Daily Summary" = "Daily Summary";
+"Large Transaction Alerts" = "Large Transaction Alerts";
+"Recurring Payment Reminders" = "Recurring Payment Reminders";
+"Manage System Settings" = "Manage System Settings";

@@ -5,11 +5,15 @@ struct TransactionsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     
+    @Binding var showSettings: Bool
+    
     // Performance Optimization: Pre-calculated grouped state
     @State private var groupedTransactions: [(String, [Transaction])] = []
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            ViewHeader(title: "Transactions", showSettings: $showSettings)
+            
             Group {
                 if transactions.isEmpty {
                     ContentUnavailableView(
@@ -18,37 +22,40 @@ struct TransactionsView: View {
                         description: Text(SettingsManager.shared.localizedString(for: "Your bank movements will appear here."))
                     )
                 } else {
-                    List {
-                        ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
-                            Section {
-                                ForEach(monthTransactions) { transaction in
-                                    TransactionRow(transaction: transaction, categories: categories)
-                                        .listRowInsets(EdgeInsets())
-                                        .listRowBackground(Color.clear)
-                                        .listRowSeparator(.hidden)
-                                        .listSectionSeparator(.hidden)
-                                        .padding(.vertical, 4)
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 24, pinnedViews: [.sectionHeaders]) {
+                            ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
+                                Section {
+                                    VStack(spacing: 12) {
+                                        ForEach(monthTransactions) { transaction in
+                                            TransactionRow(transaction: transaction, categories: categories)
+                                                .padding(.horizontal)
+                                        }
+                                    }
+                                } header: {
+                                    HStack {
+                                        Text(monthYear)
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                            .padding(.horizontal)
+                                            .padding(.vertical, 12)
+                                        Spacer()
+                                    }
+                                    .background(Color(uiColor: .systemGroupedBackground))
                                 }
-                            } header: {
-                                Text(monthYear)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                    .padding(.vertical, 8)
                             }
                         }
+                        .padding(.top, 16)
+                        .padding(.bottom, 100)
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .environment(\.defaultMinListRowHeight, 10)
                 }
             }
-            .navigationTitle(SettingsManager.shared.localizedString(for: "Transactions"))
-            .onAppear {
-                recalculateGroups()
-            }
-            .onChange(of: transactions) { _, _ in
-                recalculateGroups()
-            }
+        }
+        .onAppear {
+            recalculateGroups()
+        }
+        .onChange(of: transactions) { _, _ in
+            recalculateGroups()
         }
     }
     
@@ -99,6 +106,7 @@ struct TransactionsView: View {
 }
 
 #Preview {
-    TransactionsView()
+    TransactionsView(showSettings: .constant(false))
         .modelContainer(for: Transaction.self, inMemory: true)
+        .environmentObject(SettingsManager.shared)
 }

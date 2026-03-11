@@ -215,3 +215,14 @@
 "Sign Up" = "Registrarse";
 "Don't have an account?" = "¿No tienes cuenta?";
 "Already have an account?" = "¿Ya tienes cuenta?";
+
+/* Notifications */
+"Enable Notifications" = "Activar Notificaciones";
+"General" = "General";
+"Receive alerts and updates about your financial activity." = "Recibe alertas y actualizaciones sobre tu actividad financiera.";
+"Alert Types" = "Tipos de Alerta";
+"Budget Overrun Alerts" = "Alertas de Exceso de Presupuesto";
+"Daily Summary" = "Resumen Diario";
+"Large Transaction Alerts" = "Alertas de Transacciones Grandes";
+"Recurring Payment Reminders" = "Recordatorios de Pagos Recurrentes";
+"Manage System Settings" = "Gestionar Ajustes del Sistema";

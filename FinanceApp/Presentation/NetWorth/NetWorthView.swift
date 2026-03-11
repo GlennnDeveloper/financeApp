@@ -23,6 +23,7 @@ struct NetWorthView: View {
     private var totalLiabilities: Double { liabilities.reduce(0) { $0 + $1.balance } }
     private var currentNetWorth: Double { totalAssets - totalLiabilities }
     
+    @Binding var showSettings: Bool
     @State private var historicalData: [HistoricalNetWorth] = []
     
     // Asynchronous calculation of historical net worth over the last 6 months
@@ -72,7 +73,9 @@ struct NetWorthView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            ViewHeader(title: "Net Worth", showSettings: $showSettings)
+            
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     
@@ -114,7 +117,7 @@ struct NetWorthView: View {
                                     colors: [Color.green.opacity(0.3), .clear],
                                     startPoint: .top,
                                     endPoint: .bottom
-                                )
+                               )
                             )
                             .interpolationMethod(.monotone)
                         }
@@ -153,11 +156,8 @@ struct NetWorthView: View {
                 }
                 .padding(.bottom, 30)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle(settingsManager.localizedString(for: "Net Worth"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
         }
+        .background(Color(uiColor: .systemGroupedBackground))
         .environment(\.locale, settingsManager.locale)
         .onAppear {
             recalculateHistoricalData()
@@ -224,6 +224,7 @@ struct AccountSectionView: View {
 }
 
 #Preview {
-    NetWorthView()
+    NetWorthView(showSettings: .constant(false))
         .modelContainer(for: [Account.self, Transaction.self], inMemory: true)
+        .environmentObject(SettingsManager.shared)
 }

@@ -23,34 +23,7 @@ struct MainTabView: View {
                 SideMenuContent(isOpen: $showSettings)
                     .environmentObject(authViewModel)
             } main: {
-                TabView {
-                    DashboardView(showSettings: $showSettings)
-                        .tabItem {
-                            Label(settingsManager.localizedString(for: "Dashboard"), systemImage: "square.grid.2x2")
-                        }
-                    
-                    RecurringView()
-                        .tabItem {
-                            Label(settingsManager.localizedString(for: "Recurring"), systemImage: "calendar")
-                        }
-                    
-                    NetWorthView()
-                        .tabItem {
-                            Label(settingsManager.localizedString(for: "Net Worth"), systemImage: "chart.bar.fill")
-                        }
-                    
-                    SpendingView()
-                        .tabItem {
-                            Label(settingsManager.localizedString(for: "Spending"), systemImage: "wallet.pass")
-                        }
-                    
-                    TransactionsView()
-                        .tabItem {
-                            Label(settingsManager.localizedString(for: "Transactions"), systemImage: "list.bullet")
-                        }
-                }
-                .tint(.blue)
-                .environment(\.locale, settingsManager.locale)
+                mainContentView
             }
         }
         .onAppear {
@@ -63,6 +36,38 @@ struct MainTabView: View {
         .onChange(of: categories) { _, _ in
             viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions, rules: rules, categories: categories)
         }
+    }
+
+    @ViewBuilder
+    private var mainContentView: some View {
+        TabView {
+            DashboardView(showSettings: $showSettings)
+                .tabItem {
+                    Label(settingsManager.localizedString(for: "Dashboard"), systemImage: "square.grid.2x2")
+                }
+            
+            RecurringView(showSettings: $showSettings)
+                .tabItem {
+                    Label(settingsManager.localizedString(for: "Recurring"), systemImage: "calendar")
+                }
+            
+            NetWorthView(showSettings: $showSettings)
+                .tabItem {
+                    Label(settingsManager.localizedString(for: "Net Worth"), systemImage: "chart.bar.fill")
+                }
+            
+            SpendingView(showSettings: $showSettings)
+                .tabItem {
+                    Label(settingsManager.localizedString(for: "Spending"), systemImage: "wallet.pass")
+                }
+            
+            TransactionsView(showSettings: $showSettings)
+                .tabItem {
+                    Label(settingsManager.localizedString(for: "Transactions"), systemImage: "list.bullet")
+                }
+        }
+        .tint(.blue)
+        .environment(\.locale, settingsManager.locale)
     }
 }
 

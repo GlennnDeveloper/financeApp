@@ -29,7 +29,11 @@ struct DashboardView: View {
         ZStack(alignment: .top) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    headerSection
+                    ViewHeader(title: "Dashboard", showSettings: $showSettings, rightContent: AnyView(
+                        Image(systemName: "bell.fill")
+                            .font(.title2)
+                            .foregroundStyle(.gray.opacity(0.5))
+                    ))
                     
                     DashboardBalanceCard(
                         balance: totalBalance,
@@ -83,33 +87,6 @@ struct DashboardView: View {
         }
     }
     
-    private var headerSection: some View {
-        HStack {
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    showSettings.toggle()
-                }
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.title2)
-                    .foregroundStyle(.gray)
-            }
-
-            Spacer()
-
-            Text(Date.now, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day().locale(settingsManager.locale))
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            Image(systemName: "bell.fill")
-                .font(.title2)
-                .foregroundStyle(.gray.opacity(0.5))
-        }
-        .padding(.horizontal)
-        .padding(.top, 10)
-    }
     
     private var fabSection: some View {
         VStack {

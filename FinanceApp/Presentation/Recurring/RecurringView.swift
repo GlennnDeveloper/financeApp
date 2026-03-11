@@ -7,6 +7,8 @@ struct RecurringView: View {
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     @EnvironmentObject var settingsManager: SettingsManager
     
+    @Binding var showSettings: Bool
+    
     // Compute unique recurring expenses based on title
     var uniqueSubscriptions: [Transaction] {
         var seenTitles = Set<String>()
@@ -28,7 +30,9 @@ struct RecurringView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            ViewHeader(title: "Recurring", showSettings: $showSettings)
+            
             Group {
                 if uniqueSubscriptions.isEmpty {
                     ContentUnavailableView(
@@ -37,16 +41,9 @@ struct RecurringView: View {
                         description: Text(settingsManager.localizedString(for: "No recurring expenses were found."))
                     )
                 } else {
-                    List {
-                        Section {
-                            ForEach(uniqueSubscriptions) { transaction in
-                                TransactionRow(transaction: transaction, categories: categories)
-                                    .listRowInsets(EdgeInsets())
-                                    .listRowSeparator(.hidden)
-                                    .listRowBackground(Color.clear)
-                                    .padding(.vertical, 4)
-                            }
-                        } header: {
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 16) {
+                            // Section header
                             HStack {
                                 Text(settingsManager.localizedString(for: "Active Subscriptions"))
                                 Spacer()
@@ -55,20 +52,26 @@ struct RecurringView: View {
                             }
                             .font(.headline)
                             .foregroundStyle(.primary)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal)
+                            .padding(.top, 16)
+                            
+                            VStack(spacing: 12) {
+                                ForEach(uniqueSubscriptions) { transaction in
+                                    TransactionRow(transaction: transaction, categories: categories)
+                                        .padding(.horizontal)
+                                }
+                            }
                         }
+                        .padding(.bottom, 100) // Spacing for FAB/Tabbar
                     }
-                    .listStyle(.plain)
-                    .environment(\.defaultMinListRowHeight, 10)
                 }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle(settingsManager.localizedString(for: "Recurring"))
-            .environment(\.locale, settingsManager.locale)
         }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .environment(\.locale, settingsManager.locale)
     }
 }
 
 #Preview {
-    RecurringView()
+    RecurringView(showSettings: .constant(false))
 }

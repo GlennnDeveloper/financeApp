@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NotificationsView: View {
+    @EnvironmentObject var settingsManager: SettingsManager
     @AppStorage("notifications_enabled") private var notificationsEnabled = true
     @AppStorage("budget_alerts") private var budgetAlerts = true
     @AppStorage("daily_summary") private var dailySummary = false
@@ -10,36 +11,36 @@ struct NotificationsView: View {
     var body: some View {
         Form {
                 Section {
-                    Toggle("Enable Notifications", isOn: $notificationsEnabled)
+                    Toggle(settingsManager.localizedString(for: "Enable Notifications"), isOn: $notificationsEnabled)
                         .tint(.blue)
                 } header: {
-                    Text("General")
+                    Text(settingsManager.localizedString(for: "General"))
                 } footer: {
-                    Text("Receive alerts and updates about your financial activity.")
+                    Text(settingsManager.localizedString(for: "Receive alerts and updates about your financial activity."))
                 }
                 
                 Section {
-                    Toggle("Budget Overrun Alerts", isOn: $budgetAlerts)
+                    Toggle(settingsManager.localizedString(for: "Budget Overrun Alerts"), isOn: $budgetAlerts)
                         .tint(.blue)
                         .disabled(!notificationsEnabled)
                     
-                    Toggle("Daily Summary", isOn: $dailySummary)
+                    Toggle(settingsManager.localizedString(for: "Daily Summary"), isOn: $dailySummary)
                         .tint(.blue)
                         .disabled(!notificationsEnabled)
                     
-                    Toggle("Large Transaction Alerts", isOn: $largeTransactionAlert)
+                    Toggle(settingsManager.localizedString(for: "Large Transaction Alerts"), isOn: $largeTransactionAlert)
                         .tint(.blue)
                         .disabled(!notificationsEnabled)
                     
-                    Toggle("Recurring Payment Reminders", isOn: $recurringReminders)
+                    Toggle(settingsManager.localizedString(for: "Recurring Payment Reminders"), isOn: $recurringReminders)
                         .tint(.blue)
                         .disabled(!notificationsEnabled)
                 } header: {
-                    Text("Alert Types")
+                    Text(settingsManager.localizedString(for: "Alert Types"))
                 }
                 
                 Section {
-                    Button("Manage System Settings") {
+                    Button(settingsManager.localizedString(for: "Manage System Settings")) {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }
@@ -47,13 +48,14 @@ struct NotificationsView: View {
                     .foregroundStyle(.blue)
                 }
             }
-            .navigationTitle("Notifications")
+            .navigationTitle(settingsManager.localizedString(for: "Notifications"))
         }
     }
 
 
 #Preview {
     NavigationStack {
-        NotificationsView()
+    NotificationsView()
+        .environmentObject(SettingsManager.shared)
     }
 }

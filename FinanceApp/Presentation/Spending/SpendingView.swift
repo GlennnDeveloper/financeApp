@@ -13,6 +13,7 @@ struct SpendingView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     @EnvironmentObject var settingsManager: SettingsManager
+    @Binding var showSettings: Bool
 
     // Defaulting to "Month" timeframe for the analysis
     @State private var selectedTimeframe: Timeframe = .week
@@ -334,44 +335,43 @@ struct SpendingView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    headerArea
-                    
-                    // Donut Chart Area
-                    if totalSpentFiltered == 0 {
-                        ContentUnavailableView(
-                            SettingsManager.shared.localizedString(for: "No Data"),
-                            systemImage: "chart.pie.fill",
-                            description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
-                        )
-                        .frame(height: 300)
-                    } else {
-                        chartArea
-                        breakdownArea
-                    }
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                headerArea
+                
+                // Donut Chart Area
+                if totalSpentFiltered == 0 {
+                    ContentUnavailableView(
+                        SettingsManager.shared.localizedString(for: "No Data"),
+                        systemImage: "chart.pie.fill",
+                        description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
+                    )
+                    .frame(height: 300)
+                } else {
+                    chartArea
+                    breakdownArea
                 }
-                .padding(.bottom, 24)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .onAppear {
-                recalculateSpendingData()
-            }
-            .onChange(of: transactions) { _, _ in
-                recalculateSpendingData()
-            }
-            .onChange(of: selectedTimeframe) { _, _ in
-                recalculateSpendingData()
-            }
-            .onChange(of: dateOffset) { _, _ in
-                recalculateSpendingData()
-            }
+            .padding(.bottom, 24)
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .onAppear {
+            recalculateSpendingData()
+        }
+        .onChange(of: transactions) { _, _ in
+            recalculateSpendingData()
+        }
+        .onChange(of: selectedTimeframe) { _, _ in
+            recalculateSpendingData()
+        }
+        .onChange(of: dateOffset) { _, _ in
+            recalculateSpendingData()
         }
     }
 }
 
 #Preview {
-    SpendingView()
+    SpendingView(showSettings: .constant(false))
         .modelContainer(for: [Transaction.self], inMemory: true)
+        .environmentObject(SettingsManager.shared)
 }
