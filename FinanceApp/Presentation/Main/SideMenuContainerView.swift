@@ -38,20 +38,22 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
                 main()
                     .disabled(isOpen)
                     
-                if progress > 0 {
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .allowsHitTesting(isOpen)
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                isOpen = false
-                            }
+                // Stable Overlay (No 'if progress > 0' to prevent layout jumps)
+                Color.black
+                    .opacity(0.15 * progress)
+                    .contentShape(Rectangle())
+                    .allowsHitTesting(isOpen)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            isOpen = false
                         }
-                }
+                    }
             }
-            // 2. Movemos la vista
+            .background(Color(uiColor: .systemBackground)) // Base color for shadow contrast
+            .shadow(color: .black.opacity(0.12 * progress), radius: 15 * progress, x: -5 * progress, y: 0)
             .offset(x: effectiveOffset)
-            .gesture(
+            .compositingGroup() // Flatten rendering for better performance during drag
+            .highPriorityGesture(
                 DragGesture()
                     .updating($dragOffset) { value, state, _ in
                         state = value.translation.width
@@ -70,7 +72,6 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
                     }
             )
         }
-        // 4. Ignorar el Safe Area en la raíz aisla las animaciones de los recálculos del sistema
         .ignoresSafeArea()
     }
 }

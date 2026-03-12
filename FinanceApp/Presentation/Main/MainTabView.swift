@@ -18,11 +18,13 @@ struct MainTabView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            SideMenuContainerView(isOpen: $showSettings) {
+        SideMenuContainerView(isOpen: $showSettings) {
+            NavigationStack {
                 SideMenuContent(isOpen: $showSettings)
                     .environmentObject(authViewModel)
-            } main: {
+            }
+        } main: {
+            NavigationStack {
                 mainContentView
             }
         }
