@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to FinanceApp...</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #000; color: #fff; }
+        .button { background: #007AFF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Conexi&oacute;n con Plaid casi lista</h2>
+    <p>Si la App no se abre autom&aacute;ticamente, pulsa el bot&oacute;n:</p>
+    <a id="redirect-btn" class="button" href="financeapp://oauth">Volver a la App</a>
+
+    <script>
+        // Intento de redirección automática
+        const appUrl = "financeapp://oauth" + window.location.search;
+        document.getElementById('redirect-btn').href = appUrl;
+        
+        // Redirigir automáticamente después de 1 segundo
+        setTimeout(function() {
+            window.location.href = appUrl;
+        }, 1000);
+    </script>
+</body>
+</html>
