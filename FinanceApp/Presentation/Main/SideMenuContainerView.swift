@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
+    @EnvironmentObject var settingsManager: SettingsManager
     @Binding var isOpen: Bool
     @ViewBuilder let menu: () -> MenuContent
     @ViewBuilder let main: () -> MainContent

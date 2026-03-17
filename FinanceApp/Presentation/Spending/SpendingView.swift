@@ -3,8 +3,10 @@ import SwiftData
 import Charts
 
 struct SpendingCategoryData: Identifiable, Equatable {
-    var id: String { category.name } // Use stable ID to prevent jumping segments
-    let category: Category
+    var id: String { symbol }
+    let name: String
+    let symbol: String
+    let color: Color
     let totalSpent: Double
     let percentage: Double
 }
@@ -26,12 +28,16 @@ struct SpendingView: View {
     
     // Asynchronous calculation of all spending data
     private func recalculateSpendingData() {
+        // 0. CAPTURE metadata on MainActor before background work
+        let currentTx = transactions
+        let currentCategories = categories
+        let currentOffset = dateOffset
+        let currentTimeframe = selectedTimeframe
+        
+        // Cache category info to avoid accessing @Models on background thread
+        let categoryMetadata = currentCategories.map { (name: $0.localizedName, symbol: $0.symbol, color: $0.color) }
+        
         Task(priority: .userInitiated) {
-            let currentTx = transactions // Capture snapshot
-            let currentCategories = categories
-            let currentOffset = dateOffset
-            let currentTimeframe = selectedTimeframe
-            
             let calendar = Calendar.current
             var today = calendar.startOfDay(for: .now)
 
@@ -54,7 +60,7 @@ struct SpendingView: View {
                 today = adjustedAnchor
             }
 
-            // 1. Filter Transactions
+            // 1. Filter Transactions (Expenses only)
             let newFilteredTransactions = currentTx.filter { tx in
                 guard !tx.isIncome else { return false }
 
@@ -71,29 +77,67 @@ struct SpendingView: View {
                 }
             }
 
-            // 2. Prepare visual chart data
-            let grouped = Dictionary(grouping: newFilteredTransactions, by: { $0.categorySymbol })
+            // 2. Map into plain data structures (Symbol-First Grouping)
+            let groupedTxs = Dictionary(grouping: newFilteredTransactions, by: { $0.categorySymbol })
             let newTotalSpend = newFilteredTransactions.reduce(0) { $0 + $1.amount }
-
-            // Initialize result with ALL categories (zero-padded)
-            var newChartData: [SpendingCategoryData] = currentCategories.map { category in
-                SpendingCategoryData(category: category, totalSpent: 0, percentage: 0)
-            }
-
-            // Update totals for categories that have transactions
-            for i in 0..<newChartData.count {
-                if let txs = grouped[newChartData[i].category.symbol] {
-                    let catTotal = txs.reduce(0) { $0 + $1.amount }
-                    newChartData[i] = SpendingCategoryData(
-                        category: newChartData[i].category,
+            
+            // Build a lookup for existing categories
+            let categoryMap = Dictionary(uniqueKeysWithValues: categoryMetadata.map { ($0.symbol, $0) })
+            
+            var categoryResults: [SpendingCategoryData] = []
+            var processedSymbols = Set<String>()
+            
+            // First, process all categories that actually have transactions
+            for (symbol, txs) in groupedTxs {
+                let catTotal = txs.reduce(0) { $0 + $1.amount }
+                let percentage = newTotalSpend > 0 ? (catTotal / newTotalSpend) : 0
+                
+                if let metadata = categoryMap[symbol] {
+                    categoryResults.append(SpendingCategoryData(
+                        name: metadata.name,
+                        symbol: metadata.symbol,
+                        color: metadata.color,
                         totalSpent: catTotal,
-                        percentage: newTotalSpend > 0 ? (catTotal / newTotalSpend) : 0
-                    )
+                        percentage: percentage
+                    ))
+                } else if let defaultMatch = Category.defaultData.first(where: { $0.symbol == symbol }) {
+                    // Symbol not in DB yet, but recognized as a default category!
+                    // Proactively hydrate with correct name and color.
+                    categoryResults.append(SpendingCategoryData(
+                        name: defaultMatch.localizedName,
+                        symbol: defaultMatch.symbol,
+                        color: defaultMatch.color,
+                        totalSpent: catTotal,
+                        percentage: percentage
+                    ))
+                } else {
+                    // Truly unknown symbol
+                    categoryResults.append(SpendingCategoryData(
+                        name: "\(SettingsManager.shared.localizedString(for: "Others")) (\(symbol))",
+                        symbol: symbol,
+                        color: .gray,
+                        totalSpent: catTotal,
+                        percentage: percentage
+                    ))
+                }
+                processedSymbols.insert(symbol)
+            }
+            
+            // Second, add categories from DB that have 0 spending (to keep the list complete)
+            for cat in categoryMetadata {
+                if !processedSymbols.contains(cat.symbol) {
+                    categoryResults.append(SpendingCategoryData(
+                        name: cat.name,
+                        symbol: cat.symbol,
+                        color: cat.color,
+                        totalSpent: 0,
+                        percentage: 0
+                    ))
                 }
             }
 
-            // Sort by alphabetical category name for a fixed, stable order
-            let sortedChartData = newChartData.sorted { $0.category.localizedName < $1.category.localizedName }
+            // Sort by alphabetical name
+            let sortedChartData = categoryResults.sorted { $0.name < $1.name }
 
             await MainActor.run {
                 withAnimation {
@@ -216,18 +260,18 @@ struct SpendingView: View {
     @ViewBuilder
     private var chartArea: some View {
         ZStack {
-            Chart(chartData, id: \.category.name) { item in
+            Chart(chartData, id: \.symbol) { item in
                 SectorMark(
                     angle: .value("Spent", item.totalSpent),
                     innerRadius: .ratio(0.65),
                     angularInset: 2.0
                 )
                 .cornerRadius(6)
-                .foregroundStyle(by: .value("Category", item.category.name))
+                .foregroundStyle(by: .value("Category", item.name))
             }
-            .chartForegroundStyleScale(domain: categories.map(\.localizedName)) { categoryName in
-                if let color = categories.first(where: { $0.localizedName == categoryName })?.color {
-                    AnyShapeStyle(color.gradient)
+            .chartForegroundStyleScale(domain: chartData.map(\.name)) { categoryName in
+                if let data = chartData.first(where: { $0.name == categoryName }) {
+                    AnyShapeStyle(data.color.gradient)
                 } else {
                     AnyShapeStyle(Color.gray.gradient)
                 }
@@ -262,10 +306,11 @@ struct SpendingView: View {
             
             VStack(spacing: 12) {
                 // Only show non-zero categories in the list
-                ForEach(chartData.filter { $0.totalSpent > 0 }, id: \.category.name) { item in
+                ForEach(chartData.filter { $0.totalSpent > 0 }, id: \.symbol) { item in
                     NavigationLink {
                         CategoryDetailView(
-                            category: item.category,
+                            categoryName: item.name,
+                            categorySymbol: item.symbol,
                             dateRangeText: dateRangeText,
                             filteredTransactions: self.filteredTransactions // Pass exactly what is on the chart
                         )
@@ -274,18 +319,18 @@ struct SpendingView: View {
                             // Icon
                             ZStack {
                                 Circle()
-                                    .fill(item.category.color.opacity(0.15))
+                                    .fill(item.color.opacity(0.15))
                                     .frame(width: 48, height: 48)
                                 
-                                Image(systemName: item.category.symbol)
+                                Image(systemName: item.symbol)
                                     .font(.title3.weight(.semibold))
-                                    .foregroundStyle(item.category.color)
+                                    .foregroundStyle(item.color)
                             }
                             
                             // Label & Percentage bar
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
-                                    Text(item.category.localizedName)
+                                    Text(item.name)
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(.primary)
                                     Spacer()
@@ -302,7 +347,7 @@ struct SpendingView: View {
                                                 .fill(Color(uiColor: .systemGray5))
                                                 .frame(height: 6)
                                             Capsule()
-                                                .fill(item.category.color)
+                                                .fill(item.color)
                                                 .frame(width: geo.size.width * CGFloat(item.percentage), height: 6)
                                         }
                                     }
@@ -331,7 +376,7 @@ struct SpendingView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            ViewHeader(title: "Spending", showSettings: $showSettings)
+            ViewHeader(title: "Spending Info", showSettings: $showSettings)
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
@@ -365,6 +410,9 @@ struct SpendingView: View {
             recalculateSpendingData()
         }
         .onChange(of: dateOffset) { _, _ in
+            recalculateSpendingData()
+        }
+        .onChange(of: categories) { _, _ in
             recalculateSpendingData()
         }
     }

@@ -4,16 +4,18 @@ import SwiftData
 struct CategoryDetailView: View {
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     let transactions: [Transaction]
-    let category: Category
+    let categoryName: String
+    let categorySymbol: String
     let dateRangeText: String
     
     // Custom filter based on exactly the transactions shown in the SpendingView pie chart
-    init(category: Category, dateRangeText: String, filteredTransactions: [Transaction]) {
-        self.category = category
+    init(categoryName: String, categorySymbol: String, dateRangeText: String, filteredTransactions: [Transaction]) {
+        self.categoryName = categoryName
+        self.categorySymbol = categorySymbol
         self.dateRangeText = dateRangeText
         
         // We only want to display transactions from this timeframe & category
-        self.transactions = filteredTransactions.filter { $0.categorySymbol == category.symbol }.sorted { $0.date > $1.date }
+        self.transactions = filteredTransactions.filter { $0.categorySymbol == categorySymbol }.sorted { $0.date > $1.date }
     }
     
     var body: some View {
@@ -23,8 +25,8 @@ struct CategoryDetailView: View {
             if transactions.isEmpty {
                 ContentUnavailableView(
                     SettingsManager.shared.localizedString(for: "No Expenses"),
-                    systemImage: category.symbol,
-                    description: Text("\(SettingsManager.shared.localizedString(for: "No expenses for")) \(category.localizedName) \(SettingsManager.shared.localizedString(for: "in this timeframe."))")
+                    systemImage: categorySymbol,
+                    description: Text("\(SettingsManager.shared.localizedString(for: "No expenses for")) \(categoryName) \(SettingsManager.shared.localizedString(for: "in this timeframe."))")
                 )
             } else {
                 List {
@@ -40,7 +42,7 @@ struct CategoryDetailView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .navigationTitle(category.localizedName)
+        .navigationTitle(categoryName)
         // Simplified modifiers for cross-platform compatibility
     }
 }

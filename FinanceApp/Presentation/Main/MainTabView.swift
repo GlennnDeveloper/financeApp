@@ -26,6 +26,7 @@ struct MainTabView: View {
                 mainContentView
             }
         }
+        .environmentObject(settingsManager)
         .onAppear {
             viewModel.seedDefaultCategoriesIfNeeded(context: modelContext, existingCategories: categories)
             viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions, rules: rules, categories: categories)
@@ -34,6 +35,9 @@ struct MainTabView: View {
             viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions, rules: rules, categories: categories)
         }
         .onChange(of: categories) { _, _ in
+            viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions, rules: rules, categories: categories)
+        }
+        .onChange(of: transactions) { _, _ in
             viewModel.autoCategorizeTransactions(context: modelContext, transactions: transactions, rules: rules, categories: categories)
         }
     }

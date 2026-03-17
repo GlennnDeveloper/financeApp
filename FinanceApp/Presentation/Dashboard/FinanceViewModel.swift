@@ -65,10 +65,25 @@ final class FinanceViewModel {
     
     // Seed initial categories
     func seedDefaultCategoriesIfNeeded(context: ModelContext, existingCategories: [Category]) {
-        guard existingCategories.isEmpty else { return }
+        let existingSymbols = Set(existingCategories.map { $0.symbol })
+        var didAdd = false
         
-        Category.defaultData.forEach { context.insert($0) }
-        try? context.save()
+        for defaultCat in Category.defaultData {
+            if !existingSymbols.contains(defaultCat.symbol) {
+                context.insert(Category(
+                    name: defaultCat.name,
+                    symbol: defaultCat.symbol,
+                    colorName: defaultCat.colorName,
+                    isDefault: defaultCat.isDefault,
+                    orderIndex: defaultCat.orderIndex
+                ))
+                didAdd = true
+            }
+        }
+        
+        if didAdd {
+            try? context.save()
+        }
     }
     
     // Auto-categorize existing transactions using custom rules and CategorizationService

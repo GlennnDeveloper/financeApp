@@ -85,6 +85,8 @@ struct SettingsView: View {
         }
         .navigationTitle(settingsManager.localizedString(for: "Settings"))
         .navigationBarTitleDisplayMode(.inline)
+        .id(settingsManager.appLanguageName + settingsManager.appThemeName)
+        .environment(\.locale, settingsManager.locale)
     }
 }
 

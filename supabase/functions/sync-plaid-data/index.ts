@@ -23,7 +23,7 @@ serve(async (req) => {
 
         console.log(`[Sync] Starting sync for user: ${user_id}, internal item ID: ${plaid_item_id}`)
 
-        // 1. Get access token from DB - We query by 'id' (UUID) which is what the App now sends
+        // 1. Get access token from DB
         const { data: plaidItem, error: plaidError } = await supabase
             .from('plaid_items')
             .select('access_token, id')
@@ -39,7 +39,7 @@ serve(async (req) => {
         }
 
         const accessToken = plaidItem.access_token
-        const internalItemId = plaidItem.id // This is the UUID
+        const internalItemId = plaidItem.id
 
         // 2. Fetch Accounts from Plaid
         const accountsResponse = await fetch(`${PLAID_URL}/accounts/get`, {
@@ -53,15 +53,15 @@ serve(async (req) => {
         })
 
         const accountsData = await accountsResponse.json()
-        if (!accountsResponse.ok) {
-            console.error('[Sync] Plaid accounts error:', accountsData)
-            throw new Error(`Plaid accounts error: ${accountsData.error_message || JSON.stringify(accountsData)}`)
-        }
+        if (!accountsResponse.ok) throw new Error(`Plaid accounts error: ${JSON.stringify(accountsData)}`)
 
-        // 3. Sync Accounts to DB
-        console.log(`[Sync] Found ${accountsData.accounts.length} accounts`)
+        // 3. Sync Accounts & Create ID Mapping
+        console.log(`[Sync] Processing ${accountsData.accounts.length} accounts...`)
+        const plaidToInternalIdMap: Record<string, string> = {}
+
         for (const plaidAcc of accountsData.accounts) {
-            const { error: accError } = await supabase.from('accounts').upsert({
+            // First, upsert the account
+            const { data: savedAcc, error: accError } = await supabase.from('accounts').upsert({
                 user_id: user_id,
                 name: plaidAcc.name,
                 balance: plaidAcc.balances.current,
@@ -69,10 +69,26 @@ serve(async (req) => {
                 color_name: 'blue',
                 is_liability: ['credit', 'loan'].includes(plaidAcc.type),
                 external_id: plaidAcc.account_id,
-                plaid_item_id: internalItemId // Correct internal UUID
+                plaid_item_id: internalItemId
             }, { onConflict: 'external_id' })
+            .select('id, external_id')
+            .single()
             
-            if (accError) console.error('[Sync] Account upsert error:', accError)
+            if (accError) {
+                console.error('[Sync] Account upsert error:', accError)
+                // If upsert fails to return data but the account exists, fetch it
+                const { data: existingAcc } = await supabase
+                    .from('accounts')
+                    .select('id')
+                    .eq('external_id', plaidAcc.account_id)
+                    .single()
+                
+                if (existingAcc) {
+                    plaidToInternalIdMap[plaidAcc.account_id] = existingAcc.id
+                }
+            } else if (savedAcc) {
+                plaidToInternalIdMap[savedAcc.external_id] = savedAcc.id
+            }
         }
 
         // 4. Fetch Transactions (Last 30 days)
@@ -88,42 +104,58 @@ serve(async (req) => {
                 access_token: accessToken,
                 start_date: thirtyDaysAgo.toISOString().split('T')[0],
                 end_date: now.toISOString().split('T')[0],
+                options: { count: 100 }
             }),
         })
 
         const transactionsData = await transactionsResponse.json()
-        if (!transactionsResponse.ok) {
-            console.error('[Sync] Plaid transactions error:', transactionsData)
-            throw new Error(`Plaid transactions error: ${transactionsData.error_message || JSON.stringify(transactionsData)}`)
-        }
+        if (!transactionsResponse.ok) throw new Error(`Plaid transactions error: ${JSON.stringify(transactionsData)}`)
 
-        // 5. Sync Transactions to DB
-        console.log(`[Sync] Found ${transactionsData.transactions.length} transactions`)
-        for (const plaidTx of transactionsData.transactions) {
+        // 5. Sync Transactions with Account IDs
+        const txs = transactionsData.transactions || []
+        console.log(`[Sync] Successfully fetched ${txs.length} transactions from Plaid`)
+
+        let successCount = 0
+        for (const plaidTx of txs) {
+            const internalAccountId = plaidToInternalIdMap[plaidTx.account_id]
+            
+            if (!internalAccountId) {
+                console.warn(`[Sync] Skipping transaction ${plaidTx.name} because account mapping was not found.`)
+                continue
+            }
+
             const { error: txError } = await supabase.from('transactions').upsert({
                 user_id: user_id,
+                account_id: internalAccountId, // REQUIRED: Linking to our internal account UUID
                 title: plaidTx.name,
                 amount: Math.abs(plaidTx.amount),
                 date: plaidTx.date,
                 is_income: plaidTx.amount < 0,
                 category_symbol: mapPlaidCategoryToSymbol(plaidTx.category),
                 external_id: plaidTx.transaction_id,
-                plaid_item_id: internalItemId // Correct internal UUID
+                plaid_item_id: internalItemId,
+                is_recurring: false
             }, { onConflict: 'external_id' })
             
-            if (txError) console.error('[Sync] Transaction upsert error:', txError)
+            if (txError) {
+                console.error(`[Sync] Transaction error for ${plaidTx.name}:`, txError)
+            } else {
+                successCount++
+            }
         }
+
+        console.log(`[Sync] Finished. Successfully synced ${successCount}/${txs.length} transactions.`)
 
         return new Response(JSON.stringify({ 
             status: 'success', 
-            accounts: accountsData.accounts.length,
-            transactions: transactionsData.transactions.length 
+            accounts: Object.keys(plaidToInternalIdMap).length,
+            transactions: successCount 
         }), {
             headers: { 'Content-Type': 'application/json' },
             status: 200
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('[Sync] Fatal Error:', error)
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,

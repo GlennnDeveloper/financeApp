@@ -5,6 +5,7 @@ import Auth
 struct SideMenuContent: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.colorScheme) var systemColorScheme
     @Binding var isOpen: Bool
     
     @State private var activeSheet: SideMenuSheet?
@@ -34,6 +35,8 @@ struct SideMenuContent: View {
         .environment(\.locale, settingsManager.locale)
         .sheet(item: $activeSheet) { sheet in
             destinationView(for: sheet)
+                .environment(\.locale, settingsManager.locale)
+                .preferredColorScheme(settingsManager.appTheme == .system ? systemColorScheme : settingsManager.appTheme.colorScheme)
         }
     }
 
@@ -53,7 +56,7 @@ struct SideMenuContent: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(SettingsManager.shared.localizedString(for: "Done")) {
+                    Button(settingsManager.localizedString(for: "Done")) {
                         activeSheet = nil
                     }
                 }
