@@ -37,11 +37,14 @@ serve(async (req) => {
         })
 
         const data = await response.json()
+        console.log(`[Plaid] Response status: ${response.status}`)
         
         if (!response.ok) {
-            console.error('Plaid error:', data)
+            console.error('[Plaid] Error payload:', JSON.stringify(data, null, 2))
             return new Response(JSON.stringify(data), { status: response.status })
         }
+
+        console.log(`[Plaid] Success: Link token created`)
 
         return new Response(JSON.stringify({ link_token: data.link_token }), {
             headers: { 'Content-Type': 'application/json' },
