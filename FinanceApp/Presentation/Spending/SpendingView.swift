@@ -148,20 +148,15 @@ struct SpendingView: View {
     }
     
     @ViewBuilder
-    private var headerArea: some View {
-        // Header and Timeframe Picker
+    private func headerArea() -> some View {
         HStack {
-            Text(settingsManager.localizedString(for: "Spending Info"))
-                .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(.primary)
             Spacer()
-            
             HStack(spacing: 0) {
                 ForEach(Timeframe.allCases, id: \.self) { tf in
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selectedTimeframe = tf
-                            dateOffset = 0 // Reset when mode changes
+                            dateOffset = 0
                         }
                     } label: {
                         Text(tf.localizedName)
@@ -335,24 +330,29 @@ struct SpendingView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                headerArea
-                
-                // Donut Chart Area
-                if totalSpentFiltered == 0 {
-                    ContentUnavailableView(
-                        SettingsManager.shared.localizedString(for: "No Data"),
-                        systemImage: "chart.pie.fill",
-                        description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
-                    )
-                    .frame(height: 300)
-                } else {
-                    chartArea
-                    breakdownArea
+        VStack(spacing: 0) {
+            ViewHeader(title: "Spending", showSettings: $showSettings)
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    headerArea()
+                    
+                    
+                    // Donut Chart Area
+                    if totalSpentFiltered == 0 {
+                        ContentUnavailableView(
+                            SettingsManager.shared.localizedString(for: "No Data"),
+                            systemImage: "chart.pie.fill",
+                            description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
+                        )
+                        .frame(height: 300)
+                    } else {
+                        chartArea
+                        breakdownArea
+                    }
                 }
+                .padding(.bottom, 24)
             }
-            .padding(.bottom, 24)
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .onAppear {

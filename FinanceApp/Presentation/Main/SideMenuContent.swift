@@ -6,6 +6,14 @@ struct SideMenuContent: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var isOpen: Bool
+    
+    @State private var activeSheet: SideMenuSheet?
+
+    enum SideMenuSheet: Identifiable {
+        case profile, budget, categories, linkedAccounts, premium, settings, help
+        
+        var id: Int { hashValue }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -24,6 +32,33 @@ struct SideMenuContent: View {
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .environment(\.locale, settingsManager.locale)
+        .sheet(item: $activeSheet) { sheet in
+            destinationView(for: sheet)
+        }
+    }
+
+    @ViewBuilder
+    private func destinationView(for sheet: SideMenuSheet) -> some View {
+        NavigationStack {
+            Group {
+                switch sheet {
+                case .profile: ProfileView()
+                case .budget: BudgetView()
+                case .categories: CategoryRulesView()
+                case .linkedAccounts: LinkedAccountsView()
+                case .premium: PremiumView()
+                case .settings: SettingsView()
+                case .help: HelpPrivacyView()
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(SettingsManager.shared.localizedString(for: "Done")) {
+                        activeSheet = nil
+                    }
+                }
+            }
+        }
     }
 
     private var headerSection: some View {
@@ -53,7 +88,7 @@ struct SideMenuContent: View {
 
     private var accountSection: some View {
         MenuSection {
-            NavigationLink(destination: ProfileView()) {
+            Button { activeSheet = .profile } label: {
                 MenuRowContent(icon: "person.fill", iconColor: .orange, title: SettingsManager.shared.localizedString(for: "Profile"))
             }
             .buttonStyle(.plain)
@@ -63,17 +98,17 @@ struct SideMenuContent: View {
             }
             .buttonStyle(.plain)
             
-            NavigationLink(destination: BudgetView()) {
+            Button { activeSheet = .budget } label: {
                 MenuRowContent(icon: "dollarsign.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Manage Budget"))
             }
             .buttonStyle(.plain)
             
-            NavigationLink(destination: CategoryRulesView()) {
+            Button { activeSheet = .categories } label: {
                 MenuRowContent(icon: "square.grid.2x2.fill", iconColor: .indigo, title: SettingsManager.shared.localizedString(for: "Categories & Rules"))
             }
             .buttonStyle(.plain)
             
-            NavigationLink(destination: LinkedAccountsView()) {
+            Button { activeSheet = .linkedAccounts } label: {
                 MenuRowContent(icon: "building.columns.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Linked Accounts"))
             }
             .buttonStyle(.plain)
@@ -82,17 +117,17 @@ struct SideMenuContent: View {
 
     private var preferencesSection: some View {
         MenuSection {
-            NavigationLink(destination: PremiumView()) {
+            Button { activeSheet = .premium } label: {
                 MenuRowContent(icon: "crown.fill", iconColor: .yellow, title: SettingsManager.shared.localizedString(for: "Premium"))
             }
             .buttonStyle(.plain)
             
-            NavigationLink(destination: SettingsView()) {
+            Button { activeSheet = .settings } label: {
                 MenuRowContent(icon: "gearshape.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Settings"))
             }
             .buttonStyle(.plain)
             
-            NavigationLink(destination: HelpPrivacyView()) {
+            Button { activeSheet = .help } label: {
                 MenuRowContent(icon: "questionmark.circle.fill", iconColor: .gray, title: SettingsManager.shared.localizedString(for: "Help & Privacy"))
             }
             .buttonStyle(.plain)

@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "M72Q8VHG83.glennn.FinanceAppTest",
+        "paths": ["/oauth/*", "/link/*"]
+      }
+    ]
+  }
+}

@@ -38,7 +38,10 @@ class BankConnectionViewModel: ObservableObject {
             let tokenData: TokenResponse = try await client.functions.invoke(
                 "create-link-token",
                 options: FunctionInvokeOptions(
-                    headers: ["Authorization": "Bearer \(session.accessToken)"],
+                    headers: [
+                        "apikey": Secrets.supabaseAnonKey,
+                        "Authorization": "Bearer \(session.accessToken)"
+                    ],
                     body: LinkTokenRequest(user_id: user.id.uuidString)
                 )
             )
@@ -78,11 +81,18 @@ class BankConnectionViewModel: ObservableObject {
                 let user_id: String
             }
             
-            // Exchange token via Supabase
-            let _ = try await client.functions.invoke(
+            struct ExchangeResponse: Decodable {
+                let item_id: String
+            }
+            
+            // 1. Exchange token via Supabase
+            let response: ExchangeResponse = try await client.functions.invoke(
                 "exchange-public-token",
                 options: FunctionInvokeOptions(
-                    headers: ["Authorization": "Bearer \(session.accessToken)"],
+                    headers: [
+                        "apikey": Secrets.supabaseAnonKey,
+                        "Authorization": "Bearer \(session.accessToken)"
+                    ],
                     body: ExchangeTokenRequest(
                         public_token: publicToken,
                         user_id: user.id.uuidString
@@ -90,13 +100,33 @@ class BankConnectionViewModel: ObservableObject {
                 )
             )
             
+            // 2. Trigger initial sync
+            struct SyncRequest: Encodable {
+                let user_id: String
+                let plaid_item_id: String
+            }
+            
+            let _ = try await client.functions.invoke(
+                "sync-plaid-data",
+                options: FunctionInvokeOptions(
+                    headers: [
+                        "apikey": Secrets.supabaseAnonKey,
+                        "Authorization": "Bearer \(session.accessToken)"
+                    ],
+                    body: SyncRequest(
+                        user_id: user.id.uuidString,
+                        plaid_item_id: response.item_id
+                    )
+                )
+            )
+            
             self.isConnected = true
 
-            // Trigger real sync from remote database
+            // 3. Fetch data into SwiftData
             await syncRemoteData(context: context)
             
         } catch {
-            self.errorMessage = "Failed to exchange token: \(error.localizedDescription)"
+            self.errorMessage = "Failed to connection: \(error.localizedDescription)"
         }
     }
     

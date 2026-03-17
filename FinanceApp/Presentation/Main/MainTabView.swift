@@ -19,10 +19,8 @@ struct MainTabView: View {
     
     var body: some View {
         SideMenuContainerView(isOpen: $showSettings) {
-            NavigationStack {
-                SideMenuContent(isOpen: $showSettings)
-                    .environmentObject(authViewModel)
-            }
+            SideMenuContent(isOpen: $showSettings)
+                .environmentObject(authViewModel)
         } main: {
             NavigationStack {
                 mainContentView
