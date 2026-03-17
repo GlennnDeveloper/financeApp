@@ -32,7 +32,6 @@ serve(async (req) => {
                 products: PLAID_PRODUCTS,
                 country_codes: PLAID_COUNTRY_CODES,
                 language: 'en',
-                redirect_uri: 'https://glennndeveloper.github.io/financeApp/oauth',
             }),
         })
 
