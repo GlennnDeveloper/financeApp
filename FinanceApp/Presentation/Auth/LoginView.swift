@@ -15,136 +15,226 @@ struct LoginView: View {
     
     @FocusState private var focusedField: FocusField?
     
+    @State private var animate = false
+    
     var body: some View {
-        // GEOMETRY READER: Congela las dimensiones de la pantalla
         GeometryReader { proxy in
             ZStack {
-                Color.black.ignoresSafeArea()
+                // --- DYNAMIC BACKGROUND ---
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    
+                    // Floating blobs for depth
+                    Circle()
+                        .fill(LinearGradient(colors: [.orange.opacity(0.4), .red.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 300, height: 300)
+                        .blur(radius: 80)
+                        .offset(x: animate ? 100 : -100, y: animate ? -150 : 150)
+                    
+                    Circle()
+                        .fill(LinearGradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 400, height: 400)
+                        .blur(radius: 100)
+                        .offset(x: animate ? -120 : 120, y: animate ? 200 : -100)
+                }
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 7).repeatForever(autoreverses: true)) {
+                        animate.toggle()
+                    }
+                }
                 
                 VStack(spacing: 0) {
-                    // --- HEADER ---
-                    VStack(spacing: 12) {
-                        Image(systemName: "hand.raised.fill")
-                            .font(.system(size: 70))
-                            .foregroundStyle(LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .shadow(color: .orange.opacity(0.5), radius: 15)
-                            .drawingGroup()
+                    // --- HEADER / BRANDING ---
+                    VStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(.white.opacity(0.1))
+                                .frame(width: 100, height: 100)
+                                .blur(radius: 10)
+                            
+                            Image(systemName: "chart.pie.fill") // A more finance-related icon
+                                .font(.system(size: 50))
+                                .foregroundStyle(LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .shadow(color: .orange.opacity(0.5), radius: 20)
+                        }
                         
-                        Text("MyFinance")
-                            .font(.system(size: 32, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color.white)
+                        Text("Glennn Finance")
+                            .font(.system(size: 36, weight: .black, design: .rounded))
+                            .tracking(1)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.white, .white.opacity(0.8)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
                     }
+                    .padding(.top, 60)
                     .padding(.bottom, 40)
                     
-                    // --- FORMULARIO ---
-                    VStack(spacing: 20) {
-                        Text(settingsManager.localizedString(for: isSignUp ? "Create Account" : "Welcome Back"))
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(Color.white)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    // --- FORM WITH GLASSMORPHISM ---
+                    VStack(spacing: 24) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(settingsManager.localizedString(for: isSignUp ? "Create Account" : "Welcome Back"))
+                                .font(.title.bold())
+                                .foregroundStyle(.white)
+                            
+                            Text(settingsManager.localizedString(for: isSignUp ? "Join us to manage your finances better" : "Please sign in to continue"))
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         
                         VStack(spacing: 16) {
-                            // CAMPO EMAIL
-                            HStack(spacing: 16) {
-                                Image(systemName: "envelope.fill")
-                                    .foregroundStyle(focusedField == .email ? Color.orange : Color.white.opacity(0.5))
-                                    .frame(width: 24)
-                                
-                                TextField("", text: $email, prompt: Text(settingsManager.localizedString(for: "Email Address")).foregroundStyle(Color.white.opacity(0.4)))
-                                    .foregroundStyle(Color.white)
-                                    .keyboardType(.emailAddress)
-                                    .textContentType(.username)
-                                    .autocorrectionDisabled(true)
-                                    .textInputAutocapitalization(.never)
-                                    .submitLabel(.next)
-                                    .focused($focusedField, equals: .email)
-                            }
-                            .padding(.horizontal, 20).frame(height: 60)
-                            .contentShape(Rectangle())
+                            // EMAIL FIELD
+                            customTextField(
+                                icon: "envelope.fill",
+                                placeholder: "Email Address",
+                                text: $email,
+                                isFocused: focusedField == .email
+                            )
                             .onTapGesture { focusedField = .email }
-                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(focusedField == .email ? 0.12 : 0.05)))
                             
-                            // CAMPO PASSWORD
-                            HStack(spacing: 16) {
-                                Image(systemName: "lock.fill")
-                                    .foregroundStyle(focusedField == .password ? Color.orange : Color.white.opacity(0.5))
-                                    .frame(width: 24)
-                                
-                                SecureField("", text: $password, prompt: Text(settingsManager.localizedString(for: "Password")).foregroundStyle(Color.white.opacity(0.4)))
-                                    .foregroundStyle(Color.white)
-                                    .textContentType(.password)
-                                    .submitLabel(.done)
-                                    .focused($focusedField, equals: .password)
-                            }
-                            .padding(.horizontal, 20).frame(height: 60)
-                            .contentShape(Rectangle())
+                            // PASSWORD FIELD
+                            customSecureField(
+                                icon: "lock.fill",
+                                placeholder: "Password",
+                                text: $password,
+                                isFocused: focusedField == .password
+                            )
                             .onTapGesture { focusedField = .password }
-                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(focusedField == .password ? 0.12 : 0.05)))
                         }
                         
                         if let error = viewModel.errorMessage {
                             Text(error)
                                 .font(.caption)
                                 .foregroundStyle(.red.opacity(0.9))
-                                .padding(.vertical, 4)
+                                .padding(.horizontal, 4)
                         }
                         
-                        // BOTÓN
+                        // PRIMARY ACTION BUTTON
                         Button {
                             focusedField = nil
                             submitAction()
                         } label: {
                             HStack {
                                 if viewModel.isLoading {
-                                    ProgressView().tint(Color.white)
+                                    ProgressView().tint(.white)
                                 } else {
-                                    Text(settingsManager.localizedString(for: isSignUp ? "Sign Up" : "Sign In")).font(.headline).fontWeight(.bold)
+                                    Text(settingsManager.localizedString(for: isSignUp ? "Sign Up" : "Sign In"))
+                                        .font(.headline)
+                                        .fontWeight(.bold)
                                 }
                             }
-                            .frame(maxWidth: .infinity).frame(height: 56)
-                            .background(LinearGradient(colors: [Color.orange, Color.red], startPoint: .leading, endPoint: .trailing))
-                            .foregroundColor(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.orange, Color.red],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
                         }
                         .disabled(viewModel.isLoading)
-                        .padding(.top, 8)
                         
-                        // TOGGLE
+                        // TOGGLE LOGIN/SIGNUP
                         Button {
-                            withAnimation(.spring()) {
+                            // Simple haptic feedback could be added here
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                 isSignUp.toggle()
                                 viewModel.errorMessage = nil
                             }
                         } label: {
                             HStack(spacing: 4) {
                                 Text(settingsManager.localizedString(for: isSignUp ? "Already have an account?" : "Don't have an account?"))
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .foregroundStyle(.white.opacity(0.6))
                                 Text(settingsManager.localizedString(for: isSignUp ? "Sign In" : "Sign Up"))
-                                    .fontWeight(.bold).foregroundStyle(Color.orange)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.orange)
                             }
-                            .font(.footnote)
+                            .font(.subheadline)
                         }
-                        .padding(.top, 4)
                     }
-                    .padding(28)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .padding(30)
+                    .background {
+                        RoundedRectangle(cornerRadius: 35, style: .continuous)
+                            .fill(.white.opacity(0.08))
+                            .background(
+                                BlurView(style: .systemThinMaterialDark)
+                                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 35, style: .continuous)
+                                    .stroke(.white.opacity(0.15), lineWidth: 1)
+                            )
+                    }
                     .padding(.horizontal, 24)
                 }
-                // Usamos el GeometryReader para empujarlo dinámicamente un 10% hacia abajo
-                .padding(.top, proxy.size.height * 0.10)
-                // Congelamos el frame exacto de la pantalla
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             }
         }
-        // Este modificador ahora trabaja en conjunto con GeometryReader de manera perfecta
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .background {
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture { focusedField = nil }
-        }
+        .background(Color.black)
+        .onTapGesture { focusedField = nil }
     }
+    
+    @ViewBuilder
+    private func customTextField(icon: String, placeholder: String, text: Binding<String>, isFocused: Bool) -> some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .foregroundStyle(isFocused ? .orange : .white.opacity(0.4))
+                .font(.system(size: 20))
+                .frame(width: 24)
+            
+            TextField("", text: text, prompt: Text(settingsManager.localizedString(for: placeholder)).foregroundStyle(.white.opacity(0.3)))
+                .foregroundStyle(.white)
+                .keyboardType(.emailAddress)
+                .textContentType(.username)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.never)
+                .focused($focusedField, equals: .email)
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 64)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(isFocused ? .white.opacity(0.12) : .white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(isFocused ? .orange.opacity(0.5) : .clear, lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private func customSecureField(icon: String, placeholder: String, text: Binding<String>, isFocused: Bool) -> some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .foregroundStyle(isFocused ? .orange : .white.opacity(0.4))
+                .font(.system(size: 20))
+                .frame(width: 24)
+            
+            SecureField("", text: text, prompt: Text(settingsManager.localizedString(for: placeholder)).foregroundStyle(.white.opacity(0.3)))
+                .foregroundStyle(.white)
+                .textContentType(.password)
+                .focused($focusedField, equals: .password)
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 64)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(isFocused ? .white.opacity(0.12) : .white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(isFocused ? .orange.opacity(0.5) : .clear, lineWidth: 1)
+        )
+    }
+
     
     private func submitAction() {
         Task {
@@ -155,4 +245,13 @@ struct LoginView: View {
             }
         }
     }
+}
+
+// Support for Glassmorphism
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }

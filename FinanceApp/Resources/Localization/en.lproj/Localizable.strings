@@ -120,6 +120,14 @@
 "No Transactions" = "No Transactions";
 "Your bank movements will appear here." = "Your bank movements will appear here.";
 "Transactions" = "Transactions";
+"Search transactions" = "Search transactions";
+"All Years" = "All Years";
+"Jump to Date" = "Jump to Date";
+"Year" = "Year";
+"Month" = "Month";
+"Day" = "Day";
+"All" = "All";
+"Clear" = "Clear";
 
 /* Budget */
 "Monthly Budget" = "Monthly Budget";
@@ -206,6 +214,11 @@
 "$9.99 / month" = "$9.99 / month";
 "Cancel anytime. No hidden fees." = "Cancel anytime. No hidden fees.";
 "Start 7-Day Free Trial" = "Start 7-Day Free Trial";
+"Premium Active" = "Premium Active";
+"Unlock Pro Dashboard" = "Unlock Pro Dashboard";
+"Get predictions and spending metrics" = "Get predictions and spending metrics";
+"Predictive Recurring" = "Predictive Recurring";
+"A Pro dashboard for your subscriptions with billing predictions." = "A Pro dashboard for your subscriptions with billing predictions.";
 
 /* Help & Privacy */
 "Support" = "Support";

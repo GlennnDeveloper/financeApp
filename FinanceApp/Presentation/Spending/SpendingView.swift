@@ -304,7 +304,7 @@ struct SpendingView: View {
                 .foregroundStyle(.primary)
                 .padding(.horizontal)
             
-            VStack(spacing: 12) {
+            LazyVStack(spacing: 12) {
                 // Only show non-zero categories in the list
                 ForEach(chartData.filter { $0.totalSpent > 0 }, id: \.symbol) { item in
                     NavigationLink {
@@ -402,6 +402,11 @@ struct SpendingView: View {
                 }
                 .padding(.bottom, 24)
             }
+        }
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .frame(height: 0)
+                .ignoresSafeArea(edges: .top)
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .onAppear {

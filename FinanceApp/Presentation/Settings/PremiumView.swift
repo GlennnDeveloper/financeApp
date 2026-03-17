@@ -33,6 +33,7 @@ struct PremiumView: View {
                 // Features
                 VStack(spacing: 20) {
                     FeatureRow(icon: "chart.pie.fill", color: .purple, title: "Advanced Analytics", description: "Deep dive into your spending habits with AI-powered insights.")
+                    FeatureRow(icon: "calendar.badge.clock", color: .orange, title: "Predictive Recurring", description: "A Pro dashboard for your subscriptions with billing predictions.")
                     FeatureRow(icon: "arrow.left.arrow.right.circle.fill", color: .blue, title: "Unlimited Sync", description: "Connect all your bank accounts and credit cards automatically.")
                     FeatureRow(icon: "bell.badge.fill", color: .red, title: "Smart Alerts", description: "Get notified before you overspend or when subscriptions increase.")
                     FeatureRow(icon: "lock.shield.fill", color: .green, title: "Enhanced Security", description: "Extra layer of protection for your sensitive financial data.")
@@ -50,14 +51,16 @@ struct PremiumView: View {
                     }
                     
                     Button {
-                        // Action for subscription
+                        withAnimation {
+                            SettingsManager.shared.isPremium.toggle()
+                        }
                     } label: {
-                        Text(SettingsManager.shared.localizedString(for: "Start 7-Day Free Trial"))
+                        Text(SettingsManager.shared.isPremium ? SettingsManager.shared.localizedString(for: "Premium Active") : SettingsManager.shared.localizedString(for: "Start 7-Day Free Trial"))
                             .font(.headline)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(SettingsManager.shared.isPremium ? .white : .black)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(.yellow, in: RoundedRectangle(cornerRadius: 16))
+                            .background(SettingsManager.shared.isPremium ? .green : .yellow, in: RoundedRectangle(cornerRadius: 16))
                     }
                 }
                 .padding(.horizontal)

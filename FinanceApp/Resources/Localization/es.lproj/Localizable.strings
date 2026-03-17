@@ -120,6 +120,9 @@
 "No Transactions" = "Sin Transacciones";
 "Your bank movements will appear here." = "Tus movimientos bancarios aparecerán aquí.";
 "Transactions" = "Transacciones";
+"Search transactions" = "Buscar transacciones";
+"All Years" = "Todos los años";
+"Jump to Date" = "Ir a Fecha";
 
 /* Budget */
 "Monthly Budget" = "Presupuesto Mensual";
@@ -206,6 +209,11 @@
 "$9.99 / month" = "9,99 $ / mes";
 "Cancel anytime. No hidden fees." = "Cancela en cualquier momento. Sin cargos ocultos.";
 "Start 7-Day Free Trial" = "Prueba Gratis de 7 Días";
+"Premium Active" = "Premium Activado";
+"Unlock Pro Dashboard" = "Desbloquear Dashboard Pro";
+"Get predictions and spending metrics" = "Obtén predicciones y métricas de gasto";
+"Predictive Recurring" = "Recurrentes Predictivos";
+"A Pro dashboard for your subscriptions with billing predictions." = "Un panel profesional para tus suscripciones con predicciones de pago.";
 
 /* Help & Privacy */
 "Support" = "Soporte";

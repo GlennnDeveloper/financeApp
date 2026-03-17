@@ -46,6 +46,7 @@ final class SettingsManager: ObservableObject {
     @AppStorage("app_language") var appLanguageName: String = AppLanguage.english.rawValue
     @AppStorage("app_currency") var appCurrency: String = "USD"
     @AppStorage("use_biometrics") var useBiometrics: Bool = true
+    @AppStorage("is_premium") var isPremium: Bool = false
     
     var appTheme: AppTheme {
         get { AppTheme(rawValue: appThemeName) ?? .system }

@@ -67,20 +67,90 @@ struct RecurringView: View {
                     emptyState
                 } else {
                     VStack(spacing: 24) {
-                        summaryCards
-                        
-                        if !upcomingSubscriptions.isEmpty {
-                            upcomingSection
+                        if settingsManager.isPremium {
+                            summaryCards
+                            
+                            if !upcomingSubscriptions.isEmpty {
+                                upcomingSection
+                            }
+                            
+                            allSubscriptionsSection
+                        } else {
+                            premiumUpsellCard
+                            standardSubscriptionsSection
                         }
-                        
-                        allSubscriptionsSection
                     }
                     .padding(.bottom, 100)
                 }
             }
         }
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .frame(height: 0)
+                .ignoresSafeArea(edges: .top)
+        }
         .background(Color(uiColor: .systemGroupedBackground))
         .environment(\.locale, settingsManager.locale)
+        .sheet(isPresented: $showPremiumSheet) {
+            NavigationStack {
+                PremiumView()
+            }
+        }
+    }
+    
+    @State private var showPremiumSheet = false
+    
+    private var premiumUpsellCard: some View {
+        Button {
+            showPremiumSheet = true
+        } label: {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    ZStack {
+                        Circle()
+                            .fill(.yellow.opacity(0.15))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: "crown.fill")
+                            .foregroundStyle(.yellow)
+                            .font(.title3)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(settingsManager.localizedString(for: "Unlock Pro Dashboard"))
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        Text(settingsManager.localizedString(for: "Get predictions and spending metrics"))
+                            .font(.subheadline)
+                            .foregroundStyle(.gray)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.bold())
+                        .foregroundStyle(.gray)
+                }
+            }
+            .padding()
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .padding(.horizontal)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var standardSubscriptionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(settingsManager.localizedString(for: "Active Subscriptions"))
+                .font(.headline)
+                .padding(.horizontal)
+            
+            LazyVStack(spacing: 12) {
+                ForEach(uniqueSubscriptions) { transaction in
+                    TransactionRow(transaction: transaction, categories: categories)
+                        .padding(16)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.horizontal)
+                }
+            }
+        }
     }
     
     private var summaryCards: some View {

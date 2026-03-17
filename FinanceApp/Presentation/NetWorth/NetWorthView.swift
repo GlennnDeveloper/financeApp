@@ -164,6 +164,11 @@ struct NetWorthView: View {
                 .padding(.bottom, 30)
             }
         }
+        .overlay(alignment: .top) {
+            Color(uiColor: .systemGroupedBackground)
+                .frame(height: 0)
+                .ignoresSafeArea(edges: .top)
+        }
         .background(Color(uiColor: .systemGroupedBackground))
         .environment(\.locale, settingsManager.locale)
         .onAppear {
@@ -205,7 +210,7 @@ struct AccountSectionView: View {
                     .foregroundStyle(.gray)
                     .padding()
             } else {
-                VStack(spacing: 12) {
+                LazyVStack(spacing: 12) {
                     ForEach(accounts) { account in
                         HStack {
                             Image(systemName: account.symbol)

@@ -22,9 +22,8 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
                 main()
                     .disabled(isOpen)
                     
-                // Stable Overlay
-                Color.black
-                    .opacity(isOpen ? 0.15 : 0)
+                // Invisible tap area to close menu
+                Color.clear
                     .contentShape(Rectangle())
                     .allowsHitTesting(isOpen)
                     .onTapGesture {
