@@ -7,30 +7,39 @@ const PLAID_ENV = (Deno.env.get('PLAID_ENV') || 'sandbox').trim().toLowerCase()
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-// production.plaid.com is the only valid endpoint for both Development and Production tiers.
 const PLAID_URL = PLAID_ENV === 'sandbox' 
     ? 'https://sandbox.plaid.com' 
     : 'https://production.plaid.com'
 
-console.log(`[Plaid] Environment: ${PLAID_ENV}, using URL: ${PLAID_URL}`)
-
 serve(async (req) => {
     try {
         const { user_id, plaid_item_id } = await req.json()
+        
+        if (!user_id || !plaid_item_id) {
+            return new Response(JSON.stringify({ error: 'Missing user_id or plaid_item_id' }), { status: 400 })
+        }
+
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-        // 1. Get access token from DB
+        console.log(`[Sync] Starting sync for user: ${user_id}, internal item ID: ${plaid_item_id}`)
+
+        // 1. Get access token from DB - We query by 'id' (UUID) which is what the App now sends
         const { data: plaidItem, error: plaidError } = await supabase
             .from('plaid_items')
-            .select('access_token')
+            .select('access_token, id')
             .eq('id', plaid_item_id)
             .single()
 
         if (plaidError || !plaidItem) {
-            throw new Error(`Plaid item not found: ${plaidError?.message}`)
+            console.error('[Sync] Plaid item fetch error:', plaidError)
+            return new Response(JSON.stringify({ 
+                error: 'Plaid item not found in database', 
+                details: plaidError?.message 
+            }), { status: 500 })
         }
 
         const accessToken = plaidItem.access_token
+        const internalItemId = plaidItem.id // This is the UUID
 
         // 2. Fetch Accounts from Plaid
         const accountsResponse = await fetch(`${PLAID_URL}/accounts/get`, {
@@ -44,23 +53,29 @@ serve(async (req) => {
         })
 
         const accountsData = await accountsResponse.json()
-        if (!accountsResponse.ok) throw new Error(`Plaid accounts error: ${JSON.stringify(accountsData)}`)
+        if (!accountsResponse.ok) {
+            console.error('[Sync] Plaid accounts error:', accountsData)
+            throw new Error(`Plaid accounts error: ${accountsData.error_message || JSON.stringify(accountsData)}`)
+        }
 
         // 3. Sync Accounts to DB
+        console.log(`[Sync] Found ${accountsData.accounts.length} accounts`)
         for (const plaidAcc of accountsData.accounts) {
-            await supabase.from('accounts').upsert({
+            const { error: accError } = await supabase.from('accounts').upsert({
                 user_id: user_id,
                 name: plaidAcc.name,
                 balance: plaidAcc.balances.current,
                 symbol: mapAccountTypeToSymbol(plaidAcc.type),
-                color_name: 'blue', // Default
+                color_name: 'blue',
                 is_liability: ['credit', 'loan'].includes(plaidAcc.type),
                 external_id: plaidAcc.account_id,
-                plaid_item_id: plaid_item_id
+                plaid_item_id: internalItemId // Correct internal UUID
             }, { onConflict: 'external_id' })
+            
+            if (accError) console.error('[Sync] Account upsert error:', accError)
         }
 
-        // 4. Fetch Transactions (Last 30 days by default)
+        // 4. Fetch Transactions (Last 30 days)
         const now = new Date()
         const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000))
         
@@ -77,11 +92,15 @@ serve(async (req) => {
         })
 
         const transactionsData = await transactionsResponse.json()
-        if (!transactionsResponse.ok) throw new Error(`Plaid transactions error: ${JSON.stringify(transactionsData)}`)
+        if (!transactionsResponse.ok) {
+            console.error('[Sync] Plaid transactions error:', transactionsData)
+            throw new Error(`Plaid transactions error: ${transactionsData.error_message || JSON.stringify(transactionsData)}`)
+        }
 
         // 5. Sync Transactions to DB
+        console.log(`[Sync] Found ${transactionsData.transactions.length} transactions`)
         for (const plaidTx of transactionsData.transactions) {
-            await supabase.from('transactions').upsert({
+            const { error: txError } = await supabase.from('transactions').upsert({
                 user_id: user_id,
                 title: plaidTx.name,
                 amount: Math.abs(plaidTx.amount),
@@ -89,16 +108,23 @@ serve(async (req) => {
                 is_income: plaidTx.amount < 0,
                 category_symbol: mapPlaidCategoryToSymbol(plaidTx.category),
                 external_id: plaidTx.transaction_id,
-                plaid_item_id: plaid_item_id
+                plaid_item_id: internalItemId // Correct internal UUID
             }, { onConflict: 'external_id' })
+            
+            if (txError) console.error('[Sync] Transaction upsert error:', txError)
         }
 
-        return new Response(JSON.stringify({ status: 'success', synced: transactionsData.transactions.length }), {
+        return new Response(JSON.stringify({ 
+            status: 'success', 
+            accounts: accountsData.accounts.length,
+            transactions: transactionsData.transactions.length 
+        }), {
             headers: { 'Content-Type': 'application/json' },
+            status: 200
         })
 
     } catch (error) {
-        console.error('Sync error:', error)
+        console.error('[Sync] Fatal Error:', error)
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
@@ -117,9 +143,10 @@ function mapAccountTypeToSymbol(type: string): string {
 }
 
 function mapPlaidCategoryToSymbol(categories: string[]): string {
-    if (categories.includes('Food and Drink')) return 'fork.knife'
-    if (categories.includes('Travel')) return 'airplane'
-    if (categories.includes('Transfer')) return 'arrow.left.arrow.right'
-    if (categories.includes('Shops')) return 'cart.fill'
+    const cats = categories || []
+    if (cats.includes('Food and Drink')) return 'fork.knife'
+    if (cats.includes('Travel')) return 'airplane'
+    if (cats.includes('Transfer')) return 'arrow.left.arrow.right'
+    if (cats.includes('Shops')) return 'cart.fill'
     return 'questionmark.circle'
 }
