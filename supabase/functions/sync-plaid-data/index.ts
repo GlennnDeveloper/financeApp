@@ -59,8 +59,7 @@ serve(async (req) => {
         console.log(`[Sync] Processing ${accountsData.accounts.length} accounts...`)
         const plaidToInternalIdMap: Record<string, string> = {}
 
-        for (const plaidAcc of accountsData.accounts) {
-            // First, upsert the account
+        const accountUpserts = accountsData.accounts.map(async (plaidAcc: any) => {
             const { data: savedAcc, error: accError } = await supabase.from('accounts').upsert({
                 user_id: user_id,
                 name: plaidAcc.name,
@@ -76,7 +75,6 @@ serve(async (req) => {
             
             if (accError) {
                 console.error('[Sync] Account upsert error:', accError)
-                // If upsert fails to return data but the account exists, fetch it
                 const { data: existingAcc } = await supabase
                     .from('accounts')
                     .select('id')
@@ -89,7 +87,9 @@ serve(async (req) => {
             } else if (savedAcc) {
                 plaidToInternalIdMap[savedAcc.external_id] = savedAcc.id
             }
-        }
+        })
+
+        await Promise.all(accountUpserts)
 
         // 4. Fetch Transactions (Last 30 days)
         const now = new Date()
@@ -111,36 +111,42 @@ serve(async (req) => {
         const transactionsData = await transactionsResponse.json()
         if (!transactionsResponse.ok) throw new Error(`Plaid transactions error: ${JSON.stringify(transactionsData)}`)
 
-        // 5. Sync Transactions with Account IDs
+        // 5. Sync Transactions with Account IDs (BATCHED)
         const txs = transactionsData.transactions || []
         console.log(`[Sync] Successfully fetched ${txs.length} transactions from Plaid`)
 
-        let successCount = 0
-        for (const plaidTx of txs) {
-            const internalAccountId = plaidToInternalIdMap[plaidTx.account_id]
-            
-            if (!internalAccountId) {
-                console.warn(`[Sync] Skipping transaction ${plaidTx.name} because account mapping was not found.`)
-                continue
-            }
+        const transactionsToUpsert = txs
+            .map((plaidTx: any) => {
+                const internalAccountId = plaidToInternalIdMap[plaidTx.account_id]
+                if (!internalAccountId) {
+                    console.warn(`[Sync] Skipping transaction ${plaidTx.name} because account mapping was not found.`)
+                    return null
+                }
+                return {
+                    user_id: user_id,
+                    account_id: internalAccountId,
+                    title: plaidTx.name,
+                    amount: Math.abs(plaidTx.amount),
+                    date: plaidTx.date,
+                    is_income: plaidTx.amount < 0,
+                    category_symbol: mapPlaidCategoryToSymbol(plaidTx.category),
+                    external_id: plaidTx.transaction_id,
+                    plaid_item_id: internalItemId,
+                    is_recurring: false
+                }
+            })
+            .filter((tx: any) => tx !== null)
 
-            const { error: txError } = await supabase.from('transactions').upsert({
-                user_id: user_id,
-                account_id: internalAccountId, // REQUIRED: Linking to our internal account UUID
-                title: plaidTx.name,
-                amount: Math.abs(plaidTx.amount),
-                date: plaidTx.date,
-                is_income: plaidTx.amount < 0,
-                category_symbol: mapPlaidCategoryToSymbol(plaidTx.category),
-                external_id: plaidTx.transaction_id,
-                plaid_item_id: internalItemId,
-                is_recurring: false
-            }, { onConflict: 'external_id' })
-            
-            if (txError) {
-                console.error(`[Sync] Transaction error for ${plaidTx.name}:`, txError)
+        let successCount = 0
+        if (transactionsToUpsert.length > 0) {
+            const { error: batchError } = await supabase
+                .from('transactions')
+                .upsert(transactionsToUpsert, { onConflict: 'external_id' })
+
+            if (batchError) {
+                console.error(`[Sync] Batch transaction upsert error:`, batchError)
             } else {
-                successCount++
+                successCount = transactionsToUpsert.length
             }
         }
 

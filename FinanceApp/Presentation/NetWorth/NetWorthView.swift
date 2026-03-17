@@ -36,29 +36,32 @@ struct NetWorthView: View {
             let today = calendar.startOfDay(for: .now)
             var data: [HistoricalNetWorth] = []
 
-            // Empezamos con el Net Worth actual
+            // 1. Pre-calculate monthly net flows for the last 6 months
+            var monthlyNetFlows: [Date: Double] = [:]
+            for i in 0...5 {
+                if let monthDate = calendar.date(byAdding: .month, value: -i, to: today) {
+                    let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: monthDate))!
+                    let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
+                    
+                    let netFlow = currentTx.filter { $0.date >= startOfMonth && $0.date <= endOfMonth }
+                        .reduce(0) { $0 + ($1.isIncome ? $1.amount : -$1.amount) }
+                    
+                    monthlyNetFlows[startOfMonth] = netFlow
+                }
+            }
+
+            // 2. Build the data points by stepping back from current net worth
             var runningNetWorth = netWorthNow
             data.append(HistoricalNetWorth(date: today, amount: runningNetWorth))
 
-            // Iteramos hacia atrás mes a mes
             for i in 1...5 {
-                guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today),
-                      let currentMonthDate  = calendar.date(byAdding: .month, value: -(i - 1), to: today)
-                else { continue }
-
-                // Queremos saber el NetWorth al inicio del mes anterior.
-                let transactionsInMonth = currentTx.filter {
-                    calendar.isDate($0.date, equalTo: currentMonthDate, toGranularity: .month)
-                }
-
-                let netCashFlow = transactionsInMonth.reduce(0) { total, tx in
-                    total + (tx.isIncome ? tx.amount : -tx.amount)
-                }
-
-                // Revertir el flujo de caja
-                runningNetWorth -= netCashFlow
-
-                // Guardar el punto en el tiempo
+                guard let previousMonthDate = calendar.date(byAdding: .month, value: -i, to: today) else { continue }
+                let startOfCurrentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: calendar.date(byAdding: .month, value: -(i-1), to: today)!))!
+                
+                // Subtract current month's flow to get previous month's end balance
+                let currentMonthFlow = monthlyNetFlows[startOfCurrentMonth] ?? 0
+                runningNetWorth -= currentMonthFlow
+                
                 data.append(HistoricalNetWorth(date: previousMonthDate, amount: runningNetWorth))
             }
 
@@ -73,10 +76,14 @@ struct NetWorthView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            ViewHeader(title: "Net Worth", showSettings: $showSettings)
-            
-            ScrollView(showsIndicators: false) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+                ViewHeader(title: "Net Worth", showSettings: $showSettings) {
+                    Image(systemName: "bell.fill")
+                        .font(.title2)
+                        .foregroundStyle(.gray.opacity(0.5))
+                }
+                
                 VStack(spacing: 24) {
                     
                     // Header Box Network

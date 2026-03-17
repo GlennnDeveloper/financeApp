@@ -46,7 +46,6 @@ struct FinanceAppApp: App {
             }
             .onOpenURL { url in
                 // Handle Plaid OAuth redirect
-                print("Received URL: \(url)")
             }
             .task {
                 // We DON'T await these together because startListening() is an infinite loop 

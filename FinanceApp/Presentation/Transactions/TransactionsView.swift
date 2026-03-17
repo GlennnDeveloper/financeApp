@@ -11,18 +11,23 @@ struct TransactionsView: View {
     @State private var groupedTransactions: [(String, [Transaction])] = []
     
     var body: some View {
-        VStack(spacing: 0) {
-            ViewHeader(title: "Transactions", showSettings: $showSettings)
-            
-            Group {
-                if transactions.isEmpty {
-                    ContentUnavailableView(
-                        SettingsManager.shared.localizedString(for: "No Transactions"),
-                        systemImage: "tray.fill",
-                        description: Text(SettingsManager.shared.localizedString(for: "Your bank movements will appear here."))
-                    )
-                } else {
-                    ScrollView(showsIndicators: false) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+                ViewHeader(title: "Transactions", showSettings: $showSettings) {
+                    Image(systemName: "bell.fill")
+                        .font(.title2)
+                        .foregroundStyle(.gray.opacity(0.5))
+                }
+                
+                Group {
+                    if transactions.isEmpty {
+                        ContentUnavailableView(
+                            SettingsManager.shared.localizedString(for: "No Transactions"),
+                            systemImage: "tray.fill",
+                            description: Text(SettingsManager.shared.localizedString(for: "Your bank movements will appear here."))
+                        )
+                        .padding(.top, 100)
+                    } else {
                         LazyVStack(spacing: 24, pinnedViews: [.sectionHeaders]) {
                             ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
                                 Section {

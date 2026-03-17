@@ -1,6 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var transactions: [Transaction]
     @EnvironmentObject var settingsManager: SettingsManager
     
     var body: some View {
@@ -64,6 +67,38 @@ struct SettingsView: View {
             }
             
             Section(settingsManager.localizedString(for: "Data Management")) {
+                Button {
+                    let viewModel = FinanceViewModel()
+                    viewModel.seedManyTransactions(context: modelContext, count: 200)
+                } label: {
+                    HStack {
+                        Image(systemName: "plus.square.dashed")
+                            .foregroundStyle(.blue)
+                        Text(settingsManager.localizedString(for: "Generate Test Data (200)"))
+                    }
+                }
+                
+                Button {
+                    let viewModel = FinanceViewModel()
+                    viewModel.runSubscriptionAnalysis(context: modelContext, transactions: transactions)
+                } label: {
+                    HStack {
+                        Image(systemName: "magnifyingglass.circle")
+                            .foregroundStyle(.orange)
+                        Text(settingsManager.localizedString(for: "Analyze Subscriptions"))
+                    }
+                }
+
+                Button(role: .destructive) {
+                    let viewModel = FinanceViewModel()
+                    viewModel.clearTestData(context: modelContext)
+                } label: {
+                    HStack {
+                        Image(systemName: "trash.circle")
+                        Text(settingsManager.localizedString(for: "Clear Test Data"))
+                    }
+                }
+
                 Button(role: .destructive) {
                     // Action for clearing cache
                 } label: {
@@ -93,6 +128,7 @@ struct SettingsView: View {
 #Preview {
     NavigationStack {
         SettingsView()
+            .modelContainer(for: [Transaction.self, Category.self, Budget.self, Account.self], inMemory: true)
             .environmentObject(SettingsManager.shared)
     }
 }

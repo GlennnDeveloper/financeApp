@@ -375,10 +375,14 @@ struct SpendingView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            ViewHeader(title: "Spending Info", showSettings: $showSettings)
-            
-            ScrollView(showsIndicators: false) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
+                ViewHeader(title: "Spending Info", showSettings: $showSettings) {
+                    Image(systemName: "bell.fill")
+                        .font(.title2)
+                        .foregroundStyle(.gray.opacity(0.5))
+                }
+                
                 VStack(spacing: 24) {
                     headerArea()
                     

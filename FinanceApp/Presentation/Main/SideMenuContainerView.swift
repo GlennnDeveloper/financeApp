@@ -38,6 +38,5 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
             .offset(x: isOpen ? menuWidth : 0)
             .compositingGroup()
         }
-        .ignoresSafeArea()
     }
 }

@@ -88,6 +88,17 @@
 "No Subscriptions" = "No Subscriptions";
 "No recurring expenses were found." = "No recurring expenses were found.";
 "Active Subscriptions" = "Active Subscriptions";
+"Total Monthly" = "Total Monthly";
+"Active Subs" = "Active Subs";
+"Average Cost" = "Average Cost";
+"Upcoming Payments" = "Upcoming Payments";
+"All Subscriptions" = "All Subscriptions";
+"Due today" = "Due today";
+"Due tomorrow" = "Due tomorrow";
+"Next in %d days" = "Next in %d days";
+"Monthly" = "Monthly";
+"Remove from Recurring" = "Remove from Recurring";
+"Remove" = "Remove";
 
 /* Net Worth */
 "Net Worth" = "Net Worth";

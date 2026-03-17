@@ -139,12 +139,20 @@ class BankConnectionViewModel: ObservableObject {
             // 1. Fetch Accounts
             let remoteAccounts = try await SupabaseManager.shared.fetchAccounts()
             
+            // Optimization: Fetch all existing external IDs to avoid fetching inside the loop
+            let allAccountsDescriptor = FetchDescriptor<Account>()
+            let existingAccounts = (try? context.fetch(allAccountsDescriptor)) ?? []
+            let accountMap = Dictionary(uniqueKeysWithValues: existingAccounts.map { ($0.externalId, $0) })
+            
             for remote in remoteAccounts {
-                let extId = remote.externalId
-                let descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.externalId == extId })
-                let existing = (try? context.fetch(descriptor)) ?? []
-                
-                if existing.isEmpty {
+                if let account = accountMap[remote.externalId] {
+                    // Update existing
+                    account.balance = remote.balance
+                    account.name = remote.name
+                    account.symbol = remote.symbol
+                    account.colorName = remote.colorName
+                } else {
+                    // Insert new
                     let newAccount = Account(
                         name: remote.name,
                         balance: remote.balance,
@@ -155,23 +163,29 @@ class BankConnectionViewModel: ObservableObject {
                         externalId: remote.externalId
                     )
                     context.insert(newAccount)
-                } else if let account = existing.first {
-                    account.balance = remote.balance
-                    account.name = remote.name
-                    account.symbol = remote.symbol
-                    account.colorName = remote.colorName
                 }
             }
             
             // 2. Fetch Transactions
             let remoteTransactions = try await SupabaseManager.shared.fetchTransactions()
             
+            // Optimization: Fetch all existing transaction external IDs
+            let allTransactionsDescriptor = FetchDescriptor<Transaction>()
+            let existingTransactions = (try? context.fetch(allTransactionsDescriptor)) ?? []
+            let transactionMap = Dictionary(uniqueKeysWithValues: existingTransactions.compactMap { tx in 
+                tx.externalId.map { ($0, tx) } 
+            })
+            
             for remote in remoteTransactions {
-                let extId = remote.externalId
-                let descriptor = FetchDescriptor<Transaction>(predicate: #Predicate { $0.externalId == extId })
-                let existing = (try? context.fetch(descriptor)) ?? []
-                
-                if existing.isEmpty {
+                if let extId = remote.externalId, let tx = transactionMap[extId] {
+                    // Update existing
+                    tx.title = remote.title
+                    tx.amount = remote.amount
+                    tx.date = remote.date
+                    tx.categorySymbol = remote.categorySymbol
+                    tx.isRecurring = remote.isRecurring
+                } else {
+                    // Insert new
                     let newTx = Transaction(
                         title: remote.title,
                         amount: remote.amount,
@@ -182,12 +196,6 @@ class BankConnectionViewModel: ObservableObject {
                         isRecurring: remote.isRecurring
                     )
                     context.insert(newTx)
-                } else if let tx = existing.first {
-                    tx.title = remote.title
-                    tx.amount = remote.amount
-                    tx.date = remote.date
-                    tx.categorySymbol = remote.categorySymbol
-                    tx.isRecurring = remote.isRecurring
                 }
             }
             

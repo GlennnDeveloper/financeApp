@@ -88,6 +88,17 @@
 "No Subscriptions" = "Sin Suscripciones";
 "No recurring expenses were found." = "No se encontraron gastos recurrentes.";
 "Active Subscriptions" = "Suscripciones Activas";
+"Total Monthly" = "Gasto Mensual";
+"Active Subs" = "Suscripciones";
+"Average Cost" = "Costo Promedio";
+"Upcoming Payments" = "Próximos Pagos";
+"All Subscriptions" = "Todas las Suscripciones";
+"Due today" = "Vence hoy";
+"Due tomorrow" = "Vence mañana";
+"Next in %d days" = "Siguiente en %d días";
+"Monthly" = "Mensual";
+"Remove from Recurring" = "Quitar de Recurrentes";
+"Remove" = "Eliminar";
 
 /* Net Worth */
 "Net Worth" = "Patrimonio Neto";

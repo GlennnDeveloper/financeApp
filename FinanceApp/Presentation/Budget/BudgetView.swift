@@ -17,10 +17,33 @@ struct BudgetView: View {
     }
     
     private var totalBudget: Double { filteredBudgets.reduce(0) { $0 + $1.amount } }
-    private var totalSpent: Double {
-        transactions
-            .filter { !$0.isIncome && Calendar.current.isDate($0.date, inSameDayAs: selectedMonth) }
-            .reduce(0) { $0 + $1.amount }
+    @State private var totalSpent: Double = 0
+    @State private var categorySpending: [String: Double] = [:]
+    
+    private func recalculateBudgetData() {
+        let currentTx = transactions
+        let currentMonth = selectedMonth
+        
+        Task(priority: .userInitiated) {
+            let calendar = Calendar.current
+            
+            // Calculate total spent for the month
+            let monthlyTransactions = currentTx.filter { 
+                !$0.isIncome && calendar.isDate($0.date, inSameDayAs: currentMonth) 
+            }
+            let total = monthlyTransactions.reduce(0) { $0 + $1.amount }
+            
+            // Calculate spending per category
+            let grouped = Dictionary(grouping: monthlyTransactions) { $0.categorySymbol }
+            let spendingMap = grouped.mapValues { $0.reduce(0) { $0 + $1.amount } }
+            
+            await MainActor.run {
+                withAnimation {
+                    self.totalSpent = total
+                    self.categorySpending = spendingMap
+                }
+            }
+        }
     }
     
     var body: some View {
@@ -59,7 +82,8 @@ struct BudgetView: View {
                     } else {
                         VStack(spacing: 0) {
                             ForEach(filteredBudgets) { budget in
-                                BudgetRow(budget: budget, transactions: transactions, categories: categories, selectedMonth: selectedMonth) {
+                                let spent = categorySpending[budget.categorySymbol] ?? 0
+                                BudgetRow(budget: budget, spent: spent, categories: categories) {
                                     editingBudget = budget
                                 } onDelete: {
                                     modelContext.delete(budget)
@@ -78,6 +102,9 @@ struct BudgetView: View {
             .padding(.bottom, 32)
         }
         .background(Color(uiColor: .systemGroupedBackground))
+        .onAppear { recalculateBudgetData() }
+        .onChange(of: transactions) { recalculateBudgetData() }
+        .onChange(of: selectedMonth) { recalculateBudgetData() }
         .navigationTitle(SettingsManager.shared.localizedString(for: "Manage Budget"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -166,18 +193,15 @@ struct BudgetView: View {
     
     private func moveMonth(by value: Int) {
         if let newDate = Calendar.current.date(byAdding: .month, value: value, to: selectedMonth) {
-            withAnimation {
-                selectedMonth = newDate
-            }
+            selectedMonth = newDate
         }
     }
 }
 
 private struct BudgetRow: View {
     let budget: Budget
-    let transactions: [Transaction]
+    let spent: Double
     let categories: [Category]
-    let selectedMonth: Date
     let onEdit: () -> Void
     let onDelete: () -> Void
     
@@ -185,18 +209,8 @@ private struct BudgetRow: View {
         categories.first(where: { $0.symbol == budget.categorySymbol }) ?? categories.first ?? Category.placeholder
     }
     
-    private var spent: Double {
-        transactions
-            .filter { 
-                $0.categorySymbol == budget.categorySymbol && 
-                !$0.isIncome && 
-                Calendar.current.isDate($0.date, inSameDayAs: selectedMonth)
-            }
-            .reduce(0) { $0 + $1.amount }
-    }
-    
     private var progress: Double {
-        min(1.0, spent / budget.amount)
+        budget.amount > 0 ? min(1.0, spent / budget.amount) : 0
     }
     
     var body: some View {
@@ -426,10 +440,6 @@ extension Date {
     var startOfMonth: Date {
         Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: self)) ?? self
     }
-}
-
-extension Date: Identifiable {
-    public var id: String { self.description }
 }
 
 #Preview {

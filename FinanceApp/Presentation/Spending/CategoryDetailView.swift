@@ -20,7 +20,8 @@ struct CategoryDetailView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             
             if transactions.isEmpty {
                 ContentUnavailableView(

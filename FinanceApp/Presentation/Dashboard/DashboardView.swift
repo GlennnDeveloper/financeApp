@@ -29,11 +29,11 @@ struct DashboardView: View {
         ZStack(alignment: .top) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
-                    ViewHeader(title: "Dashboard", showSettings: $showSettings, rightContent: AnyView(
+                    ViewHeader(title: "Dashboard", showSettings: $showSettings) {
                         Image(systemName: "bell.fill")
                             .font(.title2)
                             .foregroundStyle(.gray.opacity(0.5))
-                    ))
+                    }
                     
                     DashboardBalanceCard(
                         balance: totalBalance,
@@ -146,14 +146,19 @@ struct DashboardView: View {
         let today = calendar.startOfDay(for: .now)
         var items: [ChartItem] = []
 
+        // Optimization: Pre-filter expenses
+        let expenses = transactions.filter { !$0.isIncome }
+
         switch timeframe {
         case .week:
-            for i in (0..<7).reversed() {
-                guard let date = calendar.date(byAdding: .day, value: -i, to: today) else { continue }
-                let label = i == 0 ? settingsManager.localizedString(for: "Today") : chartDayFormatter.string(from: date)
-                let daySpend = transactions.filter {
-                    !$0.isIncome && calendar.isDate($0.date, inSameDayAs: date)
-                }.reduce(0) { $0 + $1.amount }
+            let last7Days = (0..<7).reversed().compactMap { i in
+                calendar.date(byAdding: .day, value: -i, to: today)
+            }
+            let groupedByDay = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
+            
+            for date in last7Days {
+                let label = calendar.isDateInToday(date) ? settingsManager.localizedString(for: "Today") : chartDayFormatter.string(from: date)
+                let daySpend = groupedByDay[date]?.reduce(0) { $0 + $1.amount } ?? 0
                 items.append(ChartItem(label: label, amount: daySpend, date: date))
             }
         case .month:
@@ -162,17 +167,18 @@ struct DashboardView: View {
                 let startDay = (week - 1) * 7
                 guard let weekStart = calendar.date(byAdding: .day, value: startDay, to: startOfMonth),
                       let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) else { continue }
-                let weekSpend = transactions.filter {
-                    !$0.isIncome && $0.date >= weekStart && $0.date < weekEnd
-                }.reduce(0) { $0 + $1.amount }
+                let weekSpend = expenses.filter { $0.date >= weekStart && $0.date < weekEnd }.reduce(0) { $0 + $1.amount }
                 items.append(ChartItem(label: "W\(week)", amount: weekSpend, date: weekStart))
             }
         case .year:
-            for i in (0..<6).reversed() {
-                guard let date = calendar.date(byAdding: .month, value: -i, to: today) else { continue }
+            let last6Months = (0..<6).reversed().compactMap { i in
+                calendar.date(byAdding: .month, value: -i, to: today)
+            }
+            for date in last6Months {
                 let label = chartMonthFormatter.string(from: date)
-                let monthSpend = transactions.filter {
-                    !$0.isIncome && calendar.isDate($0.date, equalTo: date, toGranularity: .month) && calendar.isDate($0.date, equalTo: date, toGranularity: .year)
+                let monthSpend = expenses.filter { 
+                    calendar.isDate($0.date, equalTo: date, toGranularity: .month) && 
+                    calendar.isDate($0.date, equalTo: date, toGranularity: .year) 
                 }.reduce(0) { $0 + $1.amount }
                 items.append(ChartItem(label: label, amount: monthSpend, date: date))
             }
