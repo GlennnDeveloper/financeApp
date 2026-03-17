@@ -7,6 +7,7 @@ class AuthViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var session: Session? = nil
+    @Published var isNewUser = false
     
     private let client = SupabaseManager.shared.client
     
@@ -30,6 +31,7 @@ class AuthViewModel: ObservableObject {
         do {
             try await client.auth.signUp(email: email, password: password)
             await checkSession()
+            self.isNewUser = true
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -44,6 +46,7 @@ class AuthViewModel: ObservableObject {
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             self.session = session
+            self.isNewUser = false
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -54,5 +57,6 @@ class AuthViewModel: ObservableObject {
     func signOut() async {
         try? await client.auth.signOut()
         self.session = nil
+        self.isNewUser = false
     }
 }

@@ -47,6 +47,19 @@ final class SettingsManager: ObservableObject {
     @AppStorage("app_currency") var appCurrency: String = "USD"
     @AppStorage("use_biometrics") var useBiometrics: Bool = true
     @AppStorage("is_premium") var isPremium: Bool = false
+    @AppStorage("has_completed_onboarding") var hasCompletedOnboarding: Bool = false
+    @AppStorage("user_name") var userName: String = ""
+    @AppStorage("user_age") var userAge: Int = 0
+    @AppStorage("financial_goals") var financialGoalsData: Data = Data()
+
+    var financialGoals: [String] {
+        get {
+            (try? JSONDecoder().decode([String].self, from: financialGoalsData)) ?? []
+        }
+        set {
+            financialGoalsData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
     
     var appTheme: AppTheme {
         get { AppTheme(rawValue: appThemeName) ?? .system }

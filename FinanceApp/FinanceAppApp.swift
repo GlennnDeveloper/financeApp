@@ -20,10 +20,15 @@ struct FinanceAppApp: App {
                 if initManager.isInitialized, let container = initManager.modelContainer {
                     Group {
                         if authViewModel.session != nil {
-                            MainTabView()
-                                .environmentObject(authViewModel)
+                            if !settingsManager.hasCompletedOnboarding && authViewModel.isNewUser {
+                                OnboardingView()
+                                    .environmentObject(authViewModel)
+                            } else {
+                                MainTabView()
+                                    .environmentObject(authViewModel)
+                            }
                         } else {
-                            LoginView()
+                            LandingView()
                                 .environmentObject(authViewModel)
                         }
                     }

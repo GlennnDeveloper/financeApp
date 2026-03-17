@@ -8,10 +8,15 @@ enum FocusField {
 struct LoginView: View {
     @EnvironmentObject var viewModel: AuthViewModel
     @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.dismiss) var dismiss
     
     @State private var email = ""
     @State private var password = ""
-    @State private var isSignUp = false
+    @State private var isSignUp: Bool
+    
+    init(initialIsSignUp: Bool = false) {
+        _isSignUp = State(initialValue: initialIsSignUp)
+    }
     
     @FocusState private var focusedField: FocusField?
     
@@ -26,13 +31,17 @@ struct LoginView: View {
                     
                     // Floating blobs for depth
                     Circle()
-                        .fill(LinearGradient(colors: [.orange.opacity(0.4), .red.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(isSignUp ? 
+                              LinearGradient(colors: [.orange.opacity(0.4), .red.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                              LinearGradient(colors: [.blue.opacity(0.4), .purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 300, height: 300)
                         .blur(radius: 80)
                         .offset(x: animate ? 100 : -100, y: animate ? -150 : 150)
                     
                     Circle()
-                        .fill(LinearGradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(isSignUp ?
+                              LinearGradient(colors: [.yellow.opacity(0.2), .orange.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                              LinearGradient(colors: [.cyan.opacity(0.2), .indigo.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 400, height: 400)
                         .blur(radius: 100)
                         .offset(x: animate ? -120 : 120, y: animate ? 200 : -100)
@@ -49,37 +58,46 @@ struct LoginView: View {
                         ZStack {
                             Circle()
                                 .fill(.white.opacity(0.1))
-                                .frame(width: 100, height: 100)
+                                .frame(width: 110, height: 110)
                                 .blur(radius: 10)
                             
-                            Image(systemName: "chart.pie.fill") // A more finance-related icon
-                                .font(.system(size: 50))
-                                .foregroundStyle(LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .shadow(color: .orange.opacity(0.5), radius: 20)
+                            Image("AppLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 90, height: 90)
+                                .clipShape(Circle())
+                                .shadow(color: (isSignUp ? Color.orange : Color.blue).opacity(0.4), radius: 15)
                         }
                         
-                        Text("Glennn Finance")
+                        Text("MyFinance")
                             .font(.system(size: 36, weight: .black, design: .rounded))
                             .tracking(1)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.white, .white.opacity(0.8)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .foregroundStyle(.white)
                     }
                     .padding(.top, 60)
                     .padding(.bottom, 40)
+                    .overlay(alignment: .topLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .padding(12)
+                                .background(Circle().fill(.white.opacity(0.1)))
+                        }
+                        .padding(.leading, 20)
+                        .padding(.top, 10)
+                    }
                     
                     // --- FORM WITH GLASSMORPHISM ---
                     VStack(spacing: 24) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(settingsManager.localizedString(for: isSignUp ? "Create Account" : "Welcome Back"))
+                            Text(settingsManager.localizedString(for: isSignUp ? "Crear Cuenta" : "Bienvenido"))
                                 .font(.title.bold())
                                 .foregroundStyle(.white)
                             
-                            Text(settingsManager.localizedString(for: isSignUp ? "Join us to manage your finances better" : "Please sign in to continue"))
+                            Text(settingsManager.localizedString(for: isSignUp ? "Únete para gestionar mejor tus finanzas" : "Inicia sesión para continuar"))
                                 .font(.subheadline)
                                 .foregroundStyle(.white.opacity(0.6))
                         }
@@ -121,7 +139,7 @@ struct LoginView: View {
                                 if viewModel.isLoading {
                                     ProgressView().tint(.white)
                                 } else {
-                                    Text(settingsManager.localizedString(for: isSignUp ? "Sign Up" : "Sign In"))
+                                    Text(settingsManager.localizedString(for: isSignUp ? "Registrarse" : "Entrar"))
                                         .font(.headline)
                                         .fontWeight(.bold)
                                 }
@@ -130,31 +148,30 @@ struct LoginView: View {
                             .frame(height: 60)
                             .background(
                                 LinearGradient(
-                                    colors: [Color.orange, Color.red],
+                                    colors: isSignUp ? [.orange, .red] : [.blue, .purple],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
                             .foregroundColor(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
+                            .shadow(color: (isSignUp ? Color.red : Color.purple).opacity(0.3), radius: 10, x: 0, y: 5)
                         }
                         .disabled(viewModel.isLoading)
                         
                         // TOGGLE LOGIN/SIGNUP
                         Button {
-                            // Simple haptic feedback could be added here
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                 isSignUp.toggle()
                                 viewModel.errorMessage = nil
                             }
                         } label: {
                             HStack(spacing: 4) {
-                                Text(settingsManager.localizedString(for: isSignUp ? "Already have an account?" : "Don't have an account?"))
+                                Text(settingsManager.localizedString(for: isSignUp ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"))
                                     .foregroundStyle(.white.opacity(0.6))
-                                Text(settingsManager.localizedString(for: isSignUp ? "Sign In" : "Sign Up"))
+                                Text(settingsManager.localizedString(for: isSignUp ? "Inicia sesión ahora" : "Regístrate ahora"))
                                     .fontWeight(.bold)
-                                    .foregroundStyle(.orange)
+                                    .foregroundStyle(isSignUp ? .orange : .cyan)
                             }
                             .font(.subheadline)
                         }
@@ -180,6 +197,16 @@ struct LoginView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .background(Color.black)
         .onTapGesture { focusedField = nil }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(settingsManager.localizedString(for: "Hecho")) {
+                    focusedField = nil
+                }
+                .fontWeight(.bold)
+                .foregroundStyle(.orange)
+            }
+        }
     }
     
     @ViewBuilder
@@ -197,6 +224,8 @@ struct LoginView: View {
                 .autocorrectionDisabled(true)
                 .textInputAutocapitalization(.never)
                 .focused($focusedField, equals: .email)
+                .submitLabel(.next)
+                .onSubmit { focusedField = .password }
         }
         .padding(.horizontal, 20)
         .frame(height: 64)
@@ -222,6 +251,8 @@ struct LoginView: View {
                 .foregroundStyle(.white)
                 .textContentType(.password)
                 .focused($focusedField, equals: .password)
+                .submitLabel(isSignUp ? .join : .go)
+                .onSubmit { submitAction() }
         }
         .padding(.horizontal, 20)
         .frame(height: 64)
