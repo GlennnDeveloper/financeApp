@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct CategoryDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var settingsManager: SettingsManager
     @Query(sort: \Category.orderIndex) private var categories: [Category]
     let transactions: [Transaction]
     let categoryName: String
@@ -20,30 +22,58 @@ struct CategoryDetailView: View {
     
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
-                .ignoresSafeArea()
+            PremiumBackground(colors: [.orange, .red, .purple])
             
-            if transactions.isEmpty {
-                ContentUnavailableView(
-                    SettingsManager.shared.localizedString(for: "No Expenses"),
-                    systemImage: categorySymbol,
-                    description: Text("\(SettingsManager.shared.localizedString(for: "No expenses for")) \(categoryName) \(SettingsManager.shared.localizedString(for: "in this timeframe."))")
-                )
-            } else {
-                List {
-                    ForEach(transactions, id: \.id) { transaction in
-                        TransactionRow(transaction: transaction, categories: categories)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .padding(.vertical, 4)
+            VStack(spacing: 0) {
+                // Custom Navigation Header
+                HStack {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 40, height: 40)
+                            .background(Color.white.opacity(0.1), in: Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    Text(categoryName)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    // Invisible placeholder for alignment
+                    Color.clear.frame(width: 40, height: 40)
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
+                if transactions.isEmpty {
+                    Spacer()
+                    ContentUnavailableView(
+                        settingsManager.localizedString(for: "No Expenses"),
+                        systemImage: categorySymbol,
+                        description: Text("\(settingsManager.localizedString(for: "No expenses for")) \(categoryName) \(settingsManager.localizedString(for: "in this timeframe."))")
+                    )
+                    .foregroundStyle(.white)
+                    Spacer()
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 12) {
+                            ForEach(transactions, id: \.id) { transaction in
+                                TransactionRow(transaction: transaction, categories: categories)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 24)
+                        .padding(.bottom, 30)
                     }
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
             }
         }
-        .navigationTitle(categoryName)
-        // Simplified modifiers for cross-platform compatibility
+        .navigationBarBackButtonHidden(true)
     }
 }

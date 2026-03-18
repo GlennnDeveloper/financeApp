@@ -19,7 +19,6 @@ struct RecentTransactionsSection: View {
                 }
             }
             .padding(.horizontal)
-            .drawingGroup()
         }
     }
 }

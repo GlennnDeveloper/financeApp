@@ -42,7 +42,6 @@ struct TransactionRow: View {
                 .foregroundStyle(transaction.isIncome ? Color.green : Color.white)
         }
         .glassCard(cornerRadius: 20, padding: 16, lowRes: true)
-        .drawingGroup()
     }
 }
 
