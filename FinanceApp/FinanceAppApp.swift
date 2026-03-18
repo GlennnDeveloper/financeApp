@@ -27,25 +27,41 @@ struct FinanceAppApp: App {
                 let shouldShowContent = (initManager.isInitialized && isUnlocked) || (!settingsManager.isLoggedIn && !initManager.isInitialized)
                 
                 if shouldShowContent {
-                    Group {
-                        if authViewModel.session != nil {
-                            if !settingsManager.hasCompletedOnboarding {
-                                OnboardingView()
-                                    .environmentObject(authViewModel)
+                    ZStack {
+                        Group {
+                            if authViewModel.session != nil {
+                                if !settingsManager.hasCompletedOnboarding {
+                                    OnboardingView()
+                                        .environmentObject(authViewModel)
+                                } else {
+                                    MainTabView()
+                                        .environmentObject(authViewModel)
+                                }
                             } else {
-                                MainTabView()
+                                LandingView()
                                     .environmentObject(authViewModel)
                             }
-                        } else {
-                            LandingView()
-                                .environmentObject(authViewModel)
+                        }
+                        .modelContainer(initManager.modelContainer ?? (try! ModelContainer(for: Schema([Transaction.self, Account.self, Budget.self, Rule.self, Category.self]), configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])))
+                        .environmentObject(settingsManager)
+                        .environment(\.locale, settingsManager.locale)
+                        .preferredColorScheme(.dark)
+                        .transition(.opacity.animation(.easeInOut(duration: 0.5)))
+                        
+                        if settingsManager.showDiagnostics {
+                            VStack {
+                                HStack {
+                                    FPSOverlay()
+                                    Spacer()
+                                }
+                                Spacer()
+                            }
+                            .padding(.top, 50)
+                            .padding(.leading, 16)
+                            .zIndex(999)
+                            .allowsHitTesting(false)
                         }
                     }
-                    .modelContainer(initManager.modelContainer ?? (try! ModelContainer(for: Schema([Transaction.self, Account.self, Budget.self, Rule.self, Category.self]), configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])))
-                    .environmentObject(settingsManager)
-                    .environment(\.locale, settingsManager.locale)
-                    .preferredColorScheme(settingsManager.appTheme.colorScheme)
-                    .transition(.opacity.animation(.easeInOut(duration: 0.5)))
                 } else {
                     // Premium Splash Screen
                     ZStack {

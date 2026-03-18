@@ -48,6 +48,16 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Profiles
     
+    func fetchProfile(id: UUID) async throws -> RemoteProfile? {
+        try await client
+            .from("profiles")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+    }
+    
     func upsertProfile(_ profile: RemoteProfile) async throws {
         try await client
             .from("profiles")

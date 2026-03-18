@@ -27,12 +27,14 @@ struct DashboardView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+            PremiumBackground(colors: [.orange, .green, .blue])
+            
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 24) {
                     ViewHeader(title: "Dashboard", showSettings: $showSettings) {
                         Image(systemName: "bell.fill")
                             .font(.title2)
-                            .foregroundStyle(.gray.opacity(0.5))
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     
                     DashboardBalanceCard(
@@ -60,12 +62,7 @@ struct DashboardView: View {
                     Color.clear.frame(height: 100)
                 }
             }
-            .overlay(alignment: .top) {
-                Color(uiColor: .systemGroupedBackground)
-                    .frame(height: 0)
-                    .ignoresSafeArea(edges: .top)
-            }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .scrollContentBackground(.hidden)
             
             fabSection
         }

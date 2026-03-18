@@ -7,7 +7,7 @@ struct LandingView: View {
     
     var body: some View {
         ZStack {
-            PremiumBackground(colors: [.orange, .red, .yellow])
+            PremiumBackground(colors: [.orange, .red, .purple, .blue])
             
             VStack(spacing: 40) {
                 Spacer()
@@ -21,16 +21,20 @@ struct LandingView: View {
                         .clipShape(Circle())
                         .shadow(color: .orange.opacity(0.4), radius: 20)
                     
-                    Text("MyFinance")
+                    Text(settingsManager.localizedString(for: "MyFinance"))
                         .font(.system(size: 40, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                     
-                    Text("Toma el control de tu futuro financiero hoy mismo.")
+                    Text(settingsManager.localizedString(for: "Take control of your financial future today."))
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.6))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 50)
                 }
+                .opacity(showAuth ? 0 : 1)
+                .scaleEffect(showAuth ? 0.9 : 1)
+                .blur(radius: showAuth ? 10 : 0)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showAuth)
                 
                 Spacer()
                 
@@ -40,7 +44,7 @@ struct LandingView: View {
                         isSignUp = true
                         showAuth = true
                     } label: {
-                        Text("Empezar ahora")
+                        Text(settingsManager.localizedString(for: "Start Now"))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundStyle(.black)
@@ -54,7 +58,7 @@ struct LandingView: View {
                         isSignUp = false
                         showAuth = true
                     } label: {
-                        Text("Ya tengo una cuenta")
+                        Text(settingsManager.localizedString(for: "I already have an account"))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)

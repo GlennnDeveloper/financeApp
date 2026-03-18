@@ -5,7 +5,6 @@ import Auth
 struct SideMenuContent: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var settingsManager: SettingsManager
-    @Environment(\.colorScheme) var systemColorScheme
     @Binding var isOpen: Bool
     
     @State private var activeSheet: SideMenuSheet?
@@ -17,18 +16,22 @@ struct SideMenuContent: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            headerSection
+        ZStack {
+            PremiumBackground(colors: [.indigo, .purple, .black])
             
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    quickActionsSection
-                    accountSection
-                    preferencesSection
-                    logoutButton
-                    versionLabel
+            VStack(alignment: .leading, spacing: 0) {
+                headerSection
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        quickActionsSection
+                        accountSection
+                        preferencesSection
+                        logoutButton
+                        versionLabel
+                    }
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 16)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -36,7 +39,6 @@ struct SideMenuContent: View {
         .sheet(item: $activeSheet) { sheet in
             destinationView(for: sheet)
                 .environment(\.locale, settingsManager.locale)
-                .preferredColorScheme(settingsManager.appTheme == .system ? systemColorScheme : settingsManager.appTheme.colorScheme)
         }
     }
 
@@ -71,7 +73,7 @@ struct SideMenuContent: View {
             
             Text("\(greeting), \(name.isEmpty ? "User" : name)")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
                 .lineLimit(1)
         }
         .padding(.horizontal, 20)
@@ -154,8 +156,9 @@ struct SideMenuContent: View {
             .foregroundStyle(.red)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .background(Color.red.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
+        .drawingGroup()
         .padding(.horizontal, 4)
     }
 
@@ -177,7 +180,8 @@ private struct MenuSection<Content: View>: View {
         VStack(spacing: 0) {
             content
         }
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .glassCard(cornerRadius: 14, padding: 0, lowRes: true)
+        .drawingGroup()
     }
 }
 

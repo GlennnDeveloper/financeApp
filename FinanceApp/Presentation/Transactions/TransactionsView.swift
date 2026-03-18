@@ -42,135 +42,23 @@ struct TransactionsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+            PremiumBackground(colors: [.blue, .indigo, .purple])
+            
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
                     ViewHeader(title: "Transactions", showSettings: $showSettings) {
                         Image(systemName: "bell.fill")
                             .font(.title2)
-                            .foregroundStyle(.gray.opacity(0.5))
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     
-                    // Search & Filter Row
-                    VStack(spacing: 16) {
-                        // Search Bar
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundStyle(.gray)
-                            TextField(settingsManager.localizedString(for: "Search transactions"), text: $searchText)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                            
-                            if !searchText.isEmpty {
-                                Button { searchText = "" } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.gray)
-                                }
-                            }
-                        }
-                        .padding(12)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
-                        .padding(.horizontal)
-                        
-                        // Granular Filters: Year, Month, Day
-                        HStack(spacing: 8) {
-                            filterMenu(
-                                label: settingsManager.localizedString(for: "Year"),
-                                selection: selectedYear,
-                                options: availableYears,
-                                formatter: { String($0) },
-                                onSelect: { selectedYear = $0 },
-                                onClear: { selectedYear = nil }
-                            )
-                            
-                            filterMenu(
-                                label: settingsManager.localizedString(for: "Month"),
-                                selection: selectedMonth,
-                                options: availableMonths,
-                                formatter: { Calendar.current.monthSymbols[$0 - 1].capitalized },
-                                onSelect: { selectedMonth = $0 },
-                                onClear: { selectedMonth = nil }
-                            )
-                            
-                            filterMenu(
-                                label: settingsManager.localizedString(for: "Day"),
-                                selection: selectedDay,
-                                options: availableDays,
-                                formatter: { String($0) },
-                                onSelect: { selectedDay = $0 },
-                                onClear: { selectedDay = nil }
-                            )
-                            
-                            Spacer()
-                            
-                            if selectedYear != nil || selectedMonth != nil || selectedDay != nil {
-                                Button {
-                                    withAnimation {
-                                        selectedYear = nil
-                                        selectedMonth = nil
-                                        selectedDay = nil
-                                    }
-                                } label: {
-                                    Text(settingsManager.localizedString(for: "Clear"))
-                                        .font(.caption.bold())
-                                        .foregroundStyle(.red)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.top, 24) // Added space below header
-                    .padding(.bottom, 16)
+                    searchAndFilterHeader
                     
-                    if transactions.isEmpty {
-                        ContentUnavailableView(
-                            settingsManager.localizedString(for: "No Transactions"),
-                            systemImage: "tray.fill",
-                            description: Text(settingsManager.localizedString(for: "Your bank movements will appear here."))
-                        )
-                        .padding(.top, 100)
-                    } else if groupedTransactions.isEmpty {
-                        ContentUnavailableView(
-                            settingsManager.localizedString(for: "No Results"),
-                            systemImage: "magnifyingglass",
-                            description: Text(settingsManager.localizedString(for: "Try adjusting your filters or search terms."))
-                        )
-                        .padding(.top, 100)
-                    } else {
-                        ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
-                            Section(header: 
-                                HStack {
-                                    Text(monthYear)
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 14)
-                                    Spacer()
-                                }
-                                .background(Color(uiColor: .systemGroupedBackground))
-                            ) {
-                                VStack(spacing: 12) {
-                                    ForEach(monthTransactions) { transaction in
-                                        TransactionRow(transaction: transaction, categories: categories)
-                                            .padding(.horizontal)
-                                    }
-                                }
-                                .padding(.top, 8)
-                                .padding(.bottom, 24)
-                            }
-                        }
-                        
-                        Color.clear.frame(height: 100)
-                    }
+                    transactionList
                 }
             }
-            
-            // Opaque shield for the status bar
-            Color(uiColor: .systemGroupedBackground)
-                .frame(height: 1)
-                .ignoresSafeArea(edges: .top)
-                .zIndex(10)
+            .scrollContentBackground(.hidden)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
         .onAppear {
             recalculateGroups()
         }
@@ -188,6 +76,129 @@ struct TransactionsView: View {
         }
         .onChange(of: selectedDay) { _, _ in
             recalculateGroups()
+        }
+    }
+    
+    // MARK: - Subviews
+    
+    private var searchAndFilterHeader: some View {
+        VStack(spacing: 16) {
+            // Search Bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.white.opacity(0.4))
+                TextField(settingsManager.localizedString(for: "Search transactions"), text: $searchText)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(.white)
+                    .placeholder(when: searchText.isEmpty) {
+                        Text(settingsManager.localizedString(for: "Search transactions")).foregroundStyle(.white.opacity(0.3))
+                    }
+                    .autocorrectionDisabled()
+                
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.white.opacity(0.4))
+                    }
+                }
+            }
+            .padding(12)
+            .glassCard(cornerRadius: 12, padding: 12, lowRes: true)
+            .padding(.horizontal)
+            
+            // Granular Filters: Year, Month, Day
+            HStack(spacing: 8) {
+                filterMenu(
+                    label: settingsManager.localizedString(for: "Year"),
+                    selection: selectedYear,
+                    options: availableYears,
+                    formatter: { String($0) },
+                    onSelect: { selectedYear = $0 },
+                    onClear: { selectedYear = nil }
+                )
+                
+                filterMenu(
+                    label: settingsManager.localizedString(for: "Month"),
+                    selection: selectedMonth,
+                    options: availableMonths,
+                    formatter: { Calendar.current.monthSymbols[$0 - 1].capitalized },
+                    onSelect: { selectedMonth = $0 },
+                    onClear: { selectedMonth = nil }
+                )
+                
+                filterMenu(
+                    label: settingsManager.localizedString(for: "Day"),
+                    selection: selectedDay,
+                    options: availableDays,
+                    formatter: { String($0) },
+                    onSelect: { selectedDay = $0 },
+                    onClear: { selectedDay = nil }
+                )
+                
+                Spacer()
+                
+                if selectedYear != nil || selectedMonth != nil || selectedDay != nil {
+                    Button {
+                        withAnimation {
+                            selectedYear = nil
+                            selectedMonth = nil
+                            selectedDay = nil
+                        }
+                    } label: {
+                        Text(settingsManager.localizedString(for: "Clear"))
+                            .font(.caption.bold())
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.top, 24)
+        .padding(.bottom, 16)
+    }
+    
+    @ViewBuilder
+    private var transactionList: some View {
+        if transactions.isEmpty {
+            ContentUnavailableView(
+                settingsManager.localizedString(for: "No Transactions"),
+                systemImage: "tray.fill",
+                description: Text(settingsManager.localizedString(for: "Your bank movements will appear here."))
+            )
+            .foregroundStyle(.white)
+            .padding(.top, 100)
+        } else if groupedTransactions.isEmpty {
+            ContentUnavailableView(
+                settingsManager.localizedString(for: "No Results"),
+                systemImage: "magnifyingglass",
+                description: Text(settingsManager.localizedString(for: "Try adjusting your filters or search terms."))
+            )
+            .foregroundStyle(.white)
+            .padding(.top, 100)
+        } else {
+            ForEach(groupedTransactions, id: \.0) { monthYear, monthTransactions in
+                Section(header: 
+                    HStack {
+                        Text(monthYear)
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal)
+                            .padding(.vertical, 14)
+                        Spacer()
+                    }
+                ) {
+                    VStack(spacing: 12) {
+                        ForEach(monthTransactions) { transaction in
+                            TransactionRow(transaction: transaction, categories: categories)
+                                .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+                }
+            }
+            
+            Color.clear.frame(height: 100)
         }
     }
     
@@ -216,8 +227,10 @@ struct TransactionsView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(selection != nil ? Color.blue : Color(uiColor: .secondarySystemGroupedBackground)))
-            .foregroundStyle(selection != nil ? .white : .primary)
+            .glassCard(cornerRadius: 30, padding: 8, opacity: selection != nil ? 1.0 : 0.6, lowRes: true)
+            .drawingGroup()
+            .background(selection != nil ? Color.blue : Color.clear, in: Capsule())
+            .foregroundStyle(selection != nil ? .white : .white.opacity(0.8))
             .transaction { $0.animation = nil }
         }
         .buttonStyle(.plain)

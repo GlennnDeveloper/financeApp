@@ -76,100 +76,68 @@ struct NetWorthView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                ViewHeader(title: "Net Worth", showSettings: $showSettings) {
-                    Image(systemName: "bell.fill")
-                        .font(.title2)
-                        .foregroundStyle(.gray.opacity(0.5))
-                }
-                
-                VStack(spacing: 24) {
-                    
-                    // Header Box Network
-                    VStack(spacing: 8) {
-                        Text(settingsManager.localizedString(for: "Current Net Worth"))
-                            .font(.subheadline)
-                            .foregroundStyle(.gray)
-                        
-                        Text(currentNetWorth, format: .currency(code: settingsManager.appCurrency))
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundStyle(.primary)
-                            .contentTransition(.numericText())
+        ZStack {
+            PremiumBackground(colors: [.blue, .green, .orange])
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ViewHeader(title: "Net Worth", showSettings: $showSettings) {
+                        Image(systemName: "bell.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
-                    .padding(.top, 20)
                     
-                    // Historic Area Chart
-                    VStack(alignment: .leading) {
-                        Text(settingsManager.localizedString(for: "6 Month Trend"))
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                            .padding(.horizontal)
-                        
-                        Chart(historicalData) { item in
-                            LineMark(
-                                x: .value("Month", item.date, unit: .month),
-                                y: .value("Net Worth", item.amount)
-                            )
-                            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                            .foregroundStyle(Color.green)
-                            .interpolationMethod(.monotone)
+                    VStack(spacing: 24) {
+                        // Header Box Network
+                        VStack(spacing: 8) {
+                            Text(settingsManager.localizedString(for: "Current Net Worth"))
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.6))
                             
-                            AreaMark(
-                                x: .value("Month", item.date, unit: .month),
-                                y: .value("Net Worth", item.amount)
-                            )
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.green.opacity(0.3), .clear],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                               )
-                            )
-                            .interpolationMethod(.monotone)
+                            Text(currentNetWorth, format: .currency(code: settingsManager.appCurrency))
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .contentTransition(.numericText())
                         }
-                        .chartXAxis {
-                            AxisMarks(values: .stride(by: .month)) { value in
-                                AxisValueLabel(format: .dateTime.month(.abbreviated).locale(settingsManager.locale))
-                                    .foregroundStyle(.gray)
-                                    .font(.caption2)
-                            }
+                        
+                        // Trending Chart
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(settingsManager.localizedString(for: "6 Month Trend"))
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal)
+                            
+                            NetWorthChart(data: historicalData)
+                                .frame(height: 220)
+                                .padding(.horizontal, 8)
                         }
-                        .chartYAxis(.hidden)
-                        .frame(height: 200)
+                        .glassCard(cornerRadius: 24, padding: 16, lowRes: true)
+                        .drawingGroup()
+                        .padding(.horizontal)
+                        
+                        // Breakdown
+                        VStack(spacing: 32) {
+                            AccountSectionView(
+                                title: settingsManager.localizedString(for: "Assets"),
+                                accounts: assets,
+                                total: totalAssets,
+                                isLiability: false
+                            )
+                            
+                            AccountSectionView(
+                                title: settingsManager.localizedString(for: "Liabilities"),
+                                accounts: liabilities,
+                                total: totalLiabilities,
+                                isLiability: true
+                            )
+                        }
                         .padding(.horizontal)
                     }
-                    .padding(.vertical)
-                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .padding(.horizontal)
-                    
-                    // Breakdowns
-                    VStack(spacing: 24) {
-                        AccountSectionView(
-                            title: settingsManager.localizedString(for: "Assets"),
-                            accounts: assets,
-                            total: totalAssets,
-                            isLiability: false
-                        )
-
-                        AccountSectionView(
-                            title: settingsManager.localizedString(for: "Liabilities"),
-                            accounts: liabilities,
-                            total: totalLiabilities,
-                            isLiability: true
-                        )
-                    }
-                    .padding(.horizontal)
+                    .padding(.bottom, 30)
                 }
-                .padding(.bottom, 30)
             }
+            .scrollContentBackground(.hidden)
         }
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemGroupedBackground)
-                .frame(height: 0)
-                .ignoresSafeArea(edges: .top)
-        }
-        .background(Color(uiColor: .systemGroupedBackground))
         .environment(\.locale, settingsManager.locale)
         .onAppear {
             recalculateHistoricalData()
@@ -183,6 +151,51 @@ struct NetWorthView: View {
     }
 }
 
+// MARK: - Components
+
+struct NetWorthChart: View {
+    @EnvironmentObject var settingsManager: SettingsManager
+    let data: [HistoricalNetWorth]
+    
+    var body: some View {
+        Chart(data) { item in
+            LineMark(
+                x: .value("Month", item.date, unit: .month),
+                y: .value("Net Worth", item.amount)
+            )
+            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+            .foregroundStyle(Color.green)
+            .interpolationMethod(.monotone)
+            
+            AreaMark(
+                x: .value("Month", item.date, unit: .month),
+                y: .value("Net Worth", item.amount)
+            )
+            .foregroundStyle(
+                .linearGradient(
+                    colors: [Color.green.opacity(0.4), Color.green.opacity(0.0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .interpolationMethod(.monotone)
+        }
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .month)) { value in
+                AxisValueLabel(format: .dateTime.month(.abbreviated).locale(settingsManager.locale))
+                    .foregroundStyle(.white.opacity(0.4))
+                    .font(.caption2)
+            }
+        }
+        .chartYAxis {
+            AxisMarks { value in
+                AxisValueLabel()
+                    .foregroundStyle(.white.opacity(0.4))
+                    .font(.caption2)
+            }
+        }
+    }
+}
 
 // Reusable Section for Assets and Liabilities
 struct AccountSectionView: View {
@@ -197,10 +210,10 @@ struct AccountSectionView: View {
             HStack {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                 Spacer()
                 Text(total, format: .currency(code: settingsManager.appCurrency))
-                    .font(.headline)
+                    .font(.subheadline.bold())
                     .foregroundStyle(isLiability ? .red : .green)
             }
             
@@ -224,10 +237,10 @@ struct AccountSectionView: View {
                             Spacer()
                             
                             Text(account.balance, format: .currency(code: settingsManager.appCurrency))
-                                .foregroundStyle(.gray)
+                                .foregroundStyle(.white.opacity(0.7))
                         }
-                        .padding()
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+                        .glassCard(cornerRadius: 16, padding: 16, lowRes: true)
+                        .drawingGroup()
                     }
                 }
             }

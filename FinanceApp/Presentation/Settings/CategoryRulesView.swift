@@ -9,7 +9,10 @@ struct CategoryRulesView: View {
     @State private var showingAddCategory = false
     
     var body: some View {
-        ScrollView {
+        ZStack {
+            PremiumBackground(colors: [.indigo, .purple, .black])
+            
+            ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     
                     // Categories Section
@@ -17,7 +20,7 @@ struct CategoryRulesView: View {
                         HStack {
                             Text(SettingsManager.shared.localizedString(for: "Available Categories"))
                                 .font(.headline)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.white)
                             
                             Spacer()
                             
@@ -28,9 +31,9 @@ struct CategoryRulesView: View {
                                     .foregroundStyle(.blue)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                         
-                        VStack(spacing: 1) {
+                        VStack(spacing: 0) {
                             ForEach(categories) { category in
                                 HStack(spacing: 14) {
                                     Circle()
@@ -44,7 +47,7 @@ struct CategoryRulesView: View {
                                     
                                     Text(category.localizedName)
                                         .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(.white)
                                     
                                     Spacer()
                                     
@@ -66,7 +69,7 @@ struct CategoryRulesView: View {
                                 }
                             }
                         }
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .glassCard(cornerRadius: 16, padding: 0, lowRes: true)
                         .padding(.horizontal)
                     }
                     
@@ -75,7 +78,7 @@ struct CategoryRulesView: View {
                         HStack {
                             Text(SettingsManager.shared.localizedString(for: "Custom Rules"))
                                 .font(.headline)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.white)
                             
                             Spacer()
                             
@@ -86,35 +89,37 @@ struct CategoryRulesView: View {
                                     .foregroundStyle(.blue)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                         
                         if rules.isEmpty {
                             VStack(spacing: 12) {
                                 Image(systemName: "checklist")
                                     .font(.system(size: 40))
-                                    .foregroundStyle(.gray.opacity(0.3))
+                                    .foregroundStyle(.white.opacity(0.2))
                                 Text(SettingsManager.shared.localizedString(for: "No custom rules yet"))
                                     .font(.subheadline)
-                                    .foregroundStyle(.gray)
+                                    .foregroundStyle(.white.opacity(0.6))
                                 Text(SettingsManager.shared.localizedString(for: "Rules help automatically categorize transactions based on their title."))
                                     .font(.caption)
-                                    .foregroundStyle(.gray.opacity(0.6))
+                                    .foregroundStyle(.white.opacity(0.4))
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 40)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 40)
+                            .glassCard(cornerRadius: 16, padding: 0, lowRes: true)
+                            .padding(.horizontal)
                         } else {
-                            VStack(spacing: 1) {
+                            VStack(spacing: 0) {
                                 ForEach(rules) { rule in
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(rule.pattern)
                                                 .font(.subheadline.weight(.medium))
-                                                .foregroundStyle(.primary)
+                                                .foregroundStyle(.white)
                                             Text("\(SettingsManager.shared.localizedString(for: "Categorize as")) \(categories.first(where: { $0.symbol == rule.categorySymbol })?.localizedName ?? SettingsManager.shared.localizedString(for: "Others"))")
                                                 .font(.caption)
-                                                .foregroundStyle(.gray)
+                                                .foregroundStyle(.white.opacity(0.6))
                                         }
                                         
                                         Spacer()
@@ -135,19 +140,13 @@ struct CategoryRulesView: View {
                                     }
                                 }
                             }
-                            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .glassCard(cornerRadius: 16, padding: 0, lowRes: true)
                             .padding(.horizontal)
                         }
                     }
                 }
                 .padding(.vertical, 20)
             }
-            .navigationTitle(SettingsManager.shared.localizedString(for: "Categories & Rules"))
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showingAddRule) {
-                AddRuleSheet(categories: categories)
-            }
-            .sheet(isPresented: $showingAddCategory) {
                 AddCategorySheet(orderIndex: categories.count)
             }
         }

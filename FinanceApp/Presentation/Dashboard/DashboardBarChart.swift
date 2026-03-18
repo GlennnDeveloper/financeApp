@@ -38,7 +38,8 @@ struct DashboardBarChart: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(Color.white.opacity(0.05))
         )
+        .drawingGroup()
     }
 }

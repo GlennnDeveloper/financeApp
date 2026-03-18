@@ -227,7 +227,6 @@
 "Version" = "Versión";
 
 /* Auth */
-/* Auth */
 "Welcome Back" = "Hola de nuevo";
 "Create Account" = "Crear Cuenta";
 "Email Address" = "Correo electrónico";
@@ -236,7 +235,37 @@
 "Sign Up" = "Registrarse";
 "Don't have an account?" = "¿No tienes cuenta?";
 "Already have an account?" = "¿Ya tienes cuenta?";
-"O continúa con" = "O continúa con";
+"Or continue with" = "O continúa con";
+
+/* Landing */
+"MyFinance" = "MyFinance";
+"Take control of your financial future today." = "Toma el control de tu futuro financiero hoy mismo.";
+"Start Now" = "Empezar ahora";
+"I already have an account" = "Ya tengo una cuenta";
+
+/* Onboarding */
+"Back" = "Atrás";
+"Continue" = "Continuar";
+"Get Started" = "Empezar";
+"Welcome!" = "¡Bienvenido!";
+"Tell us a bit about yourself to personalize your experience." = "Cuéntanos un poco sobre ti para personalizar tu experiencia.";
+"First Name" = "Nombre";
+"Last Name" = "Apellidos";
+"How old are you?" = "¿Qué edad tienes?";
+"Age" = "Edad";
+"Your Goals" = "Tus Objetivos";
+"Select the ones that interest you most." = "Selecciona los que más te interesen.";
+"Save" = "Ahorrar";
+"Invest" = "Invertir";
+"Reduce Debt" = "Reducir Deuda";
+"Budget" = "Presupuestar";
+"Financial Freedom" = "Libertad Financiera";
+"Security" = "Seguridad";
+"Protect your data with Face ID so only you can access your financial information." = "Protege tus datos con Face ID para que solo tú puedas acceder a tu información financiera.";
+"Enable Face ID" = "Activar Face ID";
+"Fast and secure access" = "Acceso rápido y seguro";
+"All Set" = "¡Todo listo!";
+"We are preparing your personalized financial dashboard." = "Estamos preparando tu tablero financiero personalizado.";
 "Done" = "Hecho";
 
 /* Notifications */

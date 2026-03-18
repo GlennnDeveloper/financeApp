@@ -47,61 +47,67 @@ struct BudgetView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
-                // Month Selector Header
-                monthSelector
-                
-                // Visual Summary (Donut-like progress)
-                BudgetSummaryChart(totalBudget: totalBudget, totalSpent: totalSpent)
-                    .padding(.top, 10)
-                
-                // Details Grid
-                HStack(spacing: 20) {
-                    summaryCard(title: "Remaining", value: max(0, totalBudget - totalSpent), color: .green)
-                    summaryCard(title: "Over Budget", value: max(0, totalSpent - totalBudget), color: .red)
-                }
-                .padding(.horizontal)
-                
-                // Budget List
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text(SettingsManager.shared.localizedString(for: "Categories"))
-                            .font(.headline)
-                        Spacer()
-                        if !filteredBudgets.isEmpty {
-                            Text("\(filteredBudgets.count) \(SettingsManager.shared.localizedString(for: "active"))")
-                                .font(.caption)
-                                .foregroundStyle(Color.gray)
-                        }
+        ZStack {
+            PremiumBackground(colors: [.green, .blue, .black])
+            
+            ScrollView {
+                VStack(spacing: 32) {
+                    // Month Selector Header
+                    monthSelector
+                    
+                    // Visual Summary (Donut-like progress)
+                    BudgetSummaryChart(totalBudget: totalBudget, totalSpent: totalSpent)
+                        .padding(.top, 10)
+                    
+                    // Details Grid
+                    HStack(spacing: 20) {
+                        summaryCard(title: "Remaining", value: max(0, totalBudget - totalSpent), color: .green)
+                        summaryCard(title: "Over Budget", value: max(0, totalSpent - totalBudget), color: .red)
                     }
                     .padding(.horizontal)
                     
-                    if filteredBudgets.isEmpty {
-                        emptyState
-                    } else {
-                        VStack(spacing: 0) {
-                            ForEach(filteredBudgets) { budget in
-                                let spent = categorySpending[budget.categorySymbol] ?? 0
-                                BudgetRow(budget: budget, spent: spent, categories: categories) {
-                                    editingBudget = budget
-                                } onDelete: {
-                                    modelContext.delete(budget)
-                                }
-                                
-                                if budget.id != filteredBudgets.last?.id {
-                                    Divider().padding(.leading, 64)
-                                }
+                    // Budget List
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text(SettingsManager.shared.localizedString(for: "Categories"))
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                            Spacer()
+                            if !filteredBudgets.isEmpty {
+                                Text("\(filteredBudgets.count) \(SettingsManager.shared.localizedString(for: "active"))")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.6))
                             }
                         }
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal)
+                        
+                        if filteredBudgets.isEmpty {
+                            emptyState
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(filteredBudgets) { budget in
+                                    let spent = categorySpending[budget.categorySymbol] ?? 0
+                                    BudgetRow(budget: budget, spent: spent, categories: categories) {
+                                        editingBudget = budget
+                                    } onDelete: {
+                                        modelContext.delete(budget)
+                                    }
+                                    
+                                    if budget.id != filteredBudgets.last?.id {
+                                        Divider().background(Color.white.opacity(0.1))
+                                    }
+                                }
+                            }
+                            .glassCard(cornerRadius: 16, padding: 0, lowRes: true)
+                            .drawingGroup()
+                            .padding(.horizontal)
+                        }
                     }
                 }
+                .padding(.bottom, 32)
             }
-            .padding(.bottom, 32)
+            .scrollContentBackground(.hidden)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
         .onAppear { recalculateBudgetData() }
         .onChange(of: transactions) { recalculateBudgetData() }
         .onChange(of: selectedMonth) { recalculateBudgetData() }
@@ -139,6 +145,7 @@ struct BudgetView: View {
             
             Text(selectedMonth.formatted(.dateTime.month(.wide).year()))
                 .font(.headline)
+                .foregroundStyle(.white)
             
             Spacer()
             
@@ -163,10 +170,10 @@ struct BudgetView: View {
                 VStack(spacing: 4) {
                     Text(SettingsManager.shared.localizedString(for: "No budgets set yet"))
                         .font(.headline)
-                        .foregroundStyle(Color.primary)
+                        .foregroundStyle(.white)
                     Text(SettingsManager.shared.localizedString(for: "Tap to set your first budget"))
                         .font(.subheadline)
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(.white.opacity(0.6))
                 }
             }
             .frame(maxWidth: .infinity)
@@ -187,8 +194,8 @@ struct BudgetView: View {
                 .foregroundStyle(color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .glassCard(cornerRadius: 12, padding: 12, lowRes: true)
+        .drawingGroup()
     }
     
     private func moveMonth(by value: Int) {
@@ -229,9 +236,11 @@ private struct BudgetRow: View {
                     HStack {
                         Text(category.localizedName)
                             .font(.body.weight(.semibold))
+                            .foregroundStyle(.white)
                         Spacer()
                         Text(spent.formatted(.currency(code: SettingsManager.shared.appCurrency)))
                             .font(.body.weight(.semibold))
+                            .foregroundStyle(.white)
                     }
                     
                     GeometryReader { geo in
@@ -261,7 +270,7 @@ private struct BudgetRow: View {
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.clear)
         .contentShape(Rectangle())
         .onTapGesture(perform: onEdit)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -315,9 +324,10 @@ private struct BudgetSummaryChart: View {
                     .foregroundStyle(Color.gray)
                 Text(totalSpent.formatted(.currency(code: settingsManager.appCurrency)))
                     .font(.title.bold())
+                    .foregroundStyle(.white)
                 Text(String(format: SettingsManager.shared.localizedString(for: "of %@"), totalBudget.formatted(.currency(code: settingsManager.appCurrency))))
                     .font(.caption2)
-                    .foregroundStyle(Color.gray)
+                    .foregroundStyle(.white.opacity(0.6))
             }
         }
     }

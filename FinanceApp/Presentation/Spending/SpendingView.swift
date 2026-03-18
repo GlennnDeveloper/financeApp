@@ -205,14 +205,14 @@ struct SpendingView: View {
                     } label: {
                         Text(tf.localizedName)
                             .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
-                            .foregroundStyle(selectedTimeframe == tf ? .primary : .secondary)
+                            .foregroundStyle(selectedTimeframe == tf ? .black : .white.opacity(0.6))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(selectedTimeframe == tf ? Color(uiColor: .systemBackground) : Color.clear, in: Capsule())
+                            .background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
                     }
                 }
             }
-            .background(Color.primary.opacity(0.06), in: Capsule())
+            .background(Color.white.opacity(0.08), in: Capsule())
         }
         .padding(.horizontal)
         .padding(.top, 10)
@@ -226,7 +226,7 @@ struct SpendingView: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .padding(8)
             }
             
@@ -234,7 +234,7 @@ struct SpendingView: View {
             
             Text(dateRangeText)
                 .font(.headline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
                 .id(dateRangeText) // Helps with transition animations
                 .transition(.opacity)
             
@@ -281,16 +281,13 @@ struct SpendingView: View {
             
             // Center Label
             VStack(spacing: 4) {
-                Text(SettingsManager.shared.localizedString(for: "Total Spent"))
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
                 Text(totalSpentFiltered, format: .currency(code: settingsManager.appCurrency))
                     .font(.title2.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
             }
         }
-        .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .glassCard(cornerRadius: 24, padding: 16, lowRes: true)
+        .drawingGroup()
         .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: chartData)
         .padding(.vertical)
@@ -301,7 +298,7 @@ struct SpendingView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(SettingsManager.shared.localizedString(for: "Breakdown"))
                 .font(.headline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
                 .padding(.horizontal)
             
             LazyVStack(spacing: 12) {
@@ -332,11 +329,11 @@ struct SpendingView: View {
                                 HStack {
                                     Text(item.name)
                                         .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(.white)
                                     Spacer()
                                     Text(item.totalSpent, format: .currency(code: settingsManager.appCurrency))
                                         .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(.white)
                                 }
                                 
                                 HStack {
@@ -355,17 +352,17 @@ struct SpendingView: View {
                                     
                                     Text("\(Int(item.percentage * 100))%")
                                         .font(.caption2.monospacedDigit())
-                                        .foregroundStyle(.gray)
+                                        .foregroundStyle(.white.opacity(0.6))
                                         .frame(width: 30, alignment: .trailing)
                                 }
                             }
                             
                             Image(systemName: "chevron.right")
                                 .font(.caption.weight(.bold))
-                                .foregroundStyle(Color.gray.opacity(0.5))
+                                .foregroundStyle(Color.white.opacity(0.4))
                         }
-                        .padding(16)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .glassCard(cornerRadius: 16, padding: 16, lowRes: true)
+                        .drawingGroup()
                     }
                     .buttonStyle(.plain)
                 }
@@ -375,40 +372,39 @@ struct SpendingView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                ViewHeader(title: "Spending Info", showSettings: $showSettings) {
-                    Image(systemName: "bell.fill")
-                        .font(.title2)
-                        .foregroundStyle(.gray.opacity(0.5))
-                }
-                
-                VStack(spacing: 24) {
-                    headerArea()
-                    
-                    
-                    // Donut Chart Area
-                    if totalSpentFiltered == 0 {
-                        ContentUnavailableView(
-                            SettingsManager.shared.localizedString(for: "No Data"),
-                            systemImage: "chart.pie.fill",
-                            description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
-                        )
-                        .frame(height: 300)
-                    } else {
-                        chartArea
-                        breakdownArea
+        ZStack {
+            PremiumBackground(colors: [.purple, .indigo, .blue])
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ViewHeader(title: "Spending Info", showSettings: $showSettings) {
+                        Image(systemName: "bell.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
+                    
+                    VStack(spacing: 24) {
+                        headerArea()
+                        
+                        // Donut Chart Area
+                        if totalSpentFiltered == 0 {
+                            ContentUnavailableView(
+                                SettingsManager.shared.localizedString(for: "No Data"),
+                                systemImage: "chart.pie.fill",
+                                description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
+                            )
+                            .frame(height: 300)
+                            .foregroundStyle(.white)
+                        } else {
+                            chartArea
+                            breakdownArea
+                        }
+                    }
+                    .padding(.bottom, 24)
                 }
-                .padding(.bottom, 24)
             }
+            .scrollContentBackground(.hidden)
         }
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemGroupedBackground)
-                .frame(height: 0)
-                .ignoresSafeArea(edges: .top)
-        }
-        .background(Color(uiColor: .systemGroupedBackground))
         .onAppear {
             recalculateSpendingData()
         }

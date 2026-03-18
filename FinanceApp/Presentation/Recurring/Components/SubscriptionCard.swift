@@ -69,7 +69,8 @@ struct SubscriptionCard: View {
             }
             .padding(16)
         }
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .glassCard(cornerRadius: 24, padding: 0, lowRes: true)
+        .drawingGroup()
         .contextMenu {
             Button(role: .destructive, action: onToggleRecurring) {
                 Label(settingsManager.localizedString(for: "Remove from Recurring"), systemImage: "calendar.badge.minus")

@@ -68,7 +68,7 @@ struct MainTabView: View {
             TransactionsView(showSettings: $showSettings)
                 .tabItem {
                     Label(settingsManager.localizedString(for: "Transactions"), systemImage: "list.bullet")
-                }
+                }   
         }
         .tint(.blue)
         .environment(\.locale, settingsManager.locale)

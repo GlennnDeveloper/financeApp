@@ -17,11 +17,11 @@ struct OnboardingView: View {
     @FocusState private var focusedField: OnboardingField?
     
     let goals = [
-        ("Ahorrar", "leaf.fill", Color.green),
-        ("Invertir", "chart.line.uptrend.xyaxis", Color.blue),
-        ("Reducir Deuda", "creditcard.fill", Color.red),
-        ("Presupuestar", "list.bullet.rectangle.fill", Color.orange),
-        ("Libertad Financiera", "star.fill", Color.yellow)
+        ("Save", "leaf.fill", Color.green),
+        ("Invest", "chart.line.uptrend.xyaxis", Color.blue),
+        ("Reduce Debt", "creditcard.fill", Color.red),
+        ("Budget", "list.bullet.rectangle.fill", Color.orange),
+        ("Financial Freedom", "star.fill", Color.yellow)
     ]
     
     @State private var slideDirection: Edge = .trailing
@@ -71,7 +71,7 @@ struct OnboardingView: View {
                 // Bottom Navigation
                 HStack {
                     if currentPage > 0 {
-                        Button("Atrás") {
+                        Button(settingsManager.localizedString(for: "Back")) {
                             slideDirection = .leading
                             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                                 currentPage -= 1
@@ -97,7 +97,7 @@ struct OnboardingView: View {
                                 }
                             }
                         } label: {
-                            Text("Continuar")
+                            Text(settingsManager.localizedString(for: "Continue"))
                                 .fontWeight(.bold)
                                 .foregroundStyle(.black)
                                 .padding(.horizontal, 30)
@@ -110,7 +110,7 @@ struct OnboardingView: View {
                         Button {
                             completeOnboarding()
                         } label: {
-                            Text("Empezar")
+                            Text(settingsManager.localizedString(for: "Get Started"))
                                 .fontWeight(.bold)
                                 .foregroundStyle(.black)
                                 .padding(.horizontal, 40)
@@ -136,11 +136,11 @@ struct OnboardingView: View {
                 .padding(.top, 40)
             
             VStack(spacing: 10) {
-                Text("¡Bienvenido!")
+                Text(settingsManager.localizedString(for: "Welcome!"))
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 
-                Text("Cuentanos un poco sobre ti para personalizar tu experiencia.")
+                Text(settingsManager.localizedString(for: "Tell us a bit about yourself to personalize your experience."))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
@@ -151,7 +151,7 @@ struct OnboardingView: View {
             
             VStack(spacing: 20) {
                 CustomTextField(
-                    placeholder: "Nombre",
+                    placeholder: settingsManager.localizedString(for: "First Name"),
                     text: $firstName,
                     isFocused: focusedField == .firstName
                 )
@@ -161,7 +161,7 @@ struct OnboardingView: View {
                 .onTapGesture { focusedField = .firstName }
                 
                 CustomTextField(
-                    placeholder: "Apellidos",
+                    placeholder: settingsManager.localizedString(for: "Last Name"),
                     text: $lastName,
                     isFocused: focusedField == .lastName
                 )
@@ -184,12 +184,12 @@ struct OnboardingView: View {
                 .padding(.top, 40)
             
             VStack(spacing: 10) {
-                Text("¿Qué edad tienes?")
+                Text(settingsManager.localizedString(for: "How old are you?"))
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }
             
-            Picker("Edad", selection: $age) {
+            Picker(settingsManager.localizedString(for: "Age"), selection: $age) {
                 ForEach(18...100, id: \.self) { num in
                     Text("\(num)")
                         .font(.title2)
@@ -208,11 +208,11 @@ struct OnboardingView: View {
     private var goalsStep: some View {
         VStack(spacing: 30) {
             VStack(spacing: 10) {
-                Text("Tus Objetivos")
+                Text(settingsManager.localizedString(for: "Your Goals"))
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 
-                Text("Selecciona los que más te interesen.")
+                Text(settingsManager.localizedString(for: "Select the ones that interest you most."))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.6))
                     .lineLimit(nil)
@@ -224,7 +224,7 @@ struct OnboardingView: View {
                 VStack(spacing: 12) {
                     ForEach(goals, id: \.0) { goal in
                         GoalRow(
-                            title: goal.0,
+                            title: settingsManager.localizedString(for: goal.0),
                             icon: goal.1,
                             color: goal.2,
                             isSelected: selectedGoals.contains(goal.0)
@@ -252,11 +252,11 @@ struct OnboardingView: View {
                 .padding(.top, 40)
             
             VStack(spacing: 12) {
-                Text("Seguridad")
+                Text(settingsManager.localizedString(for: "Security"))
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 
-                Text("Protege tus datos con Face ID para que solo tú puedas acceder a tu información financiera.")
+                Text(settingsManager.localizedString(for: "Protect your data with Face ID so only you can access your financial information."))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
@@ -273,10 +273,10 @@ struct OnboardingView: View {
                             .font(.system(size: 20))
                         
                         VStack(alignment: .leading) {
-                            Text("Activar Face ID")
+                            Text(settingsManager.localizedString(for: "Enable Face ID"))
                                 .font(.headline)
                                 .foregroundStyle(.white)
-                            Text("Acceso rápido y seguro")
+                            Text(settingsManager.localizedString(for: "Fast and secure access"))
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.4))
                         }
@@ -300,11 +300,11 @@ struct OnboardingView: View {
                 .padding(.top, 60)
             
             VStack(spacing: 15) {
-                Text("¡Todo listo, \(firstName)!")
+                Text("\(settingsManager.localizedString(for: "All Set")), \(firstName)!")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 
-                Text("Estamos preparando tu tablero financiero personalizado.")
+                Text(settingsManager.localizedString(for: "We are preparing your personalized financial dashboard."))
                     .font(.body)
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -362,18 +362,7 @@ struct CustomTextField: View {
     }
 }
 
-private extension View {
-    func placeholder<Content: View>(
-        when shouldShow: Bool,
-        alignment: Alignment = .leading,
-        @ViewBuilder placeholder: () -> Content) -> some View {
 
-        ZStack(alignment: alignment) {
-            placeholder().opacity(shouldShow ? 1 : 0)
-            self
-        }
-    }
-}
 
 struct GoalRow: View {
     let title: String

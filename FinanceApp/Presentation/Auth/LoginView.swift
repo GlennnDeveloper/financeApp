@@ -36,21 +36,16 @@ struct LoginView: View {
                         ZStack {
                             Circle()
                                 .fill(.white.opacity(0.1))
-                                .frame(width: 100, height: 100)
+                                .frame(width: 120, height: 120)
                                 .blur(radius: 10)
                             
                             Image("AppLogo")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 80, height: 80)
+                                .frame(width: 100, height: 100)
                                 .clipShape(Circle())
                                 .shadow(color: (isSignUp ? Color.orange : Color.blue).opacity(0.4), radius: 15)
                         }
-                        
-                        Text("MyFinance")
-                            .font(.system(size: 32, weight: .black, design: .rounded))
-                            .tracking(1)
-                            .foregroundStyle(.white)
                         
                         Spacer()
                     }
@@ -65,11 +60,11 @@ struct LoginView: View {
                             .padding(.top, 12)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(settingsManager.localizedString(for: isSignUp ? "Crear Cuenta" : "Welcome Back"))
+                            Text(settingsManager.localizedString(for: isSignUp ? "Create Account" : "Welcome Back"))
                                 .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                             
-                            Text(settingsManager.localizedString(for: isSignUp ? "Únete para gestionar mejor tus finanzas" : "Inicia sesión para continuar"))
+                            Text(settingsManager.localizedString(for: isSignUp ? "Join to better manage your finances" : "Sign in to continue"))
                                 .font(.subheadline)
                                 .foregroundStyle(.white.opacity(0.5))
                         }
@@ -134,7 +129,7 @@ struct LoginView: View {
                         VStack(spacing: 20) {
                             HStack {
                                 Rectangle().fill(.white.opacity(0.1)).frame(height: 1)
-                                Text(settingsManager.localizedString(for: "O continúa con"))
+                                Text(settingsManager.localizedString(for: "Or continue with"))
                                     .font(.caption2)
                                     .foregroundStyle(.white.opacity(0.4))
                                     .padding(.horizontal, 8)

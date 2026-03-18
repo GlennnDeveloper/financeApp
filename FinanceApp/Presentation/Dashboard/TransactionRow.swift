@@ -26,12 +26,12 @@ struct TransactionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
 
                 Text(transaction.date, format: .dateTime.day().month().year())
                     .font(.caption)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.white.opacity(0.6))
             }
 
             Spacer()
@@ -39,10 +39,10 @@ struct TransactionRow: View {
             // Monospaced amount for perfect digit alignment
             Text(transaction.amount, format: .currency(code: settingsManager.appCurrency))
                 .font(.headline.monospacedDigit())
-                .foregroundStyle(transaction.isIncome ? Color.green : Color.primary)
+                .foregroundStyle(transaction.isIncome ? Color.green : Color.white)
         }
-        .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .glassCard(cornerRadius: 20, padding: 16, lowRes: true)
+        .drawingGroup()
     }
 }
 

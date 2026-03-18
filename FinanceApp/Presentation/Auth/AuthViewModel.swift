@@ -56,6 +56,14 @@ class AuthViewModel: ObservableObject {
             self.session = session
             self.isNewUser = false
             AppInitializationManager.shared.isUnlocked = true
+            
+            // --- FIX: Check for existing profile to skip onboarding ---
+            if let profile = try? await SupabaseManager.shared.fetchProfile(id: session.user.id) {
+                SettingsManager.shared.userName = "\(profile.firstName) \(profile.lastName)".trimmingCharacters(in: .whitespaces)
+                SettingsManager.shared.userAge = profile.age
+                SettingsManager.shared.financialGoals = profile.financialGoals
+                SettingsManager.shared.hasCompletedOnboarding = true
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

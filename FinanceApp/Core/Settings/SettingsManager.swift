@@ -1,25 +1,7 @@
 import SwiftUI
 import Combine
 
-enum AppTheme: String, CaseIterable, Identifiable {
-    case system = "System"
-    case light = "Light"
-    case dark = "Dark"
-    
-    var id: String { self.rawValue }
-    
-    var localizedName: String {
-        SettingsManager.shared.localizedString(for: self.rawValue)
-    }
-    
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
-        }
-    }
-}
+
 
 enum AppLanguage: String, CaseIterable, Identifiable {
     case english = "English"
@@ -42,7 +24,6 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 final class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
     
-    @AppStorage("app_theme") var appThemeName: String = AppTheme.system.rawValue
     @AppStorage("app_language") var appLanguageName: String = AppLanguage.english.rawValue
     @AppStorage("app_currency") var appCurrency: String = "USD"
     @AppStorage("use_biometrics") var useBiometrics: Bool = false
@@ -53,6 +34,7 @@ final class SettingsManager: ObservableObject {
     @AppStorage("has_completed_onboarding") var hasCompletedOnboarding: Bool = false
     @AppStorage("user_name") var userName: String = ""
     @AppStorage("user_age") var userAge: Int = 0
+    @AppStorage("show_diagnostics") var showDiagnostics: Bool = false
     @AppStorage("financial_goals") var financialGoalsData: Data = Data()
 
     var financialGoals: [String] {
@@ -64,11 +46,7 @@ final class SettingsManager: ObservableObject {
         }
     }
     
-    var appTheme: AppTheme {
-        get { AppTheme(rawValue: appThemeName) ?? .system }
-        set { appThemeName = newValue.rawValue }
-    }
-    
+
     var appLanguage: AppLanguage {
         get { AppLanguage(rawValue: appLanguageName) ?? .english }
         set { appLanguageName = newValue.rawValue }

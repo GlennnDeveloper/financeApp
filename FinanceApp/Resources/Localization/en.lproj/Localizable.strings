@@ -240,6 +240,38 @@
 "Sign Up" = "Sign Up";
 "Don't have an account?" = "Don't have an account?";
 "Already have an account?" = "Already have an account?";
+"Or continue with" = "Or continue with";
+
+/* Landing */
+"MyFinance" = "MyFinance";
+"Take control of your financial future today." = "Take control of your financial future today.";
+"Start Now" = "Start Now";
+"I already have an account" = "I already have an account";
+
+/* Onboarding */
+"Back" = "Back";
+"Continue" = "Continue";
+"Get Started" = "Get Started";
+"Welcome!" = "Welcome!";
+"Tell us a bit about yourself to personalize your experience." = "Tell us a bit about yourself to personalize your experience.";
+"First Name" = "First Name";
+"Last Name" = "Last Name";
+"How old are you?" = "How old are you?";
+"Age" = "Age";
+"Your Goals" = "Your Goals";
+"Select the ones that interest you most." = "Select the ones that interest you most.";
+"Save" = "Save";
+"Invest" = "Invest";
+"Reduce Debt" = "Reduce Debt";
+"Budget" = "Budget";
+"Financial Freedom" = "Financial Freedom";
+"Security" = "Security";
+"Protect your data with Face ID so only you can access your financial information." = "Protect your data with Face ID so only you can access your financial information.";
+"Enable Face ID" = "Enable Face ID";
+"Fast and secure access" = "Fast and secure access";
+"All Set" = "All Set";
+"We are preparing your personalized financial dashboard." = "We are preparing your personalized financial dashboard.";
+"Done" = "Done";
 
 /* Notifications */
 "Enable Notifications" = "Enable Notifications";

@@ -7,15 +7,20 @@ struct SettingsMenuView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    greetingSection
-                    quickActionsSection
-                    accountSection
-                    preferencesSection
-                    signOutButton
-                    versionLabel
+            ZStack {
+                PremiumBackground(colors: [.blue, .black, .indigo])
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        greetingSection
+                        quickActionsSection
+                        accountSection
+                        preferencesSection
+                        signOutButton
+                        versionLabel
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle(SettingsManager.shared.localizedString(for: "Settings"))
             .navigationBarTitleDisplayMode(.inline)
@@ -24,7 +29,7 @@ struct SettingsMenuView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                 }
             }
@@ -38,7 +43,7 @@ struct SettingsMenuView: View {
             
             Text("\(greeting), \(name.isEmpty ? "User" : name)")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,7 +141,7 @@ struct SettingsMenuView: View {
     private var versionLabel: some View {
         Text("MyFinance v1.0")
             .font(.caption2)
-            .foregroundStyle(.gray.opacity(0.5))
+            .foregroundStyle(.white.opacity(0.3))
             .padding(.bottom, 24)
     }
 }
@@ -152,7 +157,7 @@ private struct SettingsSection<Content: View>: View {
             content
         }
         .padding(.vertical, 4)
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .padding(.horizontal)
     }
 }
@@ -188,7 +193,7 @@ private struct SettingsRowContent: View {
 
             Text(title)
                 .font(.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
 
             Spacer()
 

@@ -10,11 +10,11 @@ struct DashboardBalanceCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(settingsManager.localizedString(for: "Total Balance"))
                     .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.white.opacity(0.7))
                 
                 Text(balance, format: .currency(code: settingsManager.appCurrency))
                     .font(.system(size: 40, weight: .bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .contentTransition(.numericText())
             }
             
@@ -22,7 +22,7 @@ struct DashboardBalanceCard: View {
                 Text(settingsManager.localizedString(for: "MONTHLY SAVINGS"))
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.white.opacity(0.6))
                 
                 Text(monthlySavings, format: .currency(code: settingsManager.appCurrency))
                     .font(.headline)
@@ -31,10 +31,7 @@ struct DashboardBalanceCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
-        )
+        .glassCard(padding: 24, lowRes: true)
+        .drawingGroup()
     }
 }

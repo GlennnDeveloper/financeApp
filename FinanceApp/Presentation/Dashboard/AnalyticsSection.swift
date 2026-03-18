@@ -23,7 +23,8 @@ struct AnalyticsSection: View {
                 DashboardBarChart(chartData: chartData)
                     .padding()
             }
-            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .glassCard(cornerRadius: 24, lowRes: true)
+            .drawingGroup()
             .padding(.horizontal)
         }
     }

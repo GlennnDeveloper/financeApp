@@ -54,42 +54,36 @@ struct RecurringView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                ViewHeader(title: "Recurring", showSettings: $showSettings) {
-                    Image(systemName: "bell.fill")
-                        .font(.title2)
-                        .foregroundStyle(.gray.opacity(0.5))
-                }
-                .padding(.bottom, 16)
-                
-                if uniqueSubscriptions.isEmpty {
-                    emptyState
-                } else {
-                    VStack(spacing: 24) {
-                        if settingsManager.isPremium {
-                            summaryCards
-                            
-                            if !upcomingSubscriptions.isEmpty {
-                                upcomingSection
-                            }
-                            
-                            allSubscriptionsSection
-                        } else {
-                            premiumUpsellCard
-                            standardSubscriptionsSection
-                        }
+        ZStack {
+            PremiumBackground(colors: [.purple, .blue, .orange])
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ViewHeader(title: "Recurring", showSettings: $showSettings) {
+                        Image(systemName: "bell.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 16)
+                    
+                    if uniqueSubscriptions.isEmpty {
+                        emptyState
+                    } else {
+                        VStack(spacing: 24) {
+                            if settingsManager.isPremium {
+                                recurringSummaryHeader
+                                allSubscriptionsSection
+                            } else {
+                                premiumUpsellCard
+                                standardSubscriptionsSection
+                            }
+                        }
+                        .padding(.bottom, 100)
+                    }
                 }
             }
+            .scrollContentBackground(.hidden)
         }
-        .overlay(alignment: .top) {
-            Color(uiColor: .systemGroupedBackground)
-                .frame(height: 0)
-                .ignoresSafeArea(edges: .top)
-        }
-        .background(Color(uiColor: .systemGroupedBackground))
         .environment(\.locale, settingsManager.locale)
         .sheet(isPresented: $showPremiumSheet) {
             NavigationStack {
@@ -118,19 +112,19 @@ struct RecurringView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(settingsManager.localizedString(for: "Unlock Pro Dashboard"))
                             .font(.headline)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(.white)
                         Text(settingsManager.localizedString(for: "Get predictions and spending metrics"))
                             .font(.subheadline)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.bold())
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(.white.opacity(0.4))
                 }
             }
-            .padding()
-            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .glassCard(cornerRadius: 24, padding: 16, lowRes: true)
+            .drawingGroup()
             .padding(.horizontal)
         }
         .buttonStyle(.plain)
@@ -145,15 +139,13 @@ struct RecurringView: View {
             LazyVStack(spacing: 12) {
                 ForEach(uniqueSubscriptions) { transaction in
                     TransactionRow(transaction: transaction, categories: categories)
-                        .padding(16)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal)
                 }
             }
         }
     }
     
-    private var summaryCards: some View {
+    private var recurringSummaryHeader: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 16) {
                 summaryCard(
@@ -202,12 +194,12 @@ struct RecurringView: View {
                 
                 Text(settingsManager.localizedString(for: title))
                     .font(.caption)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.white.opacity(0.6))
             }
         }
         .frame(width: 140)
-        .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .glassCard(cornerRadius: 20, padding: 16, lowRes: true)
+        .drawingGroup()
     }
     
     private var upcomingSection: some View {

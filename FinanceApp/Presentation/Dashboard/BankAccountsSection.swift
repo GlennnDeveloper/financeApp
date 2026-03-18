@@ -51,8 +51,12 @@ struct BankAccountsSection: View {
                         Image(systemName: account.symbol).font(.title3).foregroundStyle(.blue).frame(width: 32)
                         Text(account.name).foregroundStyle(.primary)
                         Spacer()
-                        Text(account.balance, format: .currency(code: settingsManager.appCurrency)).foregroundStyle(.primary.opacity(0.7))
-                    }.padding().background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16)).padding(.horizontal)
+                        Text(account.balance, format: .currency(code: settingsManager.appCurrency))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    .glassCard(cornerRadius: 16, padding: 16, lowRes: true)
+                    .drawingGroup()
+                    .padding(.horizontal)
                 }
             }
         } else {
@@ -65,12 +69,20 @@ struct BankAccountsSection: View {
                 HStack(spacing: 14) {
                     Image(systemName: "building.columns.fill").font(.title2).foregroundStyle(.blue)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(settingsManager.localizedString(for: "Connect Your Bank")).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-                        Text(settingsManager.localizedString(for: "Link an account to see balances")).font(.caption).foregroundStyle(.gray)
+                        Text(settingsManager.localizedString(for: "Connect Your Bank"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                        Text(settingsManager.localizedString(for: "Link an account to see balances"))
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     Spacer()
-                    Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.gray.opacity(0.5))
-                }.padding(16).background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white.opacity(0.4))
+                }
+                .glassCard(cornerRadius: 16, padding: 16, lowRes: true)
+                .drawingGroup()
             }.buttonStyle(.plain).padding(.horizontal)
         }
     }
