@@ -11,9 +11,9 @@ class BankConnectionViewModel: ObservableObject {
     @Published var linkToken: String? = nil
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
-    @Published var isConnected: Bool = UserDefaults.standard.bool(forKey: "isBankConnected") {
+    @Published var isConnected: Bool = SettingsManager.shared.isBankConnected {
         didSet {
-            UserDefaults.standard.set(isConnected, forKey: "isBankConnected")
+            SettingsManager.shared.isBankConnected = isConnected
         }
     }
     

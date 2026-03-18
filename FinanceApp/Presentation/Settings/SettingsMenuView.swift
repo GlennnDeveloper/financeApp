@@ -32,16 +32,14 @@ struct SettingsMenuView: View {
     }
 
     private var greetingSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(SettingsManager.shared.localizedString(for: "Hi there 👋"))
-                .font(.title.weight(.bold))
+        VStack(alignment: .leading, spacing: 4) {
+            let name = SettingsManager.shared.userName.components(separatedBy: " ").first ?? ""
+            let greeting = SettingsManager.shared.localizedString(for: "Welcome")
+            
+            Text("\(greeting), \(name.isEmpty ? "User" : name)")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
-
-            if let email = authViewModel.session?.user.email {
-                Text(email)
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
-            }
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)

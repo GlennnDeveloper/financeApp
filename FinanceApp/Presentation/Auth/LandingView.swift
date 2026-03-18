@@ -7,27 +7,19 @@ struct LandingView: View {
     
     var body: some View {
         ZStack {
-            // Background with animated blobs (reusing style from LoginView)
-            Color.black.ignoresSafeArea()
+            PremiumBackground(colors: [.orange, .red, .yellow])
             
             VStack(spacing: 40) {
                 Spacer()
                 
                 // Branding
                 VStack(spacing: 20) {
-                    ZStack {
-                        Circle()
-                            .fill(.orange.opacity(0.1))
-                            .frame(width: 140, height: 140)
-                            .blur(radius: 20)
-                        
-                        Image("AppLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .shadow(color: .orange.opacity(0.3), radius: 15)
-                    }
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 130, height: 130)
+                        .clipShape(Circle())
+                        .shadow(color: .orange.opacity(0.4), radius: 20)
                     
                     Text("MyFinance")
                         .font(.system(size: 40, weight: .black, design: .rounded))
@@ -80,9 +72,8 @@ struct LandingView: View {
                 .padding(.bottom, 50)
             }
         }
-        .fullScreenCover(isPresented: $showAuth) {
-            LoginView(initialIsSignUp: isSignUp)
-                .id(isSignUp)
+        .sheet(isPresented: $showAuth) {
+            LoginView(isSignUp: $isSignUp)
         }
     }
 }

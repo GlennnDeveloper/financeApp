@@ -72,6 +72,7 @@
 
 /* Side Menu & New Settings */
 "Hi there 👋" = "Hola 👋";
+"Welcome" = "Hola";
 "Refer a Friend" = "Recomienda a un Amigo";
 "Chat" = "Chat";
 "Demo Mode" = "Modo Demo";
@@ -226,14 +227,17 @@
 "Version" = "Versión";
 
 /* Auth */
-"Welcome Back" = "Bienvenido";
+/* Auth */
+"Welcome Back" = "Hola de nuevo";
 "Create Account" = "Crear Cuenta";
-"Email Address" = "Correo Electrónico";
+"Email Address" = "Correo electrónico";
 "Password" = "Contraseña";
-"Sign In" = "Iniciar Sesión";
+"Sign In" = "Entrar";
 "Sign Up" = "Registrarse";
 "Don't have an account?" = "¿No tienes cuenta?";
 "Already have an account?" = "¿Ya tienes cuenta?";
+"O continúa con" = "O continúa con";
+"Done" = "Hecho";
 
 /* Notifications */
 "Enable Notifications" = "Activar Notificaciones";

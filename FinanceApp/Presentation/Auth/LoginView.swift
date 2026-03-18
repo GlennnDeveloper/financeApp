@@ -12,10 +12,10 @@ struct LoginView: View {
     
     @State private var email = ""
     @State private var password = ""
-    @State private var isSignUp: Bool
+    @Binding var isSignUp: Bool
     
-    init(initialIsSignUp: Bool = false) {
-        _isSignUp = State(initialValue: initialIsSignUp)
+    init(isSignUp: Binding<Bool>) {
+        self._isSignUp = isSignUp
     }
     
     @FocusState private var focusedField: FocusField?
@@ -24,87 +24,59 @@ struct LoginView: View {
     
     var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                // --- DYNAMIC BACKGROUND ---
-                ZStack {
-                    Color.black.ignoresSafeArea()
-                    
-                    // Floating blobs for depth
-                    Circle()
-                        .fill(isSignUp ? 
-                              LinearGradient(colors: [.orange.opacity(0.4), .red.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                              LinearGradient(colors: [.blue.opacity(0.4), .purple.opacity(0.4)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 300, height: 300)
-                        .blur(radius: 80)
-                        .offset(x: animate ? 100 : -100, y: animate ? -150 : 150)
-                    
-                    Circle()
-                        .fill(isSignUp ?
-                              LinearGradient(colors: [.yellow.opacity(0.2), .orange.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                              LinearGradient(colors: [.cyan.opacity(0.2), .indigo.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 400, height: 400)
-                        .blur(radius: 100)
-                        .offset(x: animate ? -120 : 120, y: animate ? 200 : -100)
-                }
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 7).repeatForever(autoreverses: true)) {
-                        animate.toggle()
-                    }
-                }
+            ZStack(alignment: .bottom) {
+                // Background
+                PremiumBackground(colors: isSignUp ? [.orange, .red, .yellow] : [.blue, .purple, .cyan])
                 
                 VStack(spacing: 0) {
-                    // --- HEADER / BRANDING ---
+                    // --- TOP BRANDING AREA ---
                     VStack(spacing: 16) {
+                        Spacer()
+                        
                         ZStack {
                             Circle()
                                 .fill(.white.opacity(0.1))
-                                .frame(width: 110, height: 110)
+                                .frame(width: 100, height: 100)
                                 .blur(radius: 10)
                             
                             Image("AppLogo")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 90, height: 90)
+                                .frame(width: 80, height: 80)
                                 .clipShape(Circle())
                                 .shadow(color: (isSignUp ? Color.orange : Color.blue).opacity(0.4), radius: 15)
                         }
                         
                         Text("MyFinance")
-                            .font(.system(size: 36, weight: .black, design: .rounded))
+                            .font(.system(size: 32, weight: .black, design: .rounded))
                             .tracking(1)
                             .foregroundStyle(.white)
+                        
+                        Spacer()
                     }
-                    .padding(.top, 60)
-                    .padding(.bottom, 40)
-                    .overlay(alignment: .topLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(.white.opacity(0.6))
-                                .padding(12)
-                                .background(Circle().fill(.white.opacity(0.1)))
-                        }
-                        .padding(.leading, 20)
-                        .padding(.top, 10)
-                    }
+                    .frame(height: proxy.size.height * 0.35)
                     
-                    // --- FORM WITH GLASSMORPHISM ---
+                    // --- BOTTOM FORM CARD ---
                     VStack(spacing: 24) {
+                        // Handle for visual appeal (optional, but looks premium)
+                        Capsule()
+                            .fill(.white.opacity(0.15))
+                            .frame(width: 40, height: 4)
+                            .padding(.top, 12)
+                        
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(settingsManager.localizedString(for: isSignUp ? "Crear Cuenta" : "Bienvenido"))
-                                .font(.title.bold())
+                            Text(settingsManager.localizedString(for: isSignUp ? "Crear Cuenta" : "Welcome Back"))
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                             
                             Text(settingsManager.localizedString(for: isSignUp ? "Únete para gestionar mejor tus finanzas" : "Inicia sesión para continuar"))
                                 .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(.white.opacity(0.5))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 8)
                         
                         VStack(spacing: 16) {
-                            // EMAIL FIELD
                             customTextField(
                                 icon: "envelope.fill",
                                 placeholder: "Email Address",
@@ -113,7 +85,6 @@ struct LoginView: View {
                             )
                             .onTapGesture { focusedField = .email }
                             
-                            // PASSWORD FIELD
                             customSecureField(
                                 icon: "lock.fill",
                                 placeholder: "Password",
@@ -130,22 +101,22 @@ struct LoginView: View {
                                 .padding(.horizontal, 4)
                         }
                         
-                        // PRIMARY ACTION BUTTON
+                        // PRIMARY ACTION
                         Button {
-                            focusedField = nil
+                            hideKeyboard()
                             submitAction()
                         } label: {
                             HStack {
                                 if viewModel.isLoading {
                                     ProgressView().tint(.white)
                                 } else {
-                                    Text(settingsManager.localizedString(for: isSignUp ? "Registrarse" : "Entrar"))
+                                    Text(settingsManager.localizedString(for: isSignUp ? "Registrarse" : "Sign In"))
                                         .font(.headline)
                                         .fontWeight(.bold)
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 60)
+                            .frame(height: 56)
                             .background(
                                 LinearGradient(
                                     colors: isSignUp ? [.orange, .red] : [.blue, .purple],
@@ -154,12 +125,30 @@ struct LoginView: View {
                                 )
                             )
                             .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .shadow(color: (isSignUp ? Color.red : Color.purple).opacity(0.3), radius: 10, x: 0, y: 5)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: (isSignUp ? Color.red : Color.purple).opacity(0.3), radius: 8, x: 0, y: 4)
                         }
                         .disabled(viewModel.isLoading)
                         
-                        // TOGGLE LOGIN/SIGNUP
+                        // --- SOCIAL LOGIN ---
+                        VStack(spacing: 20) {
+                            HStack {
+                                Rectangle().fill(.white.opacity(0.1)).frame(height: 1)
+                                Text(settingsManager.localizedString(for: "O continúa con"))
+                                    .font(.caption2)
+                                    .foregroundStyle(.white.opacity(0.4))
+                                    .padding(.horizontal, 8)
+                                Rectangle().fill(.white.opacity(0.1)).frame(height: 1)
+                            }
+                            
+                            HStack(spacing: 20) {
+                                socialButton(icon: "google_icon_placeholder", isSystem: false)
+                                socialButton(icon: "apple.logo", isSystem: true)
+                                socialButton(icon: "facebook_icon_placeholder", isSystem: false)
+                            }
+                        }
+                        
+                        // TOGGLE
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                 isSignUp.toggle()
@@ -167,44 +156,69 @@ struct LoginView: View {
                             }
                         } label: {
                             HStack(spacing: 4) {
-                                Text(settingsManager.localizedString(for: isSignUp ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"))
-                                    .foregroundStyle(.white.opacity(0.6))
-                                Text(settingsManager.localizedString(for: isSignUp ? "Inicia sesión ahora" : "Regístrate ahora"))
+                                Text(settingsManager.localizedString(for: isSignUp ? "Already have an account?" : "Don't have an account?"))
+                                    .foregroundStyle(.white.opacity(0.5))
+                                Text(settingsManager.localizedString(for: isSignUp ? "Sign In" : "Sign Up"))
                                     .fontWeight(.bold)
                                     .foregroundStyle(isSignUp ? .orange : .cyan)
                             }
                             .font(.subheadline)
                         }
+                        .padding(.top, 8)
+                        
+                        Spacer()
                     }
-                    .padding(30)
+                    .padding(.horizontal, 30)
+                    .frame(maxWidth: .infinity)
                     .background {
-                        RoundedRectangle(cornerRadius: 35, style: .continuous)
+                        CustomCorners(corners: [.topLeft, .topRight], radius: 40)
                             .fill(.white.opacity(0.08))
                             .background(
                                 BlurView(style: .systemThinMaterialDark)
-                                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                                    .clipShape(CustomCorners(corners: [.topLeft, .topRight], radius: 40))
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 35, style: .continuous)
+                                CustomCorners(corners: [.topLeft, .topRight], radius: 40)
                                     .stroke(.white.opacity(0.15), lineWidth: 1)
                             )
                     }
-                    .padding(.horizontal, 24)
+                    .ignoresSafeArea(edges: .bottom)
                 }
-                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .background(Color.black)
-        .onTapGesture { focusedField = nil }
+        .onTapGesture { hideKeyboard() }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button(settingsManager.localizedString(for: "Hecho")) {
-                    focusedField = nil
+                Button(settingsManager.localizedString(for: "Done")) {
+                    hideKeyboard()
                 }
                 .fontWeight(.bold)
                 .foregroundStyle(.orange)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func socialButton(icon: String, isSystem: Bool) -> some View {
+        Button {} label: {
+            ZStack {
+                Circle()
+                    .fill(.white.opacity(0.05))
+                    .frame(width: 50, height: 50)
+                    .overlay(Circle().stroke(.white.opacity(0.1), lineWidth: 1))
+                
+                if isSystem {
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                } else {
+                    // Placeholder for brand icons
+                    Image(systemName: "circle.grid.3x3.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.3))
+                }
             }
         }
     }
@@ -278,7 +292,17 @@ struct LoginView: View {
     }
 }
 
-// Support for Glassmorphism
+// Helper for custom corners
+struct CustomCorners: Shape {
+    var corners: UIRectCorner
+    var radius: CGFloat
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+    }
+}
+
 struct BlurView: UIViewRepresentable {
     var style: UIBlurEffect.Style
     func makeUIView(context: Context) -> UIVisualEffectView {

@@ -11,16 +11,19 @@ class AuthViewModel: ObservableObject {
     
     private let client = SupabaseManager.shared.client
     
-    init() {}
+    init() {
+    }
     
     func startListening() async {
         for await (_, session) in client.auth.authStateChanges {
             self.session = session
+            SettingsManager.shared.isLoggedIn = session != nil
         }
     }
     
     func checkSession() async {
         self.session = try? await client.auth.session
+        SettingsManager.shared.isLoggedIn = self.session != nil
     }
     
     // Ahora recibe los datos directamente desde la vista
@@ -28,10 +31,15 @@ class AuthViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        // Reset settings and clear database for new user
+        SettingsManager.shared.reset()
+        AppInitializationManager.shared.clearDatabase()
+        
         do {
             try await client.auth.signUp(email: email, password: password)
             await checkSession()
             self.isNewUser = true
+            AppInitializationManager.shared.isUnlocked = true
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -47,6 +55,7 @@ class AuthViewModel: ObservableObject {
             let session = try await client.auth.signIn(email: email, password: password)
             self.session = session
             self.isNewUser = false
+            AppInitializationManager.shared.isUnlocked = true
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -56,6 +65,9 @@ class AuthViewModel: ObservableObject {
     
     func signOut() async {
         try? await client.auth.signOut()
+        SettingsManager.shared.reset()
+        AppInitializationManager.shared.clearDatabase()
+        AppInitializationManager.shared.isUnlocked = false
         self.session = nil
         self.isNewUser = false
     }

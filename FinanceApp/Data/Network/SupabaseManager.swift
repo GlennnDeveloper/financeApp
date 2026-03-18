@@ -45,6 +45,15 @@ class SupabaseManager: ObservableObject {
             .execute()
             .value
     }
+    
+    // MARK: - Profiles
+    
+    func upsertProfile(_ profile: RemoteProfile) async throws {
+        try await client
+            .from("profiles")
+            .upsert(profile)
+            .execute()
+    }
 }
 
 // MARK: - Remote Data Models
@@ -85,5 +94,21 @@ struct RemoteTransaction: Codable, Identifiable {
         case categorySymbol = "category_symbol"
         case externalId = "external_id"
         case isRecurring = "is_recurring"
+    }
+}
+
+struct RemoteProfile: Codable {
+    let id: UUID
+    let firstName: String
+    let lastName: String
+    let age: Int
+    let financialGoals: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case age
+        case financialGoals = "financial_goals"
     }
 }

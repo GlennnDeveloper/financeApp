@@ -10,12 +10,12 @@ struct SideMenuContainerView<MenuContent: View, MainContent: View>: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            Color(uiColor: .systemBackground).ignoresSafeArea()
+            Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
 
             menu()
                 .frame(width: menuWidth, alignment: .leading)
-                .offset(x: isOpen ? 0 : -60)
-                .opacity(isOpen ? 1 : 0.6)
+                .offset(x: isOpen ? 0 : -menuWidth) // Fully hidden off-screen
+                .opacity(isOpen ? 1 : 0) // No visibility when closed
                 .ignoresSafeArea()
 
             ZStack {

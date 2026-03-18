@@ -45,8 +45,11 @@ final class SettingsManager: ObservableObject {
     @AppStorage("app_theme") var appThemeName: String = AppTheme.system.rawValue
     @AppStorage("app_language") var appLanguageName: String = AppLanguage.english.rawValue
     @AppStorage("app_currency") var appCurrency: String = "USD"
-    @AppStorage("use_biometrics") var useBiometrics: Bool = true
+    @AppStorage("use_biometrics") var useBiometrics: Bool = false
     @AppStorage("is_premium") var isPremium: Bool = false
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+    // Tracks whether any bank accounts are linked via Plaid.
+    @AppStorage("isBankConnected") var isBankConnected: Bool = false
     @AppStorage("has_completed_onboarding") var hasCompletedOnboarding: Bool = false
     @AppStorage("user_name") var userName: String = ""
     @AppStorage("user_age") var userAge: Int = 0
@@ -81,6 +84,17 @@ final class SettingsManager: ObservableObject {
             return NSLocalizedString(key, comment: "")
         }
         return bundle.localizedString(forKey: key, value: nil, table: nil)
+    }
+    
+    func reset() {
+        isPremium = false
+        isLoggedIn = false
+        isBankConnected = false
+        hasCompletedOnboarding = false
+        userName = ""
+        userAge = 0
+        financialGoals = []
+        // Optional: appCurrency = "USD"
     }
     
     private init() {}
