@@ -70,13 +70,13 @@ struct RecurringView: View {
                         emptyState
                     } else {
                         VStack(spacing: 24) {
-                            if settingsManager.isPremium {
-                                recurringSummaryHeader
-                                allSubscriptionsSection
-                            } else {
-                                premiumUpsellCard
-                                standardSubscriptionsSection
+                            recurringSummaryHeader
+                            
+                            if !upcomingSubscriptions.isEmpty {
+                                upcomingSection
                             }
+                            
+                            allSubscriptionsSection
                         }
                         .padding(.bottom, 100)
                     }

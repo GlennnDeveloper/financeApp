@@ -65,7 +65,7 @@ struct FinanceAppApp: App {
                 } else {
                     // Premium Splash Screen
                     ZStack {
-                        Color.black.ignoresSafeArea()
+                        PremiumBackground()
                         
                         VStack(spacing: 0) {
                             Spacer()

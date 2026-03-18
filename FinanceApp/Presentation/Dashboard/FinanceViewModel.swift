@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+@MainActor
 @Observable
 final class FinanceViewModel {
 
@@ -36,6 +37,59 @@ final class FinanceViewModel {
         }
 
         return monthExpenses.reduce(0) { $0 + $1.amount }
+    }
+    
+    // Pro Feature: Calculate Cash Flow Forecast for the next 30 days
+    func calculateCashFlowForecast(transactions: [Transaction], currentBalance: Double) -> [ChartItem] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        
+        // 1. Identify recurring income/expenses
+        let recurring = transactions.filter { $0.isRecurring }
+        
+        // 2. Project for the next 30 days
+        var projectedItems: [ChartItem] = []
+        var runningBalance = currentBalance
+        
+        // Add current day
+        projectedItems.append(ChartItem(label: "Today", amount: runningBalance, date: today))
+        
+        for dayOffset in 1...30 {
+            guard let date = calendar.date(byAdding: .day, value: dayOffset, to: today) else { continue }
+            
+            // Find any recurring transactions that hit on this "day of month"
+            let dayOfMonth = calendar.component(.day, from: date)
+            let monthHits = recurring.filter { calendar.component(.day, from: $0.date) == dayOfMonth }
+            
+            for hit in monthHits {
+                runningBalance += (hit.isIncome ? hit.amount : -hit.amount)
+            }
+            
+            // Every 7 days, add a data point to the forecast chart
+            if dayOffset % 5 == 0 || dayOffset == 30 {
+                let label = "D+\(dayOffset)"
+                projectedItems.append(ChartItem(label: label, amount: runningBalance, date: date))
+            }
+        }
+        
+        return projectedItems
+    }
+    
+    // Pro Feature: Calculate Savings Rate (%)
+    func calculateSavingsRate(transactions: [Transaction]) -> Double {
+        let calendar = Calendar.current
+        let now = Date.now
+        
+        let monthTransactions = transactions.filter {
+            calendar.isDate($0.date, equalTo: now, toGranularity: .month) &&
+            calendar.isDate($0.date, equalTo: now, toGranularity: .year)
+        }
+        
+        let income = monthTransactions.filter { $0.isIncome }.reduce(0) { $0 + $1.amount }
+        let savings = calculateTotalBalance(transactions: monthTransactions)
+        
+        guard income > 0 else { return 0 }
+        return max(0, (savings / income) * 100)
     }
     
     // Generador de cuentas iniciales (para la vista de "ACCOUNTS")

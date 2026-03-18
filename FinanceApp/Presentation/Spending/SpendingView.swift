@@ -2,14 +2,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-struct SpendingCategoryData: Identifiable, Equatable {
-    var id: String { symbol }
-    let name: String
-    let symbol: String
-    let color: Color
-    let totalSpent: Double
-    let percentage: Double
-}
 
 struct SpendingView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
@@ -33,12 +25,14 @@ struct SpendingView: View {
         let currentCategories = categories
         let currentOffset = dateOffset
         let currentTimeframe = selectedTimeframe
+        let currentLocale = settingsManager.locale
         
         // Cache category info to avoid accessing @Models on background thread
         let categoryMetadata = currentCategories.map { (name: $0.localizedName, symbol: $0.symbol, color: $0.color) }
         
         Task(priority: .userInitiated) {
-            let calendar = Calendar.current
+            var calendar = Calendar.current
+            calendar.locale = currentLocale
             var today = calendar.startOfDay(for: .now)
 
             var offsetComponent: Calendar.Component = .day
@@ -102,7 +96,6 @@ struct SpendingView: View {
                     ))
                 } else if let defaultMatch = Category.defaultData.first(where: { $0.symbol == symbol }) {
                     // Symbol not in DB yet, but recognized as a default category!
-                    // Proactively hydrate with correct name and color.
                     categoryResults.append(SpendingCategoryData(
                         name: defaultMatch.localizedName,
                         symbol: defaultMatch.symbol,
@@ -113,7 +106,7 @@ struct SpendingView: View {
                 } else {
                     // Truly unknown symbol
                     categoryResults.append(SpendingCategoryData(
-                        name: "\(SettingsManager.shared.localizedString(for: "Others")) (\(symbol))",
+                        name: "\(settingsManager.localizedString(for: "Others")) (\(symbol))",
                         symbol: symbol,
                         color: .gray,
                         totalSpent: catTotal,
@@ -149,22 +142,30 @@ struct SpendingView: View {
         }
     }
     
-    // MARK: - Static formatters
-    private static let weekRangeFormatter: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "MMM d"; return f
-    }()
-    private static let monthYearFormatter: DateFormatter = {
+    // MARK: - Formatters
+    private var weekRangeFormatter: DateFormatter {
         let f = DateFormatter()
+        f.locale = settingsManager.locale
+        f.dateFormat = "MMM d"
+        return f
+    }
+    private var monthYearFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = settingsManager.locale
         f.setLocalizedDateFormatFromTemplate("MMMM yyyy")
         return f
-    }()
-    private static let yearFormatter: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "yyyy"; return f
-    }()
+    }
+    private var yearFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = settingsManager.locale
+        f.dateFormat = "yyyy"
+        return f
+    }
 
     // Helper to render the specific timeline range
     private var dateRangeText: String {
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = settingsManager.locale
         let baseDate = calendar.startOfDay(for: .now)
 
         switch selectedTimeframe {
@@ -172,23 +173,23 @@ struct SpendingView: View {
             let offsetValue = dateOffset * 7
             if let adjustedAnchor = calendar.date(byAdding: .day, value: offsetValue, to: baseDate),
                let startOfWeek = calendar.date(byAdding: .day, value: -6, to: adjustedAnchor) {
-                let startStr = Self.weekRangeFormatter.string(from: startOfWeek)
-                let endStr   = Self.weekRangeFormatter.string(from: adjustedAnchor)
+                let startStr = weekRangeFormatter.string(from: startOfWeek)
+                let endStr   = weekRangeFormatter.string(from: adjustedAnchor)
                 return "\(startStr) - \(endStr)"
             }
 
         case .month:
             if let adjustedAnchor = calendar.date(byAdding: .month, value: dateOffset, to: baseDate) {
-                return Self.monthYearFormatter.string(from: adjustedAnchor)
+                return monthYearFormatter.string(from: adjustedAnchor)
             }
 
         case .year:
             if let adjustedAnchor = calendar.date(byAdding: .year, value: dateOffset, to: baseDate) {
-                return Self.yearFormatter.string(from: adjustedAnchor)
+                return yearFormatter.string(from: adjustedAnchor)
             }
         }
 
-        return NSLocalizedString("Unknown Date", comment: "")
+        return settingsManager.localizedString(for: "Unknown Date")
     }
     
     @ViewBuilder
@@ -296,7 +297,7 @@ struct SpendingView: View {
     @ViewBuilder
     private var breakdownArea: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(SettingsManager.shared.localizedString(for: "Breakdown"))
+            Text(settingsManager.localizedString(for: "Breakdown"))
                 .font(.headline)
                 .foregroundStyle(.white)
                 .padding(.horizontal)
@@ -389,9 +390,9 @@ struct SpendingView: View {
                         // Donut Chart Area
                         if totalSpentFiltered == 0 {
                             ContentUnavailableView(
-                                SettingsManager.shared.localizedString(for: "No Data"),
+                                settingsManager.localizedString(for: "No Data"),
                                 systemImage: "chart.pie.fill",
-                                description: Text(SettingsManager.shared.localizedString(for: "You have no expenses recorded for this timeframe."))
+                                description: Text(settingsManager.localizedString(for: "You have no expenses recorded for this timeframe."))
                             )
                             .frame(height: 300)
                             .foregroundStyle(.white)
@@ -408,6 +409,9 @@ struct SpendingView: View {
         .onAppear {
             recalculateSpendingData()
         }
+        .onChange(of: settingsManager.appLanguageName) { _, _ in
+            recalculateSpendingData()
+        }
         .onChange(of: transactions) { _, _ in
             recalculateSpendingData()
         }
@@ -420,6 +424,7 @@ struct SpendingView: View {
         .onChange(of: categories) { _, _ in
             recalculateSpendingData()
         }
+        .environment(\.locale, settingsManager.locale)
     }
 }
 

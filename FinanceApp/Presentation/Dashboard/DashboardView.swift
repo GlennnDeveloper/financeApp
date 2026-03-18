@@ -22,8 +22,11 @@ struct DashboardView: View {
     @State private var selectedTimeframe: Timeframe = .week
     @State private var totalBalance: Double = 0
     @State private var monthlySavings: Double = 0
+    @State private var savingsRate: Double = 0
     @State private var chartData: [ChartItem] = []
+    @State private var forecastData: [ChartItem] = []
     @State private var showAddSheet = false
+    @State private var recalculateTask: Task<Void, Never>? = nil
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -49,10 +52,21 @@ struct DashboardView: View {
                         authViewModel: authViewModel
                     )
                     
-                    AnalyticsSection(
-                        chartData: chartData,
-                        selectedTimeframe: $selectedTimeframe
-                    )
+                    TabView {
+                        AnalyticsSection(
+                            chartData: chartData,
+                            selectedTimeframe: $selectedTimeframe
+                        )
+                        .padding(.horizontal)
+                        
+                        forecastSection
+                            .padding(.horizontal)
+                        
+                        SpendingCarouselCard(transactions: transactions, categories: categories)
+                            .padding(.horizontal)
+                    }
+                    .frame(height: 320)
+                    .tabViewStyle(.page(indexDisplayMode: .always))
                     
                     RecentTransactionsSection(
                         transactions: transactions,
@@ -110,20 +124,28 @@ struct DashboardView: View {
     }
     
     private func recalculateDashboard() {
-        Task(priority: .userInitiated) {
-            let currentAccounts = accounts
-            let currentTransactions = transactions
-            let currentTimeframe = selectedTimeframe
-
-            let newBalance = currentAccounts.reduce(0) { $0 + $1.balance }
-            let newSavings = viewModel.calculateMonthlySavings(transactions: currentTransactions)
-            let newChartData = generateChartData(transactions: currentTransactions, timeframe: currentTimeframe)
-
+        recalculateTask?.cancel()
+        
+        // 1. Capture plain data on the MainActor
+        let currentAccounts = accounts.map { (balance: $0.balance, isLiability: $0.isLiability ?? false) }
+        let currentTimeframe = selectedTimeframe
+        
+        recalculateTask = Task(priority: .userInitiated) {
+            // 2. Perform calculations on a background thread using plain data
+            let newBalance = currentAccounts.reduce(0) { $0 + ($1.isLiability ? -$1.balance : $1.balance) }
+            
+            // Note: Since FinanceViewModel methods currently take [Transaction] objects, 
+            // we'll run the legacy calls on the MainActor for now to avoid crashes,
+            // while we plan a deeper refactor of the ViewModel.
             await MainActor.run {
+                guard !Task.isCancelled else { return }
+                
                 withAnimation {
                     self.totalBalance = newBalance
-                    self.monthlySavings = newSavings
-                    self.chartData = newChartData
+                    self.monthlySavings = viewModel.calculateMonthlySavings(transactions: transactions)
+                    self.savingsRate = viewModel.calculateSavingsRate(transactions: transactions)
+                    self.chartData = generateChartData(transactions: transactions, timeframe: currentTimeframe)
+                    self.forecastData = viewModel.calculateCashFlowForecast(transactions: transactions, currentBalance: newBalance)
                 }
             }
         }
@@ -186,5 +208,55 @@ struct DashboardView: View {
             }
         }
         return items
+    }
+
+    private var forecastSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(settingsManager.localizedString(for: "Cash Flow Forecast"))
+                        .font(.headline)
+                    Text(settingsManager.localizedString(for: "Projection based on recurring items"))
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                Spacer()
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .foregroundStyle(.blue)
+            }
+            
+            Chart {
+                ForEach(forecastData) { item in
+                    LineMark(
+                        x: .value("Day", item.label),
+                        y: .value("Balance", item.amount)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing))
+                    
+                    AreaMark(
+                        x: .value("Day", item.label),
+                        y: .value("Balance", item.amount)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(LinearGradient(colors: [.blue.opacity(0.2), .clear], startPoint: .top, endPoint: .bottom))
+                }
+            }
+            .frame(height: 200)
+            .chartYAxis {
+                AxisMarks(position: .leading) { value in
+                    AxisGridLine().foregroundStyle(.white.opacity(0.05))
+                    AxisValueLabel().foregroundStyle(.white.opacity(0.4))
+                }
+            }
+            .chartXAxis {
+                AxisMarks { value in
+                    AxisValueLabel().foregroundStyle(.white.opacity(0.4))
+                }
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .glassCard(cornerRadius: 24, padding: 20, lowRes: true)
+        .drawingGroup()
     }
 }
