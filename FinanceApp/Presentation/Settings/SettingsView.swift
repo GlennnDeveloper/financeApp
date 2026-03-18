@@ -121,15 +121,6 @@ struct SettingsView: View {
                         VStack(spacing: 0) {
                             Button {
                                 let viewModel = FinanceViewModel()
-                                viewModel.seedManyTransactions(context: modelContext, count: 200)
-                            } label: {
-                                ActionRow(icon: "plus.square.dashed", color: .blue, title: "Generate Test Data (200)")
-                            }
-                            
-                            Divider().overlay(Color.white.opacity(0.06)).padding(.horizontal, 16)
-                            
-                            Button {
-                                let viewModel = FinanceViewModel()
                                 viewModel.runSubscriptionAnalysis(context: modelContext, transactions: transactions)
                             } label: {
                                 ActionRow(icon: "magnifyingglass.circle", color: .orange, title: "Analyze Subscriptions")

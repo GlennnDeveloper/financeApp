@@ -1,7 +1,9 @@
 import SwiftUI
 import Auth
+import SwiftData
 
 struct SettingsMenuView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authViewModel: AuthViewModel
 
@@ -57,7 +59,14 @@ struct SettingsMenuView: View {
             Divider().overlay(Color.white.opacity(0.06))
             SettingsRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Chat"))
             Divider().overlay(Color.white.opacity(0.06))
-            SettingsRow(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Enter Demo Mode"))
+            Button {
+                let viewModel = FinanceViewModel()
+                viewModel.seedManyTransactions(context: modelContext, count: 200)
+                dismiss()
+            } label: {
+                SettingsRowContent(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Enter Demo Mode"))
+            }
+            .buttonStyle(.plain)
         }
     }
 

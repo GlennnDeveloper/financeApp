@@ -1,8 +1,10 @@
 import SwiftUI
 import Auth
+import SwiftData
 
 /// Side menu content — adapted from SettingsView for the 3D drawer layout
 struct SideMenuContent: View {
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var isOpen: Bool
@@ -85,7 +87,16 @@ struct SideMenuContent: View {
         MenuSection {
             MenuRow(icon: "gift.fill", iconColor: .purple, title: SettingsManager.shared.localizedString(for: "Refer a Friend"))
             MenuRow(icon: "bubble.left.and.bubble.right.fill", iconColor: .blue, title: SettingsManager.shared.localizedString(for: "Chat"))
-            MenuRow(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Demo Mode"))
+            Button {
+                let viewModel = FinanceViewModel()
+                viewModel.seedManyTransactions(context: modelContext, count: 200)
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    isOpen = false
+                }
+            } label: {
+                MenuRowContent(icon: "play.circle.fill", iconColor: .green, title: SettingsManager.shared.localizedString(for: "Demo Mode"))
+            }
+            .buttonStyle(.plain)
         }
     }
 
