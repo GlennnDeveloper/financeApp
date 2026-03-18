@@ -194,104 +194,113 @@ struct SpendingView: View {
     
     @ViewBuilder
     private func headerArea() -> some View {
-        HStack {
-            Spacer()
-            HStack(spacing: 0) {
-                ForEach(Timeframe.allCases, id: \.self) { tf in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedTimeframe = tf
-                            dateOffset = 0
-                        }
-                    } label: {
-                        Text(tf.localizedName)
-                            .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
-                            .foregroundStyle(selectedTimeframe == tf ? .black : .white.opacity(0.6))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(selectedTimeframe == tf ? Color.white : Color.clear, in: Capsule())
+        VStack(spacing: 20) {
+            // Date Navigation Controls
+            HStack {
+                Button {
+                    withAnimation {
+                        dateOffset -= 1
                     }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(8)
                 }
+                
+                Spacer()
+                
+                Text(dateRangeText)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .id(dateRangeText) // Helps with transition animations
+                    .transition(.opacity)
+                
+                Spacer()
+                
+                Button {
+                    withAnimation {
+                        if dateOffset < 0 { // Prevent going into the future unnecessarily
+                            dateOffset += 1
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(dateOffset < 0 ? .primary : Color.gray.opacity(0.3)) // Visually disable future
+                        .padding(8)
+                }
+                .disabled(dateOffset >= 0)
             }
-            .background(Color.white.opacity(0.08), in: Capsule())
         }
         .padding(.horizontal)
         .padding(.top, 10)
-        
-        // Date Navigation Controls
-        HStack {
-            Button {
-                withAnimation {
-                    dateOffset -= 1
-                }
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
-                    .padding(8)
-            }
-            
-            Spacer()
-            
-            Text(dateRangeText)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .id(dateRangeText) // Helps with transition animations
-                .transition(.opacity)
-            
-            Spacer()
-            
-            Button {
-                withAnimation {
-                    if dateOffset < 0 { // Prevent going into the future unnecessarily
-                        dateOffset += 1
-                    }
-                }
-            } label: {
-                Image(systemName: "chevron.right")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(dateOffset < 0 ? .primary : Color.gray.opacity(0.3)) // Visually disable future
-                    .padding(8)
-            }
-            .disabled(dateOffset >= 0)
-        }
-        .padding(.horizontal)
     }
 
     @ViewBuilder
     private var chartArea: some View {
-        ZStack {
-            Chart(chartData, id: \.symbol) { item in
-                SectorMark(
-                    angle: .value("Spent", item.totalSpent),
-                    innerRadius: .ratio(0.65),
-                    angularInset: 2.0
-                )
-                .cornerRadius(6)
-                .foregroundStyle(by: .value("Category", item.name))
+        VStack(alignment: .leading, spacing: 20) {
+            // Card Header
+            HStack {
+                Text(settingsManager.localizedString(for: "Distribution"))
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                HStack(spacing: 0) {
+                    ForEach(Timeframe.allCases, id: \.self) { tf in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedTimeframe = tf
+                                dateOffset = 0
+                            }
+                        } label: {
+                            Text(tf.localizedName)
+                                .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
+                                .foregroundStyle(selectedTimeframe == tf ? .primary : .secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(selectedTimeframe == tf ? Color.white.opacity(0.12) : Color.clear, in: Capsule())
+                        }
+                    }
+                }
+                .background(Color.white.opacity(0.05), in: Capsule())
             }
-            .chartForegroundStyleScale(domain: chartData.map(\.name)) { categoryName in
-                if let data = chartData.first(where: { $0.name == categoryName }) {
-                    AnyShapeStyle(data.color.gradient)
-                } else {
-                    AnyShapeStyle(Color.gray.gradient)
+            .padding(.bottom, 10)
+            
+            ZStack {
+                Chart(chartData, id: \.symbol) { item in
+                    SectorMark(
+                        angle: .value("Spent", item.totalSpent),
+                        innerRadius: .ratio(0.65),
+                        angularInset: 2.0
+                    )
+                    .cornerRadius(6)
+                    .foregroundStyle(by: .value("Category", item.name))
+                }
+                .chartForegroundStyleScale(domain: chartData.map(\.name)) { categoryName in
+                    if let data = chartData.first(where: { $0.name == categoryName }) {
+                        AnyShapeStyle(data.color.gradient)
+                    } else {
+                        AnyShapeStyle(Color.gray.gradient)
+                    }
+                }
+                .chartLegend(.hidden)
+                .frame(height: 240)
+                
+                // Center Label
+                VStack(spacing: 4) {
+                    Text(totalSpentFiltered, format: .currency(code: settingsManager.appCurrency))
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
                 }
             }
-            .chartLegend(.hidden)
-            .frame(height: 280)
-            
-            // Center Label
-            VStack(spacing: 4) {
-                Text(totalSpentFiltered, format: .currency(code: settingsManager.appCurrency))
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
-            }
         }
-        .glassCard(cornerRadius: 24, padding: 16, lowRes: true)
+        .glassCard(cornerRadius: 24, padding: 20, lowRes: true)
         .drawingGroup()
         .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: chartData)
-        .padding(.vertical)
     }
 
     @ViewBuilder

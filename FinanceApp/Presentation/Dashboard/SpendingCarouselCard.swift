@@ -77,7 +77,7 @@ struct SpendingCarouselCard: View {
                         .foregroundStyle(.white.opacity(0.6))
                 }
             }
-            .frame(height: 220)
+            .frame(height: 200)
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .glassCard(cornerRadius: 24, padding: 20, lowRes: true)

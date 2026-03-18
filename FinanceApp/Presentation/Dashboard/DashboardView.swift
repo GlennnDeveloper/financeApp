@@ -65,7 +65,7 @@ struct DashboardView: View {
                         SpendingCarouselCard(transactions: transactions, categories: categories)
                             .padding(.horizontal)
                     }
-                    .frame(height: 320)
+                    .frame(height: 340)
                     .tabViewStyle(.page(indexDisplayMode: .always))
                     
                     RecentTransactionsSection(
