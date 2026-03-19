@@ -79,6 +79,7 @@ struct SpendingCarouselCard: View {
             }
             .frame(height: 200)
         }
+        .padding(.bottom, 20)
         .frame(maxHeight: .infinity, alignment: .top)
         .glassCard(cornerRadius: 24, padding: 20, lowRes: true)
         .drawingGroup()

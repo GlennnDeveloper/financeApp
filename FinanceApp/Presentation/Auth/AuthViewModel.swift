@@ -18,12 +18,22 @@ class AuthViewModel: ObservableObject {
         for await (_, session) in client.auth.authStateChanges {
             self.session = session
             SettingsManager.shared.isLoggedIn = session != nil
+            
+            // Sync profile when session is established
+            if let session = session {
+                await syncProfile(session: session)
+            }
         }
     }
     
     func checkSession() async {
         self.session = try? await client.auth.session
         SettingsManager.shared.isLoggedIn = self.session != nil
+        
+        // Sync profile if session exists
+        if let session = self.session {
+            await syncProfile(session: session)
+        }
     }
     
     // Ahora recibe los datos directamente desde la vista
@@ -57,18 +67,31 @@ class AuthViewModel: ObservableObject {
             self.isNewUser = false
             AppInitializationManager.shared.isUnlocked = true
             
-            // --- FIX: Check for existing profile to skip onboarding ---
-            if let profile = try? await SupabaseManager.shared.fetchProfile(id: session.user.id) {
-                SettingsManager.shared.userName = "\(profile.firstName) \(profile.lastName)".trimmingCharacters(in: .whitespaces)
-                SettingsManager.shared.userAge = profile.age
-                SettingsManager.shared.financialGoals = profile.financialGoals
-                SettingsManager.shared.hasCompletedOnboarding = true
-            }
+            // --- FIX: Sync profile to skip onboarding ---
+            await syncProfile(session: session)
         } catch {
             errorMessage = error.localizedDescription
         }
         
         isLoading = false
+    }
+    
+    // MARK: - Private Helpers
+    
+    private func syncProfile(session: Session) async {
+        do {
+            if let profile = try await SupabaseManager.shared.fetchProfile(id: session.user.id) {
+                SettingsManager.shared.userName = "\(profile.firstName) \(profile.lastName)".trimmingCharacters(in: .whitespaces)
+                SettingsManager.shared.userAge = profile.age
+                SettingsManager.shared.financialGoals = profile.financialGoals
+                
+                // If we found a profile, the user has completed onboarding
+                SettingsManager.shared.hasCompletedOnboarding = true
+            }
+        } catch {
+            // If profile fetch fails (e.g., no profile yet), we don't set hasCompletedOnboarding
+            print("Profile sync failed or not found: \(error)")
+        }
     }
     
     func signOut() async {

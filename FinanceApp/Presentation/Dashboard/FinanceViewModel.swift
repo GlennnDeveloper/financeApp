@@ -91,6 +91,52 @@ final class FinanceViewModel {
         guard income > 0 else { return 0 }
         return max(0, (savings / income) * 100)
     }
+
+    // Punto 5: Calculate top spending categories for the selected timeframe
+    func calculateTopCategories(transactions: [Transaction], categories: [Category], timeframe: Timeframe, limit: Int = 3) -> [SpendingCategoryData] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        
+        // 1. Filter transactions by timeframe (Expenses only)
+        let filtered: [Transaction]
+        switch timeframe {
+        case .week:
+            let startOfWeek = calendar.date(byAdding: .day, value: -7, to: today) ?? today
+            filtered = transactions.filter { !$0.isIncome && $0.date >= startOfWeek }
+        case .month:
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
+            filtered = transactions.filter { !$0.isIncome && $0.date >= startOfMonth }
+        case .year:
+            let startOfYear = calendar.date(from: calendar.dateComponents([.year], from: today)) ?? today
+            filtered = transactions.filter { !$0.isIncome && $0.date >= startOfYear }
+        }
+        
+        guard !filtered.isEmpty else { return [] }
+        
+        let totalPeriodSpend = filtered.reduce(0) { $0 + $1.amount }
+        
+        // 2. Group by category symbol
+        let grouped = Dictionary(grouping: filtered) { $0.categorySymbol }
+        
+        // 3. Map to SpendingCategoryData
+        var result: [SpendingCategoryData] = []
+        
+        for (symbol, txs) in grouped {
+            let total = txs.reduce(0) { $0 + $1.amount }
+            let category = categories.first { $0.symbol == symbol } ?? Category.placeholder
+            
+            result.append(SpendingCategoryData(
+                name: category.name,
+                symbol: symbol,
+                color: category.color,
+                totalSpent: total,
+                percentage: (total / totalPeriodSpend) * 100
+            ))
+        }
+        
+        // 4. Sort and limit
+        return Array(result.sorted { $0.totalSpent > $1.totalSpent }.prefix(limit))
+    }
     
     // Generador de cuentas iniciales (para la vista de "ACCOUNTS")
     func insertDefaultAccountsIfNeeded(context: ModelContext, existingAccounts: [Account]) {
@@ -322,9 +368,4 @@ final class FinanceViewModel {
     }
 }
 
-extension Double {
-    func rounded(toPlaces places: Int) -> Double {
-        let divisor = pow(10.0, Double(places))
-        return (self * divisor).rounded() / divisor
-    }
-}
+
