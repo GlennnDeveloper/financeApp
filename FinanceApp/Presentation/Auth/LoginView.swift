@@ -72,19 +72,25 @@ struct LoginView: View {
                         .padding(.top, 8)
                         
                         VStack(spacing: 16) {
-                            customTextField(
+                            AppTextField(
                                 icon: "envelope.fill",
                                 placeholder: "Email Address",
                                 text: $email,
-                                isFocused: focusedField == .email
+                                isFocused: focusedField == .email,
+                                keyboardType: .emailAddress,
+                                textContentType: .username,
+                                onSubmit: { focusedField = .password }
                             )
                             .onTapGesture { focusedField = .email }
                             
-                            customSecureField(
+                            AppTextField(
                                 icon: "lock.fill",
                                 placeholder: "Password",
                                 text: $password,
-                                isFocused: focusedField == .password
+                                isSecure: true,
+                                isFocused: focusedField == .password,
+                                textContentType: .password,
+                                onSubmit: { submitAction() }
                             )
                             .onTapGesture { focusedField = .password }
                         }
@@ -97,33 +103,14 @@ struct LoginView: View {
                         }
                         
                         // PRIMARY ACTION
-                        Button {
+                        AppButton(
+                            title: settingsManager.localizedString(for: isSignUp ? "Registrarse" : "Sign In"),
+                            style: isSignUp ? .custom(colors: [.orange, .red]) : .primary,
+                            isLoading: viewModel.isLoading
+                        ) {
                             hideKeyboard()
                             submitAction()
-                        } label: {
-                            HStack {
-                                if viewModel.isLoading {
-                                    ProgressView().tint(.white)
-                                } else {
-                                    Text(settingsManager.localizedString(for: isSignUp ? "Registrarse" : "Sign In"))
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    colors: isSignUp ? [.orange, .red] : [.blue, .purple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .shadow(color: (isSignUp ? Color.red : Color.purple).opacity(0.3), radius: 8, x: 0, y: 4)
                         }
-                        .disabled(viewModel.isLoading)
                         
                         // --- SOCIAL LOGIN ---
                         VStack(spacing: 20) {
@@ -218,62 +205,6 @@ struct LoginView: View {
         }
     }
     
-    @ViewBuilder
-    private func customTextField(icon: String, placeholder: String, text: Binding<String>, isFocused: Bool) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .foregroundStyle(isFocused ? .orange : .white.opacity(0.4))
-                .font(.system(size: 20))
-                .frame(width: 24)
-            
-            TextField("", text: text, prompt: Text(settingsManager.localizedString(for: placeholder)).foregroundStyle(.white.opacity(0.3)))
-                .foregroundStyle(.white)
-                .keyboardType(.emailAddress)
-                .textContentType(.username)
-                .autocorrectionDisabled(true)
-                .textInputAutocapitalization(.never)
-                .focused($focusedField, equals: .email)
-                .submitLabel(.next)
-                .onSubmit { focusedField = .password }
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 64)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(isFocused ? .white.opacity(0.12) : .white.opacity(0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(isFocused ? .orange.opacity(0.5) : .clear, lineWidth: 1)
-        )
-    }
-    
-    @ViewBuilder
-    private func customSecureField(icon: String, placeholder: String, text: Binding<String>, isFocused: Bool) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .foregroundStyle(isFocused ? .orange : .white.opacity(0.4))
-                .font(.system(size: 20))
-                .frame(width: 24)
-            
-            SecureField("", text: text, prompt: Text(settingsManager.localizedString(for: placeholder)).foregroundStyle(.white.opacity(0.3)))
-                .foregroundStyle(.white)
-                .textContentType(.password)
-                .focused($focusedField, equals: .password)
-                .submitLabel(isSignUp ? .join : .go)
-                .onSubmit { submitAction() }
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 64)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(isFocused ? .white.opacity(0.12) : .white.opacity(0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(isFocused ? .orange.opacity(0.5) : .clear, lineWidth: 1)
-        )
-    }
 
     
     private func submitAction() {

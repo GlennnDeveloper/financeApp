@@ -40,36 +40,20 @@ struct LandingView: View {
                 
                 // Action Buttons
                 VStack(spacing: 16) {
-                    Button {
+                    AppButton(
+                        title: settingsManager.localizedString(for: "Start Now"),
+                        style: .custom(colors: [.orange, .red])
+                    ) {
                         isSignUp = true
                         showAuth = true
-                    } label: {
-                        Text(settingsManager.localizedString(for: "Start Now"))
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .background(Color.orange)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
                     
-                    Button {
+                    AppButton(
+                        title: settingsManager.localizedString(for: "I already have an account"),
+                        style: .secondary
+                    ) {
                         isSignUp = false
                         showAuth = true
-                    } label: {
-                        Text(settingsManager.localizedString(for: "I already have an account"))
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(.white.opacity(0.2), lineWidth: 1)
-                            )
                     }
                 }
                 .padding(.horizontal, 30)

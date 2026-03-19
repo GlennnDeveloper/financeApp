@@ -12,10 +12,13 @@ struct DashboardBalanceCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.7))
                 
-                Text(balance, format: .currency(code: settingsManager.appCurrency))
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundStyle(.white)
-                    .contentTransition(.numericText())
+                CurrencyText(
+                    amount: balance,
+                    currencyCode: settingsManager.appCurrency,
+                    showColor: false,
+                    font: .system(size: 40, weight: .bold)
+                )
+                .contentTransition(.numericText())
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -24,10 +27,13 @@ struct DashboardBalanceCard: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.white.opacity(0.6))
                 
-                Text(monthlySavings, format: .currency(code: settingsManager.appCurrency))
-                    .font(.headline)
-                    .foregroundStyle(.red)
-                    .contentTransition(.numericText())
+                CurrencyText(
+                    amount: monthlySavings,
+                    currencyCode: settingsManager.appCurrency,
+                    isIncome: false,
+                    font: .headline
+                )
+                .contentTransition(.numericText())
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

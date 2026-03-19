@@ -189,9 +189,12 @@ struct BudgetView: View {
             Text(SettingsManager.shared.localizedString(for: title))
                 .font(.caption2)
                 .foregroundStyle(Color.gray)
-            Text(value.formatted(.currency(code: settingsManager.appCurrency)))
-                .font(.subheadline.bold())
-                .foregroundStyle(color)
+            CurrencyText(
+                amount: value,
+                currencyCode: settingsManager.appCurrency,
+                isIncome: color == .green,
+                font: .subheadline.bold()
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(cornerRadius: 12, padding: 12, lowRes: true)
@@ -223,14 +226,7 @@ private struct BudgetRow: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 14) {
-                Circle()
-                    .fill(category.color.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                    .overlay {
-                        Image(systemName: budget.categorySymbol)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(category.color)
-                    }
+                CategoryIcon(symbol: budget.categorySymbol, color: category.color, size: 40, iconScale: 0.45)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -238,9 +234,11 @@ private struct BudgetRow: View {
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.white)
                         Spacer()
-                        Text(spent.formatted(.currency(code: SettingsManager.shared.appCurrency)))
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.white)
+                        CurrencyText(
+                            amount: spent,
+                            currencyCode: SettingsManager.shared.appCurrency,
+                            font: .body.weight(.semibold)
+                        )
                     }
                     
                     GeometryReader { geo in
@@ -322,9 +320,12 @@ private struct BudgetSummaryChart: View {
                 Text(SettingsManager.shared.localizedString(for: "Spent"))
                     .font(.caption)
                     .foregroundStyle(Color.gray)
-                Text(totalSpent.formatted(.currency(code: settingsManager.appCurrency)))
-                    .font(.title.bold())
-                    .foregroundStyle(.white)
+                CurrencyText(
+                    amount: totalSpent,
+                    currencyCode: settingsManager.appCurrency,
+                    showColor: false,
+                    font: .title.bold()
+                )
                 Text(String(format: SettingsManager.shared.localizedString(for: "of %@"), totalBudget.formatted(.currency(code: settingsManager.appCurrency))))
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.6))
@@ -339,14 +340,17 @@ private struct CategoryGridItem: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            Circle()
-                .fill(category.color.opacity(isSelected ? 1.0 : 0.1))
-                .frame(width: 50, height: 50)
-                .overlay {
-                    Image(systemName: category.symbol)
-                        .font(.title3)
-                        .foregroundStyle(isSelected ? .white : category.color)
+            CategoryIcon(
+                symbol: category.symbol,
+                color: isSelected ? .white : category.color,
+                size: 50,
+                iconScale: 0.4
+            )
+            .background {
+                if isSelected {
+                    Circle().fill(category.color)
                 }
+            }
             
             Text(category.localizedName)
                 .font(.caption2.weight(.medium))

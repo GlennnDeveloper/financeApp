@@ -84,26 +84,12 @@ struct TransactionsView: View {
     private var searchAndFilterHeader: some View {
         VStack(spacing: 16) {
             // Search Bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.white.opacity(0.4))
-                TextField(settingsManager.localizedString(for: "Search transactions"), text: $searchText)
-                    .textFieldStyle(.plain)
-                    .foregroundStyle(.white)
-                    .placeholder(when: searchText.isEmpty) {
-                        Text(settingsManager.localizedString(for: "Search transactions")).foregroundStyle(.white.opacity(0.3))
-                    }
-                    .autocorrectionDisabled()
-                
-                if !searchText.isEmpty {
-                    Button { searchText = "" } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.white.opacity(0.4))
-                    }
-                }
-            }
-            .padding(12)
-            .glassCard(cornerRadius: 12, padding: 12, lowRes: true)
+            AppTextField(
+                icon: "magnifyingglass",
+                placeholder: "Search transactions",
+                text: $searchText,
+                isFocused: false // Focus handled by internal TextField if needed, or can be passed
+            )
             .padding(.horizontal)
             
             // Granular Filters: Year, Month, Day

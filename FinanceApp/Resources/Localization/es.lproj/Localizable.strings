@@ -278,3 +278,8 @@
 "Large Transaction Alerts" = "Alertas de Transacciones Grandes";
 "Recurring Payment Reminders" = "Recordatorios de Pagos Recurrentes";
 "Manage System Settings" = "Gestionar Ajustes del Sistema";
+
+/* Forecast */
+"Danger Zone" = "Zona de Peligro";
+"Cash Flow Forecast" = "Predicción de Flujo";
+"Projection based on recurring items" = "Proyección basada en recurrentes";

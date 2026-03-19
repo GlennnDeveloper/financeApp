@@ -283,3 +283,8 @@
 "Large Transaction Alerts" = "Large Transaction Alerts";
 "Recurring Payment Reminders" = "Recurring Payment Reminders";
 "Manage System Settings" = "Manage System Settings";
+
+/* Forecast */
+"Danger Zone" = "Danger Zone";
+"Cash Flow Forecast" = "Cash Flow Forecast";
+"Projection based on recurring items" = "Projection based on recurring items";

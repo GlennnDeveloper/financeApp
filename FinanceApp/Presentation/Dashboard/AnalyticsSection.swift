@@ -62,7 +62,8 @@ struct AnalyticsSection: View {
                 
                 Spacer()
                 
-                timeframeSelector
+                
+                CustomTimeframeSelector(selectedTimeframe: $selectedTimeframe)
             }
             .padding(.top, 8)
             
@@ -79,29 +80,7 @@ struct AnalyticsSection: View {
         .padding(.bottom, 20)
         .frame(maxHeight: .infinity, alignment: .top)
         .glassCard(cornerRadius: 24, padding: 12, lowRes: true)
-        .drawingGroup()
     }
-    
-    private var timeframeSelector: some View {
-        HStack(spacing: 0) {
-            ForEach(Timeframe.allCases, id: \.self) { tf in
-                Button {
-                    withAnimation(.snappy(duration: 0.2, extraBounce: 0.1)) {
-                        selectedTimeframe = tf
-                    }
-                } label: {
-                    Text(tf.localizedName)
-                        .font(.caption2.weight(selectedTimeframe == tf ? .bold : .medium))
-                        .foregroundStyle(selectedTimeframe == tf ? Color.primary : Color.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(selectedTimeframe == tf ? Color(uiColor: .systemBackground).opacity(0.8) : Color.clear, in: Capsule())
-                }
-            }
-        }
-        .background(Color.primary.opacity(0.06), in: Capsule())
-    }
-    
     private var typeSelector: some View {
         HStack(spacing: 4) {
             ForEach(AnalyticsViewType.allCases, id: \.self) { type in

@@ -31,10 +31,10 @@ struct CategoryDetailView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.title3.weight(.bold))
+                            .font(.body.weight(.bold))
                             .foregroundStyle(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Color.white.opacity(0.1), in: Circle())
+                            .frame(width: 36, height: 36)
+                            .glassCard(cornerRadius: 18, padding: 0, lowRes: true)
                     }
                     
                     Spacer()

@@ -39,22 +39,45 @@ final class FinanceViewModel {
         return monthExpenses.reduce(0) { $0 + $1.amount }
     }
     
-    // Pro Feature: Calculate Cash Flow Forecast for the next 30 days
-    func calculateCashFlowForecast(transactions: [Transaction], currentBalance: Double) -> [ChartItem] {
+    // Alert properties for Forecast
+    var forecastAlert: String? = nil
+    private let alertThreshold: Double = 100.0
+
+    // Pro Feature: Calculate Cash Flow Forecast for the next N days
+    func calculateCashFlowForecast(transactions: [Transaction], currentBalance: Double, timeframe: Timeframe) -> [ChartItem] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
         
         // 1. Identify recurring income/expenses
         let recurring = transactions.filter { $0.isRecurring }
         
-        // 2. Project for the next 30 days
+        // 2. Project based on timeframe
         var projectedItems: [ChartItem] = []
         var runningBalance = currentBalance
+        var minBalanceFound = currentBalance
+        var minBalanceDate: Date = today
+        
+        let projectionDays: Int
+        let interval: Int
+        
+        switch timeframe {
+        case .week:
+            projectionDays = 7
+            interval = 1
+        case .month:
+            projectionDays = 30
+            interval = 5
+        case .year:
+            projectionDays = 365
+            interval = 30
+        }
         
         // Add current day
-        projectedItems.append(ChartItem(label: "Today", amount: runningBalance, date: today))
+        let dfInitial = DateFormatter()
+        dfInitial.dateFormat = "d MMM"
+        projectedItems.append(ChartItem(label: dfInitial.string(from: today), amount: runningBalance, date: today))
         
-        for dayOffset in 1...30 {
+        for dayOffset in 1...projectionDays {
             guard let date = calendar.date(byAdding: .day, value: dayOffset, to: today) else { continue }
             
             // Find any recurring transactions that hit on this "day of month"
@@ -65,11 +88,37 @@ final class FinanceViewModel {
                 runningBalance += (hit.isIncome ? hit.amount : -hit.amount)
             }
             
-            // Every 7 days, add a data point to the forecast chart
-            if dayOffset % 5 == 0 || dayOffset == 30 {
-                let label = "D+\(dayOffset)"
+            // Track minimum balance
+            if runningBalance < minBalanceFound {
+                minBalanceFound = runningBalance
+                minBalanceDate = date
+            }
+            
+            // Interval-based data points
+            if dayOffset % interval == 0 || dayOffset == projectionDays {
+                let df = DateFormatter()
+                df.dateFormat = (timeframe == .year) ? "MMM" : "d MMM"
+                let label = df.string(from: date)
                 projectedItems.append(ChartItem(label: label, amount: runningBalance, date: date))
             }
+        }
+        
+        // 3. Generate alert if below threshold
+        if minBalanceFound < alertThreshold {
+            let df = DateFormatter()
+            df.dateFormat = "d 'de' MMMM" // e.g., 12 de Abril
+            let dateString = df.string(from: minBalanceDate)
+            
+            // Professional currency formatting
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencySymbol = "$"
+            formatter.maximumFractionDigits = 0
+            let amountString = formatter.string(from: NSNumber(value: minBalanceFound)) ?? "$\(Int(minBalanceFound))"
+            
+            forecastAlert = "Tu balance podría caer a \(amountString) el \(dateString). Considera mover fondos."
+        } else {
+            forecastAlert = nil
         }
         
         return projectedItems

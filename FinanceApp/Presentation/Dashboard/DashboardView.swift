@@ -30,7 +30,6 @@ struct DashboardView: View {
     @State private var monthlySavings: Double = 0
     @State private var savingsRate: Double = 0
     @State private var chartData: [ChartItem] = []
-    @State private var forecastData: [ChartItem] = []
     @State private var previousPeriodSpend: Double = 0
     @State private var previousPeriodIncome: Double = 0
     @State private var topCategories: [SpendingCategoryData] = []
@@ -64,30 +63,18 @@ struct DashboardView: View {
                         authViewModel: authViewModel
                     )
                     
-                    TabView {
-                        AnalyticsSection(
-                            chartData: chartData,
-                            previousExpenses: previousPeriodSpend,
-                            previousIncome: previousPeriodIncome,
-                            topCategories: topCategories,
-                            selectedTimeframe: $selectedTimeframe,
-                            analyticsType: $analyticsType,
-                            yMax: chartYMax,
-                            selectedItem: $selectedChartItem
-                        )
-                        .padding(.horizontal)
-                        .padding(.top, 4)
-                        
-                        forecastSection
-                        .padding(.horizontal)
-                        .padding(.top, 4)
-                        
-                        SpendingCarouselCard(transactions: transactions, categories: categories)
-                        .padding(.horizontal)
-                        .padding(.top, 4)
-                    }
-                    .frame(height: 414)
-                    .tabViewStyle(.page(indexDisplayMode: .always))
+                    AnalyticsSection(
+                        chartData: chartData,
+                        previousExpenses: previousPeriodSpend,
+                        previousIncome: previousPeriodIncome,
+                        topCategories: topCategories,
+                        selectedTimeframe: $selectedTimeframe,
+                        analyticsType: $analyticsType,
+                        yMax: chartYMax,
+                        selectedItem: $selectedChartItem
+                    )
+                    .padding(.horizontal)
+                    .padding(.top, 4)
                     
                     RecentTransactionsSection(
                         transactions: transactions,
@@ -139,13 +126,8 @@ struct DashboardView: View {
             Spacer()
             HStack {
                 Spacer()
-                Button(action: { showAddSheet = true }) {
-                    Image(systemName: "plus")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(Color.white)
-                        .frame(width: 60, height: 60)
-                        .background(Color.blue, in: Circle())
-                        .shadow(color: Color.blue.opacity(0.4), radius: 10, x: 0, y: 5)
+                AppIconButton(icon: "plus", color: .blue) {
+                    showAddSheet = true
                 }
                 .padding(.trailing, 24)
                 .padding(.bottom, 24)
@@ -182,8 +164,6 @@ struct DashboardView: View {
                     self.previousPeriodIncome = calculatePreviousPeriodTotal(transactions: transactions, timeframe: currentTimeframe, isIncome: true)
                     
                     self.topCategories = viewModel.calculateTopCategories(transactions: transactions, categories: categories, timeframe: currentTimeframe)
-                    
-                    self.forecastData = viewModel.calculateCashFlowForecast(transactions: transactions, currentBalance: newBalance)
                 }
             }
         }
@@ -300,54 +280,4 @@ struct DashboardView: View {
         }
     }
 
-    private var forecastSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(settingsManager.localizedString(for: "Cash Flow Forecast"))
-                        .font(.headline)
-                    Text(settingsManager.localizedString(for: "Projection based on recurring items"))
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-                Spacer()
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .foregroundStyle(.blue)
-            }
-            
-            Chart {
-                ForEach(forecastData) { item in
-                    LineMark(
-                        x: .value("Day", item.label),
-                        y: .value("Balance", item.amount)
-                    )
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing))
-                    
-                    AreaMark(
-                        x: .value("Day", item.label),
-                        y: .value("Balance", item.amount)
-                    )
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(LinearGradient(colors: [.blue.opacity(0.2), .clear], startPoint: .top, endPoint: .bottom))
-                }
-            }
-            .frame(height: 200)
-            .chartYAxis {
-                AxisMarks(position: .leading) { value in
-                    AxisGridLine().foregroundStyle(.white.opacity(0.05))
-                    AxisValueLabel().foregroundStyle(.white.opacity(0.4))
-                }
-            }
-            .chartXAxis {
-                AxisMarks { value in
-                    AxisValueLabel().foregroundStyle(.white.opacity(0.4))
-                }
-            }
-        }
-        .padding(.bottom, 20)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .glassCard(cornerRadius: 24, padding: 20, lowRes: true)
-        .drawingGroup()
-    }
 }

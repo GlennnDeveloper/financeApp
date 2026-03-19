@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Individual shared transaction row (Extracted for global use)
+/// Individual shared transaction row (Moved to Shared for global use)
 struct TransactionRow: View {
     var transaction: Transaction
     var categories: [Category]
@@ -12,16 +12,7 @@ struct TransactionRow: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Smooth circular icon with category color
-            ZStack {
-                Circle()
-                    .fill(Color.primary.opacity(0.1))
-                    .frame(width: 50, height: 50)
-
-                Image(systemName: transaction.categorySymbol)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(categoryColor)
-            }
+            CategoryIcon(symbol: transaction.categorySymbol, color: categoryColor)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.title)
@@ -36,10 +27,11 @@ struct TransactionRow: View {
 
             Spacer()
 
-            // Monospaced amount for perfect digit alignment
-            Text(transaction.amount, format: .currency(code: settingsManager.appCurrency))
-                .font(.headline.monospacedDigit())
-                .foregroundStyle(transaction.isIncome ? Color.green : Color.white)
+            CurrencyText(
+                amount: transaction.amount,
+                currencyCode: settingsManager.appCurrency,
+                isIncome: transaction.isIncome
+            )
         }
         .glassCard(cornerRadius: 20, padding: 16, lowRes: true)
     }
